@@ -1,0 +1,265 @@
+import { RouteSegment, Landmark, IncidentReport, TrustedContact } from '../types';
+
+export const INITIAL_USER_POS: [number, number] = [21.1663, 72.7832]; // SVNIT Campus, Surat
+export const DESTINATION_POS: [number, number] = [21.1960, 72.8190]; // Athwa / Ring Road Hub, Surat
+
+export const MOCK_ROUTES: RouteSegment[] = [
+  {
+    id: 'route-safest',
+    name: 'Dumas Road & Ring Road Corridor',
+    category: 'safest',
+    safetyScore: 94,
+    distanceKm: 4.8,
+    durationMin: 14,
+    color: '#10B981', // Emerald green
+    lightingPercent: 96,
+    crowdContext: {
+      level: 'High',
+      verifiedSafe: true,
+      description: 'Active commercial high street with continuous streetlights & high women presence',
+    },
+    safeLandmarksCount: 5,
+    incidentsReported: 0,
+    coordinates: [
+      [21.1663, 72.7832], // SVNIT Gate
+      [21.1695, 72.7885],
+      [21.1730, 72.7930], // Kargil Chowk (Well lit)
+      [21.1775, 72.7988], // Piplod Main Road
+      [21.1820, 72.8055], // Near Police Commissionerate
+      [21.1890, 72.8120], // Athwagate Pink Booth
+      [21.1960, 72.8190], // Ring Road Hub
+    ],
+    highlights: [
+      '96% high-lumens LED street lighting',
+      '2 Women Pink Police Booths on path',
+      '24/7 commercial stores & CCTV coverage',
+      'Zero reported harassment spots in past 6 months',
+    ],
+    warnings: [
+      '+3 mins longer than isolated alleyway, but 100% safer',
+    ],
+  },
+  {
+    id: 'route-balanced',
+    name: 'Ghod Dod Road Alternate',
+    category: 'balanced',
+    safetyScore: 78,
+    distanceKm: 4.3,
+    durationMin: 12,
+    color: '#F59E0B', // Amber
+    lightingPercent: 74,
+    crowdContext: {
+      level: 'Moderate',
+      verifiedSafe: true,
+      description: 'Residential & boutique market area. Moderate evening foot traffic.',
+    },
+    safeLandmarksCount: 2,
+    incidentsReported: 1,
+    coordinates: [
+      [21.1663, 72.7832],
+      [21.1710, 72.7870],
+      [21.1760, 72.7915],
+      [21.1800, 72.7980], // Ghod Dod Road
+      [21.1865, 72.8080],
+      [21.1915, 72.8140],
+      [21.1960, 72.8190],
+    ],
+    highlights: [
+      'Well-paved sidewalks with active residential security guards',
+      '1 24/7 Apollo Pharmacy on route',
+    ],
+    warnings: [
+      'One 150m pocket has intermittent lighting after 10 PM',
+      '1 isolated stalking attempt reported 45 days ago',
+    ],
+  },
+  {
+    id: 'route-fastest',
+    name: 'Canal Road & Underpass Shortcut',
+    category: 'fastest',
+    safetyScore: 41,
+    distanceKm: 3.6,
+    durationMin: 9,
+    color: '#EF4444', // Danger Red
+    lightingPercent: 28,
+    crowdContext: {
+      level: 'Deserted',
+      verifiedSafe: false,
+      description: 'Industrial stretch & underpass. Very sparse pedestrian visibility.',
+    },
+    safeLandmarksCount: 0,
+    incidentsReported: 4,
+    coordinates: [
+      [21.1663, 72.7832],
+      [21.1720, 72.7820], // Canal stretch
+      [21.1785, 72.7890], // Flyover underpass
+      [21.1850, 72.8000], // Dark industrial zone
+      [21.1920, 72.8110],
+      [21.1960, 72.8190],
+    ],
+    highlights: [
+      'Saves 5 minutes',
+    ],
+    warnings: [
+      '⚠️ Low Visibility: 72% dark unlit stretches',
+      '⚠️ High Risk: 4 recent catcalling/harassment reports',
+      '⚠️ Dead-zone alert: Poor mobile signal under the railway flyover',
+      'Not recommended for solo female travel after 7:30 PM',
+    ],
+  },
+];
+
+export const MOCK_LANDMARKS: Landmark[] = [
+  {
+    id: 'lm-1',
+    name: 'Umra Pink Police Booth & Help Desk',
+    type: 'pink_booth',
+    lat: 21.1780,
+    lng: 72.7995,
+    address: 'Dumas Rd, opposite Kargil Chowk, Surat',
+    phone: '1091 / 0261-2224500',
+    openHours: '24/7 Dedicated Women Police Desk',
+    verified: true,
+    distanceMeters: 450,
+  },
+  {
+    id: 'lm-2',
+    name: 'Athwa Police Station',
+    type: 'police',
+    lat: 21.1870,
+    lng: 72.8105,
+    address: 'Athwagate Junction, Surat',
+    phone: '112 / 0261-2665510',
+    openHours: '24 Hours Emergency Response',
+    verified: true,
+    distanceMeters: 920,
+  },
+  {
+    id: 'lm-3',
+    name: 'Civil Hospital & Trauma Emergency',
+    type: 'hospital',
+    lat: 21.1920,
+    lng: 72.8240,
+    address: 'Majura Gate, Ring Road, Surat',
+    phone: '108 / 0261-2244175',
+    openHours: '24/7 Emergency Wing',
+    verified: true,
+    distanceMeters: 1400,
+  },
+  {
+    id: 'lm-4',
+    name: 'SVNIT Security Command Post',
+    type: 'safe_haven',
+    lat: 21.1668,
+    lng: 72.7845,
+    address: 'Main Gate, Ichchhanath, Surat',
+    phone: '0261-2259571',
+    openHours: '24/7 Campus Security & CCTV',
+    verified: true,
+    distanceMeters: 120,
+  },
+  {
+    id: 'lm-5',
+    name: 'Apollo 24/7 Medstore & Safe Haven',
+    type: 'pharmacy',
+    lat: 21.1810,
+    lng: 72.8020,
+    address: 'Ghod Dod Rd, Near St. Xavier School',
+    phone: '0261-2651122',
+    openHours: 'Open All Night',
+    verified: true,
+    distanceMeters: 650,
+  },
+];
+
+export const MOCK_INCIDENTS: IncidentReport[] = [
+  {
+    id: 'inc-1',
+    type: 'poor_lighting',
+    severity: 'high',
+    lat: 21.1795,
+    lng: 72.7880,
+    title: 'Canal Road Broken Streetlights',
+    description: '3 consecutive poles broken. Completely pitch black from 8:00 PM onwards.',
+    timestamp: '2 hours ago',
+    confirmations: 7,
+    requiredConfirmations: 3,
+    verified: true,
+    decayHoursLeft: 46,
+  },
+  {
+    id: 'inc-2',
+    type: 'harassment',
+    severity: 'high',
+    lat: 21.1840,
+    lng: 72.7990,
+    title: 'Group loitering & whistling',
+    description: 'Bystanders gathered near empty construction lot harassing pedestrians.',
+    timestamp: 'Yesterday, 9:40 PM',
+    confirmations: 5,
+    requiredConfirmations: 3,
+    verified: true,
+    decayHoursLeft: 18,
+  },
+  {
+    id: 'inc-3',
+    type: 'deserted',
+    severity: 'medium',
+    lat: 21.1735,
+    lng: 72.7830,
+    title: 'Deserted Service Lane',
+    description: 'No commercial activity or passing vehicles after 9 PM.',
+    timestamp: '3 days ago',
+    confirmations: 4,
+    requiredConfirmations: 3,
+    verified: true,
+    decayHoursLeft: 12,
+  },
+  {
+    id: 'inc-4',
+    type: 'well_lit',
+    severity: 'safe',
+    lat: 21.1725,
+    lng: 72.7940,
+    title: 'Kargil Chowk High-Mast LED & Patrol',
+    description: 'Continuous police mobile van stationed here every night. Highly safe.',
+    timestamp: 'Today, 6:00 PM',
+    confirmations: 12,
+    requiredConfirmations: 3,
+    verified: true,
+    decayHoursLeft: 72,
+  },
+];
+
+export const MOCK_TRUSTED_CONTACTS: TrustedContact[] = [
+  {
+    id: 'tc-1',
+    name: 'Priya Gohil (Sister)',
+    relation: 'Sister',
+    phone: '+91 98790 12345',
+    isEmergencyAlert: true,
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80',
+    batteryStatus: 88,
+    lastActive: 'Active now',
+  },
+  {
+    id: 'tc-2',
+    name: 'Rajesh Gohil (Papa)',
+    relation: 'Father',
+    phone: '+91 87808 88428',
+    isEmergencyAlert: true,
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+    batteryStatus: 72,
+    lastActive: 'Active 2m ago',
+  },
+  {
+    id: 'tc-3',
+    name: 'Ananya Sharma (Roommate)',
+    relation: 'Flatmate',
+    phone: '+91 94281 99887',
+    isEmergencyAlert: true,
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+    batteryStatus: 94,
+    lastActive: 'Active now',
+  },
+];
