@@ -14,6 +14,7 @@ import { CommunityReportModal } from './components/CommunityReportModal';
 import { SafeHavensDrawer } from './components/SafeHavensDrawer';
 import { GuardianDashboard } from './components/GuardianDashboard';
 import { CivicHeatmapDashboard } from './components/CivicHeatmapDashboard';
+import { MapApiKeyModal } from './components/MapApiKeyModal';
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
 import { playSilentConfirmPing } from './utils/audio';
 
@@ -21,6 +22,12 @@ export const App: React.FC = () => {
   // Navigation & View Views
   const [currentView, setCurrentView] = useState<'mobile' | 'guardian' | 'civic'>('mobile');
   const [deviceFrameMode, setDeviceFrameMode] = useState<boolean>(false);
+
+  // Maps API Key Configuration (reads from localStorage or .env VITE_MAPBOX_TOKEN)
+  const [mapboxApiKey, setMapboxApiKey] = useState<string>(() => {
+    return localStorage.getItem('safesafar_mapbox_token') || (import.meta.env.VITE_MAPBOX_TOKEN as string) || '';
+  });
+  const [isMapApiKeyModalOpen, setIsMapApiKeyModalOpen] = useState<boolean>(false);
 
   // Core Data
   const [routes] = useState<RouteSegment[]>(MOCK_ROUTES);
@@ -59,6 +66,17 @@ export const App: React.FC = () => {
     setTimeout(() => {
       setToastMessage(null);
     }, 4500);
+  };
+
+  const handleSaveMapApiKey = (key: string) => {
+    setMapboxApiKey(key);
+    if (key) {
+      localStorage.setItem('safesafar_mapbox_token', key);
+      showToast('🗺️ Mapbox Token applied! Map tiles updated.');
+    } else {
+      localStorage.removeItem('safesafar_mapbox_token');
+      showToast('🗺️ Reset to default free CartoDB / OSM tiles.');
+    }
   };
 
   // SOS State
@@ -202,6 +220,8 @@ export const App: React.FC = () => {
         onOpenDecoy={() => setIsDecoyOpen(true)}
         onOpenReportModal={() => setIsReportModalOpen(true)}
         onOpenSafeHavens={() => setIsSafeHavensOpen(true)}
+        onOpenMapApiKeyModal={() => setIsMapApiKeyModalOpen(true)}
+        hasCustomMapKey={!!mapboxApiKey}
         onTriggerSOS={() => triggerSOS('button', false, false)}
         batteryLevel={batteryLevel}
       />
@@ -288,6 +308,7 @@ export const App: React.FC = () => {
                     navProgressIndex={navStepIndex}
                     showHeatmap={showHeatmap}
                     showSafeLandmarks={showSafeLandmarks}
+                    mapboxApiKey={mapboxApiKey}
                     onLandmarkClick={(lm) => {
                       showToast(`Safe Landmark: ${lm.name} (${lm.openHours})`);
                     }}
@@ -405,6 +426,13 @@ export const App: React.FC = () => {
       </main>
 
       {/* ALL MODALS & OVERLAYS */}
+      <MapApiKeyModal
+        isOpen={isMapApiKeyModalOpen}
+        onClose={() => setIsMapApiKeyModalOpen(false)}
+        currentKey={mapboxApiKey}
+        onSaveKey={handleSaveMapApiKey}
+      />
+
       <FakeCallModal
         isOpen={isFakeCallOpen}
         onClose={() => setIsFakeCallOpen(false)}

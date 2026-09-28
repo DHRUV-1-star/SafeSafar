@@ -14,6 +14,7 @@ interface MapComponentProps {
   showHeatmap: boolean;
   showSafeLandmarks: boolean;
   onLandmarkClick?: (lm: Landmark) => void;
+  mapboxApiKey?: string;
 }
 
 export const MapComponent: React.FC<MapComponentProps> = ({
@@ -27,9 +28,11 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   showHeatmap,
   showSafeLandmarks,
   onLandmarkClick,
+  mapboxApiKey,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
   const routeLayersRef = useRef<L.LayerGroup | null>(null);
   const landmarkLayersRef = useRef<L.LayerGroup | null>(null);
   const incidentLayersRef = useRef<L.LayerGroup | null>(null);
@@ -45,13 +48,6 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       zoom: 14,
       zoomControl: false,
     });
-
-    // Dark Tile Layer (CartoDB Dark Matter)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-      subdomains: 'abcd',
-      maxZoom: 19,
-    }).addTo(map);
 
     L.control.zoom({ position: 'topright' }).addTo(map);
 
@@ -81,6 +77,41 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       mapInstanceRef.current = null;
     };
   }, []);
+
+  // Dynamic Tile Layer Switcher (Mapbox vs CartoDB Free)
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+
+    if (tileLayerRef.current) {
+      map.removeLayer(tileLayerRef.current);
+      tileLayerRef.current = null;
+    }
+
+    const key = mapboxApiKey?.trim();
+    if (key && key.startsWith('pk.')) {
+      // High-resolution Mapbox Navigation Night Tiles
+      tileLayerRef.current = L.tileLayer(
+        `https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/256/{z}/{x}/{y}@2x?access_token=${key}`,
+        {
+          attribution: '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; OpenStreetMap',
+          tileSize: 512,
+          zoomOffset: -1,
+          maxZoom: 20,
+        }
+      ).addTo(map);
+    } else {
+      // Free CartoDB Voyager / Dark Matter Tiles (No Key Required)
+      tileLayerRef.current = L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        {
+          attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+          subdomains: 'abcd',
+          maxZoom: 19,
+        }
+      ).addTo(map);
+    }
+  }, [mapboxApiKey]);
 
   // Update User Marker position
   useEffect(() => {
@@ -164,24 +195,19 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     if (!showSafeLandmarks) return;
 
     landmarks.forEach((lm) => {
-      let iconColor = '#3b82f6';
       let iconSymbol = '🏛️';
       let badgeBg = '#1e3a8a';
 
       if (lm.type === 'pink_booth') {
-        iconColor = '#ec4899';
         iconSymbol = '🛡️ Pink';
         badgeBg = 'rgba(236, 72, 153, 0.9)';
       } else if (lm.type === 'police') {
-        iconColor = '#60a5fa';
         iconSymbol = '👮 Police';
         badgeBg = 'rgba(37, 99, 235, 0.9)';
       } else if (lm.type === 'hospital') {
-        iconColor = '#10b981';
         iconSymbol = '🏥 24/7 Med';
         badgeBg = 'rgba(16, 185, 129, 0.9)';
       } else if (lm.type === 'pharmacy') {
-        iconColor = '#f59e0b';
         iconSymbol = '💊 Safe Haven';
         badgeBg = 'rgba(217, 119, 6, 0.9)';
       }

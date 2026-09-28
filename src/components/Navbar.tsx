@@ -11,6 +11,8 @@ interface NavbarProps {
   onOpenDecoy: () => void;
   onOpenReportModal: () => void;
   onOpenSafeHavens: () => void;
+  onOpenMapApiKeyModal: () => void;
+  hasCustomMapKey: boolean;
   onTriggerSOS: () => void;
   batteryLevel: number;
 }
@@ -25,6 +27,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenDecoy,
   onOpenReportModal,
   onOpenSafeHavens,
+  onOpenMapApiKeyModal,
+  hasCustomMapKey,
   onTriggerSOS,
   batteryLevel,
 }) => {
@@ -90,6 +94,21 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Controls & Emergency Tools */}
         <div className="flex items-center flex-wrap gap-2">
+          {/* Map API Key Settings */}
+          <button
+            onClick={onOpenMapApiKeyModal}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+              hasCustomMapKey
+                ? 'bg-purple-600/20 border-purple-500/50 text-purple-300'
+                : 'bg-white/5 border-white/10 text-gray-300 hover:text-white'
+            }`}
+            title="Configure Mapbox / Maps API Key"
+          >
+            <KeyRound className="w-3.5 h-3.5 text-purple-400" />
+            <span>Map API</span>
+            {hasCustomMapKey && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>}
+          </button>
+
           {/* 2G / Offline Fallback Mode Toggle */}
           <button
             onClick={onToggleOffline}
