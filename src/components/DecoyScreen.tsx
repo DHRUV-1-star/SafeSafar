@@ -41,7 +41,7 @@ export const DecoyScreen: React.FC<DecoyScreenProps> = ({ onExitDecoy, duressSOS
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#121212] text-white flex flex-col justify-between p-6 select-none animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-[9999] bg-[#121212] text-white flex flex-col justify-between p-6 select-none animate-in fade-in duration-150">
       {/* Decoy Header */}
       <div className="flex justify-between items-center pt-2">
         <div className="text-xs text-gray-500 font-mono">Standard Calculator</div>

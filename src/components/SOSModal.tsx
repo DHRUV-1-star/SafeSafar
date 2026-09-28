@@ -69,7 +69,7 @@ export const SOSModal: React.FC<SOSModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-lg p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-lg p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-md bg-[#160d14] border-2 border-red-500/50 rounded-3xl p-6 text-white shadow-2xl overflow-hidden flex flex-col items-center">
         {/* Glowing emergency backdrop halo */}
         <div className="absolute -top-24 -left-24 w-64 h-64 bg-red-600/20 rounded-full blur-3xl pointer-events-none" />

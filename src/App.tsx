@@ -228,7 +228,7 @@ export const App: React.FC = () => {
 
       {/* Floating System Toast Alert */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#161f33] border border-purple-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
+        <div className="fixed bottom-6 right-6 z-[10000] bg-[#161f33] border border-purple-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
           <Sparkles className="w-5 h-5 text-purple-400 shrink-0" />
           <span className="text-xs font-semibold">{toastMessage}</span>
         </div>
@@ -296,7 +296,7 @@ export const App: React.FC = () => {
             <div className={deviceFrameMode ? "max-w-[460px] mx-auto bg-black/95 p-4 rounded-[48px] border-[5px] border-[#374151] shadow-2xl space-y-4" : "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"}>
               {/* Map Visualizer (Left/Top) */}
               <div className={deviceFrameMode ? "flex flex-col gap-4 w-full" : "lg:col-span-7 xl:col-span-8 flex flex-col gap-4"}>
-                <div className={deviceFrameMode ? "h-[340px] w-full relative" : "h-[460px] sm:h-[520px] w-full relative"}>
+                <div className={deviceFrameMode ? "h-[340px] w-full relative z-0 isolate" : "h-[460px] sm:h-[520px] w-full relative z-0 isolate"}>
                   <MapComponent
                     routes={routes}
                     selectedRoute={selectedRoute}
@@ -316,7 +316,7 @@ export const App: React.FC = () => {
 
                   {/* Active SOS Watermark on Map */}
                   {sosState.isActive && (
-                    <div className="absolute top-4 left-4 z-[400] bg-red-600/90 text-white px-3 py-1.5 rounded-full text-xs font-black tracking-wide shadow-xl flex items-center gap-2 animate-bounce">
+                    <div className="absolute top-4 left-4 z-10 bg-red-600/90 text-white px-3 py-1.5 rounded-full text-xs font-black tracking-wide shadow-xl flex items-center gap-2 animate-bounce pointer-events-none">
                       <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
                       <span>SOS TELEMETRY TRANSMITTING LIVE</span>
                     </div>
@@ -324,7 +324,7 @@ export const App: React.FC = () => {
 
                   {/* 2G Fallback Watermark */}
                   {isOfflineMode && (
-                    <div className="absolute top-4 right-14 z-[400] bg-yellow-600/90 text-black font-bold px-3 py-1.5 rounded-full text-[11px] shadow-xl">
+                    <div className="absolute top-4 right-14 z-10 bg-yellow-600/90 text-black font-bold px-3 py-1.5 rounded-full text-[11px] shadow-xl pointer-events-none">
                       OFFLINE / 2G MESH ACTIVE
                     </div>
                   )}

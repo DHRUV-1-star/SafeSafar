@@ -134,6 +134,8 @@ body {
   height: 100%;
   background: #0d121f !important;
   font-family: inherit;
+  z-index: 0 !important;
+  isolation: isolate;
 }
 
 .leaflet-control-zoom {

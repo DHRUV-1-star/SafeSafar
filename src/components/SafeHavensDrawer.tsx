@@ -18,7 +18,7 @@ export const SafeHavensDrawer: React.FC<SafeHavensDrawerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-lg bg-[#111827] border border-white/10 rounded-3xl p-6 text-white shadow-2xl max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">

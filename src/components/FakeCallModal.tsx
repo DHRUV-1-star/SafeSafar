@@ -120,7 +120,7 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
       {/* Phone Screen Container */}
       <div className="relative w-full max-w-sm h-[680px] bg-gradient-to-b from-[#111827] via-[#0B0F19] to-black rounded-[42px] border-4 border-[#374151] shadow-2xl flex flex-col justify-between p-6 text-white overflow-hidden select-none">
         

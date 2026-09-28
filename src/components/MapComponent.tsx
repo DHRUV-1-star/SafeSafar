@@ -40,7 +40,25 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
   // Initialize Map
   useEffect(() => {
-    if (!mapContainerRef.current || mapInstanceRef.current) return;
+    if (!mapContainerRef.current) return;
+
+    // Safety cleanup of any existing instance
+    if (mapInstanceRef.current) {
+      try {
+        mapInstanceRef.current.off();
+        mapInstanceRef.current.remove();
+      } catch (e) {
+        console.warn('Map cleanup error:', e);
+      }
+      mapInstanceRef.current = null;
+    }
+
+    if (mapContainerRef.current) {
+      try {
+        delete (mapContainerRef.current as any)._leaflet_id;
+        mapContainerRef.current.innerHTML = '';
+      } catch {}
+    }
 
     // Center on Surat / SVNIT
     const map = L.map(mapContainerRef.current, {
@@ -72,9 +90,56 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
     mapInstanceRef.current = map;
 
+    // Observe container size adjustments
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    });
+
+    if (mapContainerRef.current) {
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
     return () => {
-      map.remove();
-      mapInstanceRef.current = null;
+      resizeObserver.disconnect();
+      try {
+        if (tileLayerRef.current) {
+          map.removeLayer(tileLayerRef.current);
+          tileLayerRef.current = null;
+        }
+        if (routeLayersRef.current) {
+          routeLayersRef.current.clearLayers();
+          map.removeLayer(routeLayersRef.current);
+          routeLayersRef.current = null;
+        }
+        if (landmarkLayersRef.current) {
+          landmarkLayersRef.current.clearLayers();
+          map.removeLayer(landmarkLayersRef.current);
+          landmarkLayersRef.current = null;
+        }
+        if (incidentLayersRef.current) {
+          incidentLayersRef.current.clearLayers();
+          map.removeLayer(incidentLayersRef.current);
+          incidentLayersRef.current = null;
+        }
+        if (userMarkerRef.current) {
+          map.removeLayer(userMarkerRef.current);
+          userMarkerRef.current = null;
+        }
+        map.off();
+        map.remove();
+      } catch (err) {
+        console.warn('Map cleanup error:', err);
+      } finally {
+        mapInstanceRef.current = null;
+        if (mapContainerRef.current) {
+          try {
+            delete (mapContainerRef.current as any)._leaflet_id;
+            mapContainerRef.current.innerHTML = '';
+          } catch {}
+        }
+      }
     };
   }, []);
 
@@ -84,7 +149,9 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     const map = mapInstanceRef.current;
 
     if (tileLayerRef.current) {
-      map.removeLayer(tileLayerRef.current);
+      try {
+        map.removeLayer(tileLayerRef.current);
+      } catch {}
       tileLayerRef.current = null;
     }
 
@@ -111,6 +178,15 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         }
       ).addTo(map);
     }
+
+    return () => {
+      if (tileLayerRef.current && mapInstanceRef.current) {
+        try {
+          mapInstanceRef.current.removeLayer(tileLayerRef.current);
+        } catch {}
+        tileLayerRef.current = null;
+      }
+    };
   }, [mapboxApiKey]);
 
   // Update User Marker position
@@ -305,8 +381,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   }, [incidents, showHeatmap]);
 
   return (
-    <div className="relative w-full h-full min-h-[380px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-      <div ref={mapContainerRef} className="w-full h-full min-h-[380px]" />
+    <div className="relative z-0 isolate w-full h-full min-h-[380px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+      <div ref={mapContainerRef} className="w-full h-full min-h-[380px] relative z-0" />
     </div>
   );
 };
