@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { RouteSegment, Landmark, IncidentReport, TrustedContact, ActiveSOSState } from './types';
 import { INITIAL_USER_POS, MOCK_ROUTES, MOCK_LANDMARKS, MOCK_INCIDENTS, MOCK_TRUSTED_CONTACTS } from './data/mockData';
+import { calculateRouteLighting, StreetLamp } from './services/overpass';
 import { Navbar } from './components/Navbar';
 import { MapComponent } from './components/MapComponent';
 import { RouteSelector } from './components/RouteSelector';
@@ -15,7 +16,7 @@ import { CommunityReportModal } from './components/CommunityReportModal';
 import { SafeHavensDrawer } from './components/SafeHavensDrawer';
 import { GuardianDashboard, CommuterProfile } from './components/GuardianDashboard';
 import { CivicHeatmapDashboard } from './components/CivicHeatmapDashboard';
-import { MapApiKeyModal } from './components/MapApiKeyModal';
+
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
 import { playSilentConfirmPing, stopSiren } from './utils/audio';
 import { fetchRealRoutes, LocationSuggestion } from './services/geocodingService';
@@ -25,11 +26,8 @@ export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'mobile' | 'guardian' | 'civic'>('mobile');
   const [deviceFrameMode, setDeviceFrameMode] = useState<boolean>(false);
 
-  // Maps API Key Configuration (reads from localStorage or .env VITE_MAPBOX_TOKEN)
-  const [mapboxApiKey, setMapboxApiKey] = useState<string>(() => {
-    return localStorage.getItem('safesafar_mapbox_token') || (import.meta.env.VITE_MAPBOX_TOKEN as string) || '';
-  });
-  const [isMapApiKeyModalOpen, setIsMapApiKeyModalOpen] = useState<boolean>(false);
+  // Mapbox token: read from .env at build time only (pk.* public token, safe for client)
+  const mapboxApiKey = (import.meta.env.VITE_MAPBOX_TOKEN as string) || '';
 
   // Core Data & Real Routing State
   const [routes, setRoutes] = useState<RouteSegment[]>(MOCK_ROUTES);
@@ -76,6 +74,57 @@ export const App: React.FC = () => {
   const [startLocationName, setStartLocationName] = useState<string>('SVNIT Campus, Dumas Road, Surat');
   const [destinationName, setDestinationName] = useState<string>('Ring Road Hub, Surat');
   const [isLoadingRoutes, setIsLoadingRoutes] = useState<boolean>(false);
+
+  // OSM Street Lamps & Dynamic Lighting State
+  const [streetLamps, setStreetLamps] = useState<StreetLamp[]>([]);
+
+  const handleStreetLampsUpdated = useCallback((lamps: StreetLamp[]) => {
+    setStreetLamps(lamps);
+  }, []);
+
+  // Dynamically calculate and replace mock lighting values with real Overpass + landmark + road-prior calculation
+  useEffect(() => {
+    setRoutes((prevRoutes) =>
+      prevRoutes.map((route) => {
+        const calculation = calculateRouteLighting(route, streetLamps, landmarks);
+        const baseWarnings = route.warnings.filter(
+          (w) => !w.toLowerCase().includes('lighting data')
+        );
+        const newWarnings = [...baseWarnings];
+        if (calculation.warning) {
+          newWarnings.push(calculation.warning);
+        }
+
+        // Dynamic composite safety score adjusted by real lighting calculation
+        const lightingDelta = (calculation.lightingPercent - route.lightingPercent) * 0.25;
+        const adjustedSafetyScore = Math.max(
+          10,
+          Math.min(99, Math.round(route.safetyScore + lightingDelta))
+        );
+
+        return {
+          ...route,
+          lightingPercent: calculation.lightingPercent,
+          confidence: calculation.confidence,
+          safetyScore: adjustedSafetyScore,
+          warnings: newWarnings,
+        };
+      })
+    );
+  }, [streetLamps, landmarks]);
+
+  // Keep selectedRoute synchronized with dynamic updates
+  useEffect(() => {
+    const updated = routes.find((r) => r.id === selectedRoute.id);
+    if (
+      updated &&
+      (updated.lightingPercent !== selectedRoute.lightingPercent ||
+        updated.confidence !== selectedRoute.confidence ||
+        updated.safetyScore !== selectedRoute.safetyScore)
+    ) {
+      setSelectedRoute(updated);
+    }
+  }, [routes, selectedRoute.id]);
 
   // User State & Telemetry
   const [userLocation, setUserLocation] = useState<[number, number]>(INITIAL_USER_POS);
@@ -148,16 +197,7 @@ export const App: React.FC = () => {
     }, 4500);
   };
 
-  const handleSaveMapApiKey = (key: string) => {
-    setMapboxApiKey(key);
-    if (key) {
-      localStorage.setItem('safesafar_mapbox_token', key);
-      showToast('🗺️ Mapbox Token applied! Map tiles updated.');
-    } else {
-      localStorage.removeItem('safesafar_mapbox_token');
-      showToast('🗺️ Reset to default free CartoDB / OSM tiles.');
-    }
-  };
+
 
   // SOS State
   const [sosState, setSosState] = useState<ActiveSOSState>({
@@ -356,8 +396,7 @@ export const App: React.FC = () => {
         onOpenDecoy={() => setIsDecoyOpen(true)}
         onOpenReportModal={() => setIsReportModalOpen(true)}
         onOpenSafeHavens={() => setIsSafeHavensOpen(true)}
-        onOpenMapApiKeyModal={() => setIsMapApiKeyModalOpen(true)}
-        hasCustomMapKey={!!mapboxApiKey}
+
         onTriggerSOS={() => triggerSOS('button', false, false)}
         onDisarmSOS={handleDisarmSOS}
         sosState={sosState}
@@ -462,6 +501,7 @@ export const App: React.FC = () => {
                     mapboxApiKey={mapboxApiKey}
                     startLocationName={startLocationName}
                     destinationName={destinationName}
+                    onStreetLampsUpdated={handleStreetLampsUpdated}
                     onLandmarkClick={(lm) => {
                       showToast(`Safe Landmark: ${lm.name} (${lm.openHours})`);
                     }}
@@ -583,12 +623,7 @@ export const App: React.FC = () => {
       </main>
 
       {/* ALL MODALS & OVERLAYS */}
-      <MapApiKeyModal
-        isOpen={isMapApiKeyModalOpen}
-        onClose={() => setIsMapApiKeyModalOpen(false)}
-        currentKey={mapboxApiKey}
-        onSaveKey={handleSaveMapApiKey}
-      />
+
 
       <FakeCallModal
         isOpen={isFakeCallOpen}

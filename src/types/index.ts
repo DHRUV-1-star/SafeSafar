@@ -9,6 +9,7 @@ export interface RouteSegment {
   durationMin: number;
   color: string;
   lightingPercent: number; // e.g. 92%
+  confidence?: 'high' | 'medium' | 'low'; // OSM data confidence flag
   crowdContext: {
     level: 'High' | 'Moderate' | 'Low' | 'Deserted';
     verifiedSafe: boolean; // Safe-crowd verification (market/transit vs deserted/hostile)

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Smartphone, Monitor, BarChart3, Wifi, WifiOff, PhoneCall, KeyRound, AlertTriangle, Eye, PlusCircle, Compass, Power } from 'lucide-react';
+import { Shield, Smartphone, Monitor, BarChart3, Wifi, WifiOff, PhoneCall, AlertTriangle, Eye, PlusCircle, Compass, Power, Lock } from 'lucide-react';
 import { ActiveSOSState } from '../types';
 
 interface NavbarProps {
@@ -12,8 +12,6 @@ interface NavbarProps {
   onOpenDecoy: () => void;
   onOpenReportModal: () => void;
   onOpenSafeHavens: () => void;
-  onOpenMapApiKeyModal: () => void;
-  hasCustomMapKey: boolean;
   onTriggerSOS: () => void;
   onDisarmSOS?: () => void;
   sosState?: ActiveSOSState;
@@ -30,8 +28,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenDecoy,
   onOpenReportModal,
   onOpenSafeHavens,
-  onOpenMapApiKeyModal,
-  hasCustomMapKey,
   onTriggerSOS,
   onDisarmSOS,
   sosState,
@@ -99,22 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Controls & Emergency Tools */}
         <div className="flex items-center flex-wrap gap-2">
-          {/* Map API Key Settings */}
-          <button
-            onClick={onOpenMapApiKeyModal}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
-              hasCustomMapKey
-                ? 'bg-purple-600/20 border-purple-500/50 text-purple-300'
-                : 'bg-white/5 border-white/10 text-gray-300 hover:text-white'
-            }`}
-            title="Configure Mapbox / Maps API Key"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-purple-400" />
-            <span>Map API</span>
-            {hasCustomMapKey && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>}
-          </button>
 
-          {/* 2G / Offline Fallback Mode Toggle */}
           <button
             onClick={onToggleOffline}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all ${
@@ -163,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-xs font-medium transition-all"
             title="Test Duress Passkey (PIN 9999)"
           >
-            <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+            <Lock className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden md:inline">Duress PIN</span>
           </button>
 
