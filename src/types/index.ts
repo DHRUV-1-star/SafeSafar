@@ -1,5 +1,12 @@
 export type RouteCategory = 'safest' | 'balanced' | 'fastest';
 
+export interface NavigationStep {
+  instruction: string;
+  roadName: string;
+  distanceMeters: number;
+  landmark?: string;
+}
+
 export interface RouteSegment {
   id: string;
   name: string;
@@ -19,6 +26,9 @@ export interface RouteSegment {
   coordinates: [number, number][]; // Leaflet lat, lng
   highlights: string[];
   warnings: string[];
+  navigationSteps?: NavigationStep[];
+  originName?: string;
+  destinationName?: string;
 }
 
 export interface Landmark {

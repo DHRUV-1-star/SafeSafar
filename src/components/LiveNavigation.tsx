@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { RouteSegment, Landmark } from '../types';
 import { Navigation, Volume2, VolumeX, AlertOctagon, CheckCircle2, MapPin, Shield, Zap, X } from 'lucide-react';
 import { speakInstruction } from '../utils/speech';
@@ -15,6 +15,47 @@ interface LiveNavigationProps {
   onStepNextCoord: () => void;
 }
 
+/**
+ * Calculate compass heading (bearing in degrees) from coordinate A to coordinate B
+ */
+function calculateHeading(coord1: [number, number], coord2: [number, number]): string {
+  const lat1 = (coord1[0] * Math.PI) / 180;
+  const lat2 = (coord2[0] * Math.PI) / 180;
+  const dLng = ((coord2[1] - coord1[1]) * Math.PI) / 180;
+
+  const y = Math.sin(dLng) * Math.cos(lat2);
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+  const bearing = (Math.atan2(y, x) * 180) / Math.PI;
+  const deg = (bearing + 360) % 360;
+
+  if (deg >= 337.5 || deg < 22.5) return 'north';
+  if (deg >= 22.5 && deg < 67.5) return 'northeast';
+  if (deg >= 67.5 && deg < 112.5) return 'east';
+  if (deg >= 112.5 && deg < 157.5) return 'southeast';
+  if (deg >= 157.5 && deg < 202.5) return 'south';
+  if (deg >= 202.5 && deg < 247.5) return 'southwest';
+  if (deg >= 247.5 && deg < 292.5) return 'west';
+  return 'northwest';
+}
+
+/**
+ * Calculate distance in meters between 2 coordinates (Haversine formula)
+ */
+function getDistanceMeters(coord1: [number, number], coord2: [number, number]): number {
+  const R = 6371e3; // Earth radius in meters
+  const phi1 = (coord1[0] * Math.PI) / 180;
+  const phi2 = (coord2[0] * Math.PI) / 180;
+  const deltaPhi = ((coord2[0] - coord1[0]) * Math.PI) / 180;
+  const deltaLambda = ((coord2[1] - coord1[1]) * Math.PI) / 180;
+
+  const a =
+    Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+    Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
+
 export const LiveNavigation: React.FC<LiveNavigationProps> = ({
   route,
   landmarks,
@@ -28,25 +69,98 @@ export const LiveNavigation: React.FC<LiveNavigationProps> = ({
   const totalSteps = route.coordinates.length;
   const progressPct = Math.min(100, Math.round(((currentCoordIndex + 1) / totalSteps) * 100));
 
-  // Instructions for each waypoint on the Dumas Road / Ring Road corridor
-  const instructions = [
-    { text: 'Head northeast on Dumas Rd past SVNIT main gate.', landmark: 'SVNIT Security Post' },
-    { text: 'Continue along Dumas Road. Street lighting is 96% optimal.', landmark: 'CCTV Corridor' },
-    { text: 'Approaching Kargil Chowk. Keep right on high-mast illuminated avenue.', landmark: 'Kargil Chowk Police Patrol' },
-    { text: 'In 300 meters, Umra Pink Police Booth will be on your right.', landmark: 'Umra Pink Police Booth' },
-    { text: 'Passing Police Commissionerate zone. Highly safe perimeter.', landmark: 'Police HQ' },
-    { text: 'Approaching Athwagate junction safe corridor.', landmark: 'Athwa Pink Booth' },
-    { text: 'Arriving safely at Ring Road Hub destination.', landmark: 'Safe Haven Hub' },
-  ];
+  // Extract real origin & destination names
+  const { origName, destName } = useMemo(() => {
+    let orig = route.originName?.split(',')[0].trim();
+    let dest = route.destinationName?.split(',')[0].trim();
 
-  const currentInstruction = instructions[Math.min(currentCoordIndex, instructions.length - 1)];
+    if (!orig || !dest) {
+      if (route.name.includes(' to ')) {
+        const parts = route.name.split(' to ');
+        orig = parts[0]?.trim();
+        dest = parts[1]?.split('(')[0]?.trim();
+      }
+    }
+
+    return {
+      origName: orig || 'Starting Point',
+      destName: dest || 'Destination',
+    };
+  }, [route]);
+
+  // Compute dynamic turn-by-turn instruction based on real map coordinates & OSRM steps
+  const currentInstruction = useMemo(() => {
+    const currCoord = route.coordinates[currentCoordIndex];
+    const nextCoord = route.coordinates[Math.min(currentCoordIndex + 1, totalSteps - 1)];
+
+    // Compass heading
+    const heading = currCoord && nextCoord ? calculateHeading(currCoord, nextCoord) : 'ahead';
+
+    // Remaining distance calculation
+    const remainingRatio = Math.max(0, 1 - currentCoordIndex / Math.max(1, totalSteps - 1));
+    const distRemainingKm = (route.distanceKm * remainingRatio).toFixed(1);
+
+    // Find closest safe landmark from the actual landmarks list
+    let nearestLandmarkStr = '';
+    if (currCoord && landmarks.length > 0) {
+      let minDistance = Infinity;
+      let closest: Landmark | null = null;
+      landmarks.forEach((lm) => {
+        const d = getDistanceMeters(currCoord, [lm.lat, lm.lng]);
+        if (d < minDistance) {
+          minDistance = d;
+          closest = lm;
+        }
+      });
+
+      if (closest && minDistance < 1500) {
+        nearestLandmarkStr = `${(closest as Landmark).name} (~${Math.round(minDistance)}m)`;
+      }
+    }
+
+    // 1. Starting Waypoint
+    if (currentCoordIndex === 0) {
+      return {
+        text: `Departing from ${origName}. Head ${heading} toward ${destName}.`,
+        landmark: nearestLandmarkStr || `Safe Departure Point • ${origName}`,
+      };
+    }
+
+    // 2. Final Arrival Waypoint
+    if (currentCoordIndex >= totalSteps - 1 || progressPct >= 100) {
+      return {
+        text: `Arriving at ${destName}. Safe arrival confirmed.`,
+        landmark: `Safe Haven Hub • ${destName}`,
+      };
+    }
+
+    // 3. Real OSRM Navigation Steps if available
+    if (route.navigationSteps && route.navigationSteps.length > 0) {
+      const stepIdx = Math.min(
+        Math.floor((currentCoordIndex / totalSteps) * route.navigationSteps.length),
+        route.navigationSteps.length - 1
+      );
+      const activeStep = route.navigationSteps[stepIdx];
+
+      return {
+        text: `${activeStep.instruction} (${distRemainingKm} km remaining to ${destName})`,
+        landmark: nearestLandmarkStr || activeStep.landmark || `Illuminated Safe Corridor on ${activeStep.roadName}`,
+      };
+    }
+
+    // 4. Dynamic Real Corridor Guidance
+    return {
+      text: `Continue ${heading} along illuminated corridor toward ${destName} (${distRemainingKm} km remaining).`,
+      landmark: nearestLandmarkStr || `Illuminated Highway Corridor • Active 24/7 Monitoring`,
+    };
+  }, [route, currentCoordIndex, totalSteps, origName, destName, progressPct, landmarks]);
 
   // Speak guidance whenever instruction changes
   useEffect(() => {
-    if (!speechMuted && currentInstruction) {
+    if (!speechMuted && currentInstruction?.text) {
       speakInstruction(`SafeSafar guidance: ${currentInstruction.text}`);
     }
-  }, [currentCoordIndex, speechMuted]);
+  }, [currentCoordIndex, speechMuted, currentInstruction]);
 
   // Handle Arrival
   const handleArrivalClick = () => {
@@ -64,16 +178,16 @@ export const LiveNavigation: React.FC<LiveNavigationProps> = ({
       {/* Top Banner */}
       <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center text-emerald-400 animate-pulse">
+          <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center text-emerald-400 animate-pulse shrink-0">
             <Navigation className="w-4 h-4 fill-emerald-400" />
           </div>
-          <div>
+          <div className="min-w-0">
             <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Active Safe Navigation</span>
-            <h3 className="text-sm font-bold text-white">{route.name}</h3>
+            <h3 className="text-sm font-bold text-white truncate">{route.name}</h3>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setSpeechMuted(!speechMuted)}
             className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300"
@@ -98,11 +212,11 @@ export const LiveNavigation: React.FC<LiveNavigationProps> = ({
           <div className="w-10 h-10 rounded-2xl bg-purple-600/30 border border-purple-500 flex items-center justify-center text-purple-300 shrink-0 mt-0.5">
             <MapPin className="w-5 h-5 text-purple-400" />
           </div>
-          <div className="flex-1">
-            <h4 className="text-base font-bold text-white leading-snug">{currentInstruction?.text}</h4>
-            <div className="flex items-center gap-2 mt-2 text-xs text-emerald-400">
-              <Shield className="w-3.5 h-3.5" />
-              <span>Safe Landmark Ahead: {currentInstruction?.landmark}</span>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-base font-bold text-white leading-snug">{currentInstruction.text}</h4>
+            <div className="flex items-center gap-2 mt-2 text-xs text-emerald-400 truncate">
+              <Shield className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Safe Landmark Ahead: {currentInstruction.landmark}</span>
             </div>
           </div>
         </div>
