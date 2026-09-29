@@ -16,11 +16,23 @@ import { CommunityReportModal } from './components/CommunityReportModal';
 import { SafeHavensDrawer } from './components/SafeHavensDrawer';
 import { GuardianDashboard, CommuterProfile } from './components/GuardianDashboard';
 import { CivicHeatmapDashboard } from './components/CivicHeatmapDashboard';
+import { AuthModal } from './components/AuthModal';
 import { AuthPage } from './components/AuthPage';
+import { DatabaseSetupModal } from './components/DatabaseSetupModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
 import { playSilentConfirmPing, stopSiren } from './utils/audio';
 import { fetchRealRoutes, LocationSuggestion } from './services/geocodingService';
+import {
+  getCurrentUser,
+  fetchUserGuardians,
+  saveGuardianToDatabase,
+  updateGuardianInDatabase,
+  deleteGuardianFromDatabase,
+  logoutUser,
+  updateUserProfile,
+  AuthUser,
+} from './services/databaseService';
 
 export const App: React.FC = () => {
   // Authentication & Safety Profile State
@@ -33,9 +45,11 @@ export const App: React.FC = () => {
         return null;
       }
     }
-    return null; // Start unauthenticated to showcase the dedicated Auth Page
+    return null;
   });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isDatabaseSetupOpen, setIsDatabaseSetupOpen] = useState<boolean>(false);
 
   // Navigation & View Views
   const [currentView, setCurrentView] = useState<'mobile' | 'guardian' | 'civic'>('mobile');
@@ -52,21 +66,41 @@ export const App: React.FC = () => {
   const [landmarks] = useState<Landmark[]>(MOCK_LANDMARKS);
   const [incidents, setIncidents] = useState<IncidentReport[]>(MOCK_INCIDENTS);
 
-  // Dynamic User-Entered Guardians (persisted in localStorage)
-  const [trustedContacts, setTrustedContacts] = useState<TrustedContact[]>(() => {
-    const saved = localStorage.getItem('safesafar_guardians') || localStorage.getItem('safesafar_trusted_contacts');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      } catch (e) {
-        console.error('Error loading saved guardians', e);
+  // Dynamic User Guardians (Loaded from Database for active user)
+  const [trustedContacts, setTrustedContacts] = useState<TrustedContact[]>([]);
+
+  // Initialize and load user & user-specific guardians from database
+  useEffect(() => {
+    const initDatabaseAndUser = async () => {
+      const activeUser = await getCurrentUser();
+      if (activeUser) {
+        const userProfile: UserProfile = {
+          id: activeUser.id,
+          name: activeUser.name,
+          phone: activeUser.phone || '+91 98790 12345',
+          email: activeUser.email,
+          role: activeUser.role,
+          avatar:
+            activeUser.avatar ||
+            `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+              activeUser.name
+            )}&backgroundColor=7c3aed,4f46e5`,
+          normalPin: '1234',
+          duressPin: '9999',
+          secretSafeWord: 'reach soon',
+          guardianPairingCode: '782914',
+          emergencyContactCount: 0,
+        };
+        setCurrentUser(userProfile);
+        localStorage.setItem('safesafar_user', JSON.stringify(userProfile));
+
+        // Load guardians from database specifically for this user
+        const dbGuardians = await fetchUserGuardians(activeUser.id);
+        setTrustedContacts(dbGuardians);
       }
-    }
-    return MOCK_TRUSTED_CONTACTS;
-  });
+    };
+    initDatabaseAndUser();
+  }, []);
 
   // Commuter Profile (persisted in localStorage)
   const [commuterProfile, setCommuterProfile] = useState<CommuterProfile>(() => {
@@ -223,31 +257,97 @@ export const App: React.FC = () => {
 
 
   // User Authentication Handlers
-  const handleLoginSuccess = (user: UserProfile) => {
-    setCurrentUser(user);
-    localStorage.setItem('safesafar_user', JSON.stringify(user));
+  const handleAuthSuccess = async (authUser: AuthUser) => {
+    const profile: UserProfile = {
+      id: authUser.id,
+      name: authUser.name,
+      phone: authUser.phone || '+91 98790 12345',
+      email: authUser.email,
+      role: authUser.role,
+      avatar:
+        authUser.avatar ||
+        `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+          authUser.name
+        )}&backgroundColor=7c3aed,4f46e5`,
+      normalPin: '1234',
+      duressPin: '9999',
+      secretSafeWord: 'reach soon',
+      guardianPairingCode: '782914',
+      emergencyContactCount: 0,
+    };
+    setCurrentUser(profile);
+    localStorage.setItem('safesafar_user', JSON.stringify(profile));
 
-    if (user.role === 'guardian') {
+    // Fetch this user's existing guardians from the database
+    const dbGuardians = await fetchUserGuardians(authUser.id);
+    setTrustedContacts(dbGuardians);
+
+    if (authUser.role === 'guardian') {
       setCurrentView('guardian');
-    } else if (user.role === 'civic') {
+    } else if (authUser.role === 'civic') {
       setCurrentView('civic');
     } else {
       setCurrentView('mobile');
     }
 
-    showToast(`✓ Welcome back, ${user.name}! Mode: ${user.role.toUpperCase()}`);
+    showToast(`✓ Welcome, ${authUser.name}! Existing guardians loaded from database.`);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutUser();
     setCurrentUser(null);
+    setTrustedContacts([]);
     localStorage.removeItem('safesafar_user');
-    showToast('Signed out from SafeSafar. Public guest mode active.');
+    showToast('Signed out from SafeSafar. Switched to guest mode.');
   };
 
-  const handleUpdateUser = (updated: UserProfile) => {
+  const handleUpdateUser = async (updated: UserProfile) => {
     setCurrentUser(updated);
     localStorage.setItem('safesafar_user', JSON.stringify(updated));
-    showToast('✓ Security PINs and profile updated successfully!');
+    await updateUserProfile(updated.id, { name: updated.name, phone: updated.phone });
+    showToast('✓ Profile updated in database!');
+  };
+
+  // Guardian Database CRUD Handlers
+  const handleAddGuardian = async (contactData: Omit<TrustedContact, 'id'>) => {
+    const userId = currentUser?.id || 'guest-user';
+    const savedContact = await saveGuardianToDatabase(userId, contactData);
+    setTrustedContacts((prev) => [savedContact, ...prev.filter((c) => c.id !== savedContact.id)]);
+    showToast(`✓ Guardian "${savedContact.name}" saved to database!`);
+  };
+
+  const handleUpdateGuardian = async (id: string, updatedFields: Partial<TrustedContact>) => {
+    const userId = currentUser?.id || 'guest-user';
+    const updatedList = await updateGuardianInDatabase(userId, id, updatedFields);
+    setTrustedContacts(updatedList);
+    showToast('✓ Guardian details updated in database!');
+  };
+
+  const handleDeleteGuardian = async (id: string) => {
+    const target = trustedContacts.find((c) => c.id === id);
+    const userId = currentUser?.id || 'guest-user';
+    const updatedList = await deleteGuardianFromDatabase(userId, id);
+    setTrustedContacts(updatedList);
+    showToast(`✓ Guardian "${target?.name || ''}" removed from database.`);
+  };
+
+  const handleLoadSampleContacts = async () => {
+    const userId = currentUser?.id || 'guest-user';
+    for (const c of MOCK_TRUSTED_CONTACTS) {
+      await saveGuardianToDatabase(userId, c);
+    }
+    const refreshed = await fetchUserGuardians(userId);
+    setTrustedContacts(refreshed);
+    showToast('Sample guardians added to database.');
+  };
+
+  const handleUpdateCommuterProfile = async (profile: CommuterProfile) => {
+    setCommuterProfile(profile);
+    if (currentUser) {
+      await updateUserProfile(currentUser.id, { name: profile.name, hub: profile.hub });
+    }
+    localStorage.setItem('safesafar_commuter_profile', JSON.stringify(profile));
+    showToast('✓ Commuter profile updated in database.');
   };
 
   // SOS State
@@ -380,47 +480,24 @@ export const App: React.FC = () => {
     showToast('✓ Community safety condition posted! Pending trust peer audit.');
   };
 
-  // Guardian Management Handlers (Only user-entered details will appear)
-  const handleAddGuardian = (contactData: Omit<TrustedContact, 'id'>) => {
-    const newContact: TrustedContact = {
-      ...contactData,
-      id: `guardian-${Date.now()}`,
-      batteryStatus: contactData.batteryStatus ?? Math.floor(Math.random() * 20) + 80,
-      lastActive: 'Active now',
-      avatar:
-        contactData.avatar ||
-        `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(contactData.name)}&backgroundColor=7c3aed,4f46e5,db2777`,
-    };
-    const updated = [...trustedContacts, newContact];
-    setTrustedContacts(updated);
-    localStorage.setItem('safesafar_guardians', JSON.stringify(updated));
-    showToast(`✓ Guardian "${newContact.name}" added successfully!`);
-  };
+  // Dedicated Login Success for AuthPage
+  const handleLoginSuccess = async (user: UserProfile) => {
+    setCurrentUser(user);
+    localStorage.setItem('safesafar_user', JSON.stringify(user));
 
-  const handleUpdateGuardian = (id: string, updatedFields: Partial<TrustedContact>) => {
-    const updated = trustedContacts.map((c) => (c.id === id ? { ...c, ...updatedFields } : c));
-    setTrustedContacts(updated);
-    localStorage.setItem('safesafar_guardians', JSON.stringify(updated));
-    showToast('✓ Guardian details updated!');
-  };
+    // Load existing guardians from the database for this specific user
+    const dbGuardians = await fetchUserGuardians(user.id);
+    setTrustedContacts(dbGuardians);
 
-  const handleDeleteGuardian = (id: string) => {
-    const target = trustedContacts.find((c) => c.id === id);
-    const updated = trustedContacts.filter((c) => c.id !== id);
-    setTrustedContacts(updated);
-    localStorage.setItem('safesafar_guardians', JSON.stringify(updated));
-    showToast(`✓ Guardian "${target?.name || ''}" removed.`);
-  };
+    if (user.role === 'guardian') {
+      setCurrentView('guardian');
+    } else if (user.role === 'civic') {
+      setCurrentView('civic');
+    } else {
+      setCurrentView('mobile');
+    }
 
-  const handleLoadSampleContacts = () => {
-    setTrustedContacts(MOCK_TRUSTED_CONTACTS);
-    localStorage.setItem('safesafar_guardians', JSON.stringify(MOCK_TRUSTED_CONTACTS));
-    showToast('Demo guardian contacts loaded.');
-  };
-
-  const handleUpdateCommuterProfile = (profile: CommuterProfile) => {
-    setCommuterProfile(profile);
-    localStorage.setItem('safesafar_commuter_profile', JSON.stringify(profile));
+    showToast(`✓ Welcome back, ${user.name}! Existing guardians loaded from database.`);
   };
 
   // If user is unauthenticated, show the dedicated SafeSafar Auth Page
@@ -468,9 +545,10 @@ export const App: React.FC = () => {
         sosState={sosState}
         batteryLevel={batteryLevel}
         currentUser={currentUser}
-        onOpenAuthModal={() => setIsProfileModalOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenProfileModal={() => setIsProfileModalOpen(true)}
         onLogout={handleLogout}
+        onOpenDatabaseSetup={() => setIsDatabaseSetupOpen(true)}
       />
 
       {/* Floating System Toast Alert */}
@@ -759,6 +837,22 @@ export const App: React.FC = () => {
           setUserLocation([lm.lat, lm.lng]);
           showToast(`📍 Set focus to safe landmark: ${lm.name}`);
         }}
+      />
+
+      {/* User Authentication & Database Modals */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+        onOpenDatabaseSetup={() => {
+          setIsAuthModalOpen(false);
+          setIsDatabaseSetupOpen(true);
+        }}
+      />
+
+      <DatabaseSetupModal
+        isOpen={isDatabaseSetupOpen}
+        onClose={() => setIsDatabaseSetupOpen(false)}
       />
     </div>
   );

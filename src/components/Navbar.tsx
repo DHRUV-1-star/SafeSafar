@@ -16,9 +16,10 @@ import {
   User as UserIcon, 
   Lock, 
   Users, 
-  Settings, 
+  Settings,
   LogOut,
-  Power
+  Power,
+  Database
 } from 'lucide-react';
 import { ActiveSOSState, UserProfile } from '../types';
 import { UserAvatar } from './UserAvatar';
@@ -41,6 +42,7 @@ interface NavbarProps {
   onOpenAuthModal: () => void;
   onOpenProfileModal: () => void;
   onLogout?: () => void;
+  onOpenDatabaseSetup?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -60,6 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuthModal,
   onOpenProfileModal,
   onLogout,
+  onOpenDatabaseSetup,
 }) => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -302,6 +305,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <Settings className="w-4 h-4 text-gray-400 shrink-0" />
                       <span>Settings</span>
                     </button>
+
+                    {onOpenDatabaseSetup && (
+                      <button
+                        type="button"
+                        onClick={() => handleDropdownAction(onOpenDatabaseSetup)}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-colors text-left font-medium"
+                      >
+                        <Database className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span>Database & Cloud</span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Divider & Sign Out */}
@@ -319,13 +333,25 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
           ) : (
-            <button
-              onClick={onOpenAuthModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-colors shadow-sm"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Sign In</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              {onOpenDatabaseSetup && (
+                <button
+                  type="button"
+                  onClick={onOpenDatabaseSetup}
+                  className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 transition-colors"
+                  title="Database Setup & SQL Schema"
+                >
+                  <Database className="w-3.5 h-3.5 text-purple-400" />
+                </button>
+              )}
+              <button
+                onClick={onOpenAuthModal}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-colors shadow-sm"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Sign In</span>
+              </button>
+            </div>
           )}
 
           {/* Immediate SOS Emergency Panic Button / Turn Off SOS */}
