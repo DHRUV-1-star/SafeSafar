@@ -46,7 +46,7 @@ export const MapApiKeyModal: React.FC<MapApiKeyModalProps> = ({
   const isMapbox = apiKeyInput.trim().startsWith('pk.');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-lg bg-[#111827] border border-white/10 rounded-3xl p-6 text-white shadow-2xl">
         {/* Close Button */}
         <button

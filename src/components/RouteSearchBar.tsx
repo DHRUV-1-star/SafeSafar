@@ -108,7 +108,7 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
   };
 
   return (
-    <div className="bg-[#111827]/95 backdrop-blur-xl border border-white/10 rounded-3xl p-4 sm:p-5 shadow-2xl space-y-3 relative z-[500]">
+    <div className="bg-[#111827]/95 backdrop-blur-xl border border-white/10 rounded-3xl p-4 sm:p-5 shadow-2xl space-y-3 relative z-20">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse"></span>
@@ -157,7 +157,7 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
 
             {/* Live Autocomplete Dropdown Panel for Start */}
             {showStartDropdown && startSuggestions.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-[#162035] border-2 border-emerald-500/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[600] overflow-hidden max-h-56 overflow-y-auto divide-y divide-white/10">
+              <div className="absolute left-0 right-0 top-full mt-2 bg-[#162035] border-2 border-emerald-500/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-30 overflow-hidden max-h-56 overflow-y-auto divide-y divide-white/10">
                 {startSuggestions.map((sug, i) => (
                   <button
                     key={i}
@@ -202,7 +202,7 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
 
             {/* Live Autocomplete Dropdown Panel for Destination */}
             {showDestDropdown && destSuggestions.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-[#162035] border-2 border-pink-500/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[600] overflow-hidden max-h-56 overflow-y-auto divide-y divide-white/10">
+              <div className="absolute left-0 right-0 top-full mt-2 bg-[#162035] border-2 border-pink-500/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-30 overflow-hidden max-h-56 overflow-y-auto divide-y divide-white/10">
                 {destSuggestions.map((sug, i) => (
                   <button
                     key={i}
