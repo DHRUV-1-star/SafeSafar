@@ -12,7 +12,7 @@ import { SOSModal } from './components/SOSModal';
 import { WalkMeHomeModal } from './components/WalkMeHomeModal';
 import { CommunityReportModal } from './components/CommunityReportModal';
 import { SafeHavensDrawer } from './components/SafeHavensDrawer';
-import { GuardianDashboard } from './components/GuardianDashboard';
+import { GuardianDashboard, CommuterProfile } from './components/GuardianDashboard';
 import { CivicHeatmapDashboard } from './components/CivicHeatmapDashboard';
 import { MapApiKeyModal } from './components/MapApiKeyModal';
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
@@ -34,7 +34,39 @@ export const App: React.FC = () => {
   const [selectedRoute, setSelectedRoute] = useState<RouteSegment>(MOCK_ROUTES[0]);
   const [landmarks] = useState<Landmark[]>(MOCK_LANDMARKS);
   const [incidents, setIncidents] = useState<IncidentReport[]>(MOCK_INCIDENTS);
-  const [trustedContacts] = useState<TrustedContact[]>(MOCK_TRUSTED_CONTACTS);
+
+  // Dynamic User-Entered Guardians (persisted in localStorage)
+  const [trustedContacts, setTrustedContacts] = useState<TrustedContact[]>(() => {
+    const saved = localStorage.getItem('safesafar_guardians');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch (e) {
+        console.error('Error loading saved guardians', e);
+      }
+    }
+    return [];
+  });
+
+  // Commuter Profile (persisted in localStorage)
+  const [commuterProfile, setCommuterProfile] = useState<CommuterProfile>(() => {
+    const saved = localStorage.getItem('safesafar_commuter_profile');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error loading commuter profile', e);
+      }
+    }
+    return {
+      name: 'Dharmik Gohil',
+      hub: 'Active Walk Me Home Companion • Surat Hub',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+    };
+  });
 
   // User State & Telemetry
   const [userLocation, setUserLocation] = useState<[number, number]>(INITIAL_USER_POS);
@@ -207,6 +239,49 @@ export const App: React.FC = () => {
     };
     setIncidents([reportItem, ...incidents]);
     showToast('✓ Community safety condition posted! Pending trust peer audit.');
+  };
+
+  // Guardian Management Handlers (Only user-entered details will appear)
+  const handleAddGuardian = (contactData: Omit<TrustedContact, 'id'>) => {
+    const newContact: TrustedContact = {
+      ...contactData,
+      id: `guardian-${Date.now()}`,
+      batteryStatus: contactData.batteryStatus ?? Math.floor(Math.random() * 20) + 80,
+      lastActive: 'Active now',
+      avatar:
+        contactData.avatar ||
+        `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(contactData.name)}&backgroundColor=7c3aed,4f46e5,db2777`,
+    };
+    const updated = [...trustedContacts, newContact];
+    setTrustedContacts(updated);
+    localStorage.setItem('safesafar_guardians', JSON.stringify(updated));
+    showToast(`✓ Guardian "${newContact.name}" added successfully!`);
+  };
+
+  const handleUpdateGuardian = (id: string, updatedFields: Partial<TrustedContact>) => {
+    const updated = trustedContacts.map((c) => (c.id === id ? { ...c, ...updatedFields } : c));
+    setTrustedContacts(updated);
+    localStorage.setItem('safesafar_guardians', JSON.stringify(updated));
+    showToast('✓ Guardian details updated!');
+  };
+
+  const handleDeleteGuardian = (id: string) => {
+    const target = trustedContacts.find((c) => c.id === id);
+    const updated = trustedContacts.filter((c) => c.id !== id);
+    setTrustedContacts(updated);
+    localStorage.setItem('safesafar_guardians', JSON.stringify(updated));
+    showToast(`✓ Guardian "${target?.name || ''}" removed.`);
+  };
+
+  const handleLoadSampleContacts = () => {
+    setTrustedContacts(MOCK_TRUSTED_CONTACTS);
+    localStorage.setItem('safesafar_guardians', JSON.stringify(MOCK_TRUSTED_CONTACTS));
+    showToast('Demo guardian contacts loaded.');
+  };
+
+  const handleUpdateCommuterProfile = (profile: CommuterProfile) => {
+    setCommuterProfile(profile);
+    localStorage.setItem('safesafar_commuter_profile', JSON.stringify(profile));
   };
 
   return (
@@ -428,6 +503,13 @@ export const App: React.FC = () => {
             trustedContacts={trustedContacts}
             onTriggerRemoteSOS={() => triggerSOS('button', false, false)}
             onClearSOS={handleDisarmSOS}
+            onAddContact={handleAddGuardian}
+            onUpdateContact={handleUpdateGuardian}
+            onDeleteContact={handleDeleteGuardian}
+            onLoadSampleContacts={handleLoadSampleContacts}
+            commuterProfile={commuterProfile}
+            onUpdateCommuterProfile={handleUpdateCommuterProfile}
+            onShowToast={showToast}
           />
         )}
 

@@ -155,20 +155,26 @@ export const SOSModal: React.FC<SOSModalProps> = ({
               </div>
 
               <div className="space-y-2 mt-2">
-                {trustedContacts.map((contact) => (
-                  <div key={contact.id} className="flex items-center justify-between text-xs bg-black/40 px-3 py-2 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <img src={contact.avatar} alt={contact.name} className="w-6 h-6 rounded-full object-cover" />
-                      <div>
-                        <div className="font-medium text-white">{contact.name}</div>
-                        <div className="text-[10px] text-gray-400">{contact.phone}</div>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                      <CheckCircle2 className="w-2.5 h-2.5" /> Dispatched
-                    </span>
+                {trustedContacts.length === 0 ? (
+                  <div className="p-3 text-center bg-black/40 border border-yellow-500/20 rounded-xl text-[11px] text-yellow-300">
+                    ⚠️ No trusted guardians configured yet. You can add them anytime in the Guardian Dashboard.
                   </div>
-                ))}
+                ) : (
+                  trustedContacts.map((contact) => (
+                    <div key={contact.id} className="flex items-center justify-between text-xs bg-black/40 px-3 py-2 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <img src={contact.avatar} alt={contact.name} className="w-6 h-6 rounded-full object-cover" />
+                        <div>
+                          <div className="font-medium text-white">{contact.name}</div>
+                          <div className="text-[10px] text-gray-400">{contact.phone}</div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                        <CheckCircle2 className="w-2.5 h-2.5" /> Dispatched
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
 
               {/* 2G SMS Payload Preview */}

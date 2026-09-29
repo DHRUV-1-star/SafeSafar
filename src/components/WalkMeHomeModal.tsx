@@ -114,21 +114,27 @@ export const WalkMeHomeModal: React.FC<WalkMeHomeModalProps> = ({
           </div>
 
           <div className="space-y-2.5">
-            {trustedContacts.map((contact) => (
-              <div key={contact.id} className="flex items-center justify-between text-xs bg-black/30 p-2.5 rounded-xl">
-                <div className="flex items-center gap-2.5">
-                  <img src={contact.avatar} alt={contact.name} className="w-8 h-8 rounded-full object-cover border border-purple-500/40" />
-                  <div>
-                    <div className="font-medium text-white">{contact.name}</div>
-                    <div className="text-[10px] text-gray-400">{contact.relation} • {contact.phone}</div>
+            {trustedContacts.length === 0 ? (
+              <div className="p-3 text-center bg-black/40 rounded-xl text-gray-400 text-xs border border-white/5">
+                No guardians configured. Add guardians in Guardian Dashboard to enable live companion tracking.
+              </div>
+            ) : (
+              trustedContacts.map((contact) => (
+                <div key={contact.id} className="flex items-center justify-between text-xs bg-black/30 p-2.5 rounded-xl">
+                  <div className="flex items-center gap-2.5">
+                    <img src={contact.avatar} alt={contact.name} className="w-8 h-8 rounded-full object-cover border border-purple-500/40" />
+                    <div>
+                      <div className="font-medium text-white">{contact.name}</div>
+                      <div className="text-[10px] text-gray-400">{contact.relation} • {contact.phone}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-emerald-400 font-medium">Tracking</span>
+                    <div className="text-[9px] text-gray-500">{contact.lastActive || 'Active'}</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-emerald-400 font-medium">Tracking</span>
-                  <div className="text-[9px] text-gray-500">{contact.lastActive}</div>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

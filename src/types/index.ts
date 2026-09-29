@@ -58,6 +58,7 @@ export interface TrustedContact {
   avatar: string;
   batteryStatus?: number;
   lastActive?: string;
+  email?: string;
 }
 
 export interface ActiveSOSState {
