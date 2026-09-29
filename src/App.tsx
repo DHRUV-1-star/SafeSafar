@@ -4,6 +4,7 @@ import { INITIAL_USER_POS, MOCK_ROUTES, MOCK_LANDMARKS, MOCK_INCIDENTS, MOCK_TRU
 import { Navbar } from './components/Navbar';
 import { MapComponent } from './components/MapComponent';
 import { RouteSelector } from './components/RouteSelector';
+import { RouteSearchBar } from './components/RouteSearchBar';
 import { LiveNavigation } from './components/LiveNavigation';
 import { FakeCallModal } from './components/FakeCallModal';
 import { DuressModal } from './components/DuressModal';
@@ -17,6 +18,7 @@ import { CivicHeatmapDashboard } from './components/CivicHeatmapDashboard';
 import { MapApiKeyModal } from './components/MapApiKeyModal';
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
 import { playSilentConfirmPing, stopSiren } from './utils/audio';
+import { fetchRealRoutes, LocationSuggestion } from './services/geocodingService';
 
 export const App: React.FC = () => {
   // Navigation & View Views
@@ -29,8 +31,8 @@ export const App: React.FC = () => {
   });
   const [isMapApiKeyModalOpen, setIsMapApiKeyModalOpen] = useState<boolean>(false);
 
-  // Core Data
-  const [routes] = useState<RouteSegment[]>(MOCK_ROUTES);
+  // Core Data & Real Routing State
+  const [routes, setRoutes] = useState<RouteSegment[]>(MOCK_ROUTES);
   const [selectedRoute, setSelectedRoute] = useState<RouteSegment>(MOCK_ROUTES[0]);
   const [landmarks] = useState<Landmark[]>(MOCK_LANDMARKS);
   const [incidents, setIncidents] = useState<IncidentReport[]>(MOCK_INCIDENTS);
@@ -68,10 +70,56 @@ export const App: React.FC = () => {
     };
   });
 
+  // Real Locations & Coordinates State
+  const [startCoords, setStartCoords] = useState<[number, number]>([21.1663, 72.7832]);
+  const [destCoords, setDestCoords] = useState<[number, number]>([21.1960, 72.8190]);
+  const [startLocationName, setStartLocationName] = useState<string>('SVNIT Campus, Dumas Road, Surat');
+  const [destinationName, setDestinationName] = useState<string>('Ring Road Hub, Surat');
+  const [isLoadingRoutes, setIsLoadingRoutes] = useState<boolean>(false);
+
   // User State & Telemetry
   const [userLocation, setUserLocation] = useState<[number, number]>(INITIAL_USER_POS);
   const [batteryLevel] = useState<number>(88);
   const [isOfflineMode, setIsOfflineMode] = useState<boolean>(false);
+
+  const handleSelectStartLocation = (suggestion: LocationSuggestion) => {
+    setStartLocationName(suggestion.displayName);
+    setStartCoords([suggestion.lat, suggestion.lng]);
+    setUserLocation([suggestion.lat, suggestion.lng]);
+  };
+
+  const handleSelectDestination = (suggestion: LocationSuggestion) => {
+    setDestinationName(suggestion.displayName);
+    setDestCoords([suggestion.lat, suggestion.lng]);
+  };
+
+  const handleSwapLocations = () => {
+    const tempName = startLocationName;
+    const tempCoords = startCoords;
+    setStartLocationName(destinationName);
+    setStartCoords(destCoords);
+    setDestinationName(tempName);
+    setDestCoords(tempCoords);
+    showToast('🔄 Swapped Starting Point & Destination!');
+  };
+
+  const handleFetchRealRoutes = async () => {
+    setIsLoadingRoutes(true);
+    showToast(`🌐 Calculating real safe route from "${startLocationName.split(',')[0]}" to "${destinationName.split(',')[0]}"...`);
+    try {
+      const newRoutes = await fetchRealRoutes(startCoords, destCoords, startLocationName, destinationName);
+      if (newRoutes && newRoutes.length > 0) {
+        setRoutes(newRoutes);
+        setSelectedRoute(newRoutes[0]);
+        showToast(`📍 Found ${newRoutes.length} real safe routes! Safest route activated.`);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('⚠️ Could not fetch real route. Displaying estimated safe corridor.');
+    } finally {
+      setIsLoadingRoutes(false);
+    }
+  };
 
   // Active Trip & Navigation
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
@@ -382,8 +430,21 @@ export const App: React.FC = () => {
               </div>
             </div>
 
+            {/* Route Search & Location Input Bar */}
+            <RouteSearchBar
+              startLocation={startLocationName}
+              destination={destinationName}
+              onSelectStartLocation={handleSelectStartLocation}
+              onSelectDestination={handleSelectDestination}
+              onStartLocationInputChange={setStartLocationName}
+              onDestinationInputChange={setDestinationName}
+              onSwapLocations={handleSwapLocations}
+              onSearchRoutes={handleFetchRealRoutes}
+              isLoadingRoutes={isLoadingRoutes}
+            />
+
             {/* Layout: Interactive Leaflet Map + Controls */}
-            <div className={deviceFrameMode ? "max-w-[460px] mx-auto bg-black/95 p-4 rounded-[48px] border-[5px] border-[#374151] shadow-2xl space-y-4" : "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"}>
+            <div className={deviceFrameMode ? "max-w-[460px] mx-auto bg-black/95 p-4 rounded-[48px] border-[5px] border-[#374151] shadow-2xl space-y-4 relative z-10" : "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start relative z-10"}>
               {/* Map Visualizer (Left/Top) */}
               <div className={deviceFrameMode ? "flex flex-col gap-4 w-full" : "lg:col-span-7 xl:col-span-8 flex flex-col gap-4"}>
                 <div className={deviceFrameMode ? "h-[340px] w-full relative z-0 isolate" : "h-[460px] sm:h-[520px] w-full relative z-0 isolate"}>
@@ -399,6 +460,8 @@ export const App: React.FC = () => {
                     showHeatmap={showHeatmap}
                     showSafeLandmarks={showSafeLandmarks}
                     mapboxApiKey={mapboxApiKey}
+                    startLocationName={startLocationName}
+                    destinationName={destinationName}
                     onLandmarkClick={(lm) => {
                       showToast(`Safe Landmark: ${lm.name} (${lm.openHours})`);
                     }}

@@ -15,6 +15,8 @@ interface MapComponentProps {
   showSafeLandmarks: boolean;
   onLandmarkClick?: (lm: Landmark) => void;
   mapboxApiKey?: string;
+  startLocationName?: string;
+  destinationName?: string;
 }
 
 export const MapComponent: React.FC<MapComponentProps> = ({
@@ -29,6 +31,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   showSafeLandmarks,
   onLandmarkClick,
   mapboxApiKey,
+  startLocationName = 'SVNIT Campus, Dumas Road',
+  destinationName = 'Ring Road Hub, Surat',
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -199,9 +203,10 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     }
   }, [userLocation, isNavigating]);
 
-  // Render Routes
+  // Render Routes & Start / Destination Pins
   useEffect(() => {
     if (!mapInstanceRef.current || !routeLayersRef.current) return;
+    const map = mapInstanceRef.current;
     const group = routeLayersRef.current;
     group.clearLayers();
 
@@ -245,22 +250,46 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       group.addLayer(mainPolyline);
     });
 
-    // Destination Marker
+    const shortStartLabel = startLocationName.split(',')[0].trim();
+    const shortDestLabel = destinationName.split(',')[0].trim();
+
+    // 1. START LOCATION MARKER (Green Pin)
+    const startCoords = selectedRoute.coordinates[0];
+    if (startCoords) {
+      const startIcon = L.divIcon({
+        className: 'start-marker',
+        html: `
+          <div title="${startLocationName}" style="background: #064e3b; border: 2px solid #10b981; color: #34d399; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.6); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;">
+            <span>🟢 START: ${shortStartLabel}</span>
+          </div>
+        `,
+        iconSize: [160, 28],
+        iconAnchor: [80, 32],
+      });
+      group.addLayer(L.marker(startCoords, { icon: startIcon }));
+    }
+
+    // 2. DESTINATION MARKER (Pink Pin)
     const destCoords = selectedRoute.coordinates[selectedRoute.coordinates.length - 1];
     if (destCoords) {
       const destIcon = L.divIcon({
         className: 'dest-marker',
         html: `
-          <div style="background: #111827; border: 2px solid #ec4899; color: #ec4899; border-radius: 20px; padding: 4px 8px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); white-space: nowrap;">
-            <span>📍 Ring Road Hub</span>
+          <div title="${destinationName}" style="background: #831843; border: 2px solid #ec4899; color: #f472b6; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.6); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;">
+            <span>📍 DEST: ${shortDestLabel}</span>
           </div>
         `,
-        iconSize: [110, 28],
-        iconAnchor: [55, 30],
+        iconSize: [160, 28],
+        iconAnchor: [80, -4],
       });
       group.addLayer(L.marker(destCoords, { icon: destIcon }));
     }
-  }, [routes, selectedRoute, onSelectRoute]);
+
+    // Auto-fit map bounds to show full route path clearly
+    if (!isNavigating && selectedRoute.coordinates.length > 0) {
+      map.fitBounds(selectedRoute.coordinates, { padding: [40, 40] });
+    }
+  }, [routes, selectedRoute, onSelectRoute, startLocationName, destinationName, isNavigating]);
 
   // Render Landmarks
   useEffect(() => {
