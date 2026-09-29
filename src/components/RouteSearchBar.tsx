@@ -94,7 +94,11 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const sug: LocationSuggestion = {
-            displayName: 'My Current GPS Location',
+            displayName: 'My Current GPS Location, India',
+            shortName: 'My Current GPS Location',
+            subtitle: 'Device Geolocation',
+            placeType: 'locality',
+            typeLabel: '📍 Current GPS',
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
           };
@@ -135,7 +139,16 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
                   value={startLocation}
                   onChange={(e) => onStartLocationInputChange(e.target.value)}
                   onFocus={() => setShowStartDropdown(true)}
-                  placeholder="Type any landmark or city in India (e.g. SVNIT Surat, Connaught Place Delhi, Marine Drive Mumbai)..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (startSuggestions.length > 0) {
+                        onSelectStartLocation(startSuggestions[0]);
+                        setShowStartDropdown(false);
+                      }
+                      onSearchRoutes();
+                    }
+                  }}
+                  placeholder="Search any village, town, or city in India (e.g. Bhadrod, Mahuva, SVNIT Surat, Jaipur)..."
                   className="w-full bg-transparent text-xs font-semibold text-white focus:outline-none placeholder:text-gray-500 truncate"
                 />
               </div>
@@ -157,7 +170,7 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
 
             {/* Live Autocomplete Dropdown Panel for Start */}
             {showStartDropdown && startSuggestions.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-[#162035] border-2 border-emerald-500/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-30 overflow-hidden max-h-56 overflow-y-auto divide-y divide-white/10">
+              <div className="absolute left-0 right-0 top-full mt-2 bg-[#162035] border-2 border-emerald-500/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-30 overflow-hidden max-h-64 overflow-y-auto divide-y divide-white/10">
                 {startSuggestions.map((sug, i) => (
                   <button
                     key={i}
@@ -168,10 +181,17 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
                     }}
                     className="w-full p-3 text-left hover:bg-emerald-500/20 transition-colors flex items-start gap-2.5 group cursor-pointer"
                   >
-                    <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                    <div className="mt-0.5 shrink-0">
+                      <MapPin className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <span className="text-xs font-bold text-white block truncate">{sug.displayName.split(',')[0]}</span>
-                      <span className="text-[10px] text-gray-300 block truncate leading-tight mt-0.5">{sug.displayName}</span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-bold text-white block truncate">{sug.shortName || sug.displayName.split(',')[0]}</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-emerald-300 font-medium shrink-0 border border-emerald-500/20">
+                          {sug.typeLabel || '📍 Place'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-gray-300 block truncate leading-tight mt-0.5">{sug.subtitle || sug.displayName}</span>
                     </div>
                   </button>
                 ))}
@@ -192,7 +212,16 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
                   value={destination}
                   onChange={(e) => onDestinationInputChange(e.target.value)}
                   onFocus={() => setShowDestDropdown(true)}
-                  placeholder="Type any destination in India (e.g. Ring Road Surat, Airport Jaipur, MG Road Bengaluru)..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (destSuggestions.length > 0) {
+                        onSelectDestination(destSuggestions[0]);
+                        setShowDestDropdown(false);
+                      }
+                      onSearchRoutes();
+                    }
+                  }}
+                  placeholder="Type any village, town, or city in India (e.g. Bhadrod, Mahuva, Ring Road Surat)..."
                   className="w-full bg-transparent text-xs font-semibold text-white focus:outline-none placeholder:text-gray-500 truncate"
                 />
               </div>
@@ -202,7 +231,7 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
 
             {/* Live Autocomplete Dropdown Panel for Destination */}
             {showDestDropdown && destSuggestions.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-[#162035] border-2 border-pink-500/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-30 overflow-hidden max-h-56 overflow-y-auto divide-y divide-white/10">
+              <div className="absolute left-0 right-0 top-full mt-2 bg-[#162035] border-2 border-pink-500/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-30 overflow-hidden max-h-64 overflow-y-auto divide-y divide-white/10">
                 {destSuggestions.map((sug, i) => (
                   <button
                     key={i}
@@ -213,10 +242,17 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
                     }}
                     className="w-full p-3 text-left hover:bg-pink-500/20 transition-colors flex items-start gap-2.5 group cursor-pointer"
                   >
-                    <Navigation className="w-4 h-4 text-pink-400 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                    <div className="mt-0.5 shrink-0">
+                      <Navigation className="w-4 h-4 text-pink-400 group-hover:scale-110 transition-transform" />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <span className="text-xs font-bold text-white block truncate">{sug.displayName.split(',')[0]}</span>
-                      <span className="text-[10px] text-gray-300 block truncate leading-tight mt-0.5">{sug.displayName}</span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-bold text-white block truncate">{sug.shortName || sug.displayName.split(',')[0]}</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-pink-300 font-medium shrink-0 border border-pink-500/20">
+                          {sug.typeLabel || '📍 Place'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-gray-300 block truncate leading-tight mt-0.5">{sug.subtitle || sug.displayName}</span>
                     </div>
                   </button>
                 ))}

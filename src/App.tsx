@@ -18,7 +18,7 @@ import { CivicHeatmapDashboard } from './components/CivicHeatmapDashboard';
 import { MapApiKeyModal } from './components/MapApiKeyModal';
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
 import { playSilentConfirmPing, stopSiren } from './utils/audio';
-import { fetchRealRoutes, LocationSuggestion } from './services/geocodingService';
+import { fetchRealRoutes, searchLocationSuggestions, generateRouteLandmarks, LocationSuggestion } from './services/geocodingService';
 
 export const App: React.FC = () => {
   // Navigation & View Views
@@ -34,7 +34,7 @@ export const App: React.FC = () => {
   // Core Data & Real Routing State
   const [routes, setRoutes] = useState<RouteSegment[]>(MOCK_ROUTES);
   const [selectedRoute, setSelectedRoute] = useState<RouteSegment>(MOCK_ROUTES[0]);
-  const [landmarks] = useState<Landmark[]>(MOCK_LANDMARKS);
+  const [landmarks, setLandmarks] = useState<Landmark[]>(MOCK_LANDMARKS);
   const [incidents, setIncidents] = useState<IncidentReport[]>(MOCK_INCIDENTS);
 
   // Dynamic User-Entered Guardians (persisted in localStorage)
@@ -105,13 +105,61 @@ export const App: React.FC = () => {
 
   const handleFetchRealRoutes = async () => {
     setIsLoadingRoutes(true);
-    showToast(`🌐 Calculating real safe route from "${startLocationName.split(',')[0]}" to "${destinationName.split(',')[0]}"...`);
+
+    let activeStartCoords = startCoords;
+    let activeDestCoords = destCoords;
+    let activeStartName = startLocationName;
+    let activeDestName = destinationName;
+
+    // 1. Auto-resolve typed start location if user didn't pick from dropdown
+    if (startLocationName.trim().length >= 2) {
+      try {
+        const startMatches = await searchLocationSuggestions(startLocationName.trim());
+        if (startMatches && startMatches.length > 0) {
+          activeStartCoords = [startMatches[0].lat, startMatches[0].lng];
+          activeStartName = startMatches[0].displayName;
+          setStartCoords(activeStartCoords);
+          setStartLocationName(activeStartName);
+          setUserLocation(activeStartCoords);
+        }
+      } catch (e) {
+        console.warn('Auto-resolve start error:', e);
+      }
+    }
+
+    // 2. Auto-resolve typed destination location if user didn't pick from dropdown
+    if (destinationName.trim().length >= 2) {
+      try {
+        const destMatches = await searchLocationSuggestions(destinationName.trim());
+        if (destMatches && destMatches.length > 0) {
+          activeDestCoords = [destMatches[0].lat, destMatches[0].lng];
+          activeDestName = destMatches[0].displayName;
+          setDestCoords(activeDestCoords);
+          setDestinationName(activeDestName);
+        }
+      } catch (e) {
+        console.warn('Auto-resolve dest error:', e);
+      }
+    }
+
+    const startShort = activeStartName.split(',')[0].trim();
+    const destShort = activeDestName.split(',')[0].trim();
+
+    showToast(`🌐 Calculating real safe routes from "${startShort}" to "${destShort}"...`);
+
     try {
-      const newRoutes = await fetchRealRoutes(startCoords, destCoords, startLocationName, destinationName);
+      const newRoutes = await fetchRealRoutes(activeStartCoords, activeDestCoords, activeStartName, activeDestName);
       if (newRoutes && newRoutes.length > 0) {
         setRoutes(newRoutes);
         setSelectedRoute(newRoutes[0]);
-        showToast(`📍 Found ${newRoutes.length} real safe routes! Safest route activated.`);
+
+        // Generate dynamic emergency havens & police posts along the actual travel route
+        const dynamicLandmarks = generateRouteLandmarks(newRoutes[0].coordinates, activeStartName, activeDestName);
+        if (dynamicLandmarks.length > 0) {
+          setLandmarks(dynamicLandmarks);
+        }
+
+        showToast(`📍 Found 3 rated routes! Safest highway corridor recommended.`);
       }
     } catch (err) {
       console.error(err);
