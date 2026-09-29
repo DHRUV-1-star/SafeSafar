@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { RouteSegment, Landmark, IncidentReport, TrustedContact, ActiveSOSState } from './types';
+import { RouteSegment, Landmark, IncidentReport, TrustedContact, ActiveSOSState, UserProfile } from './types';
 import { INITIAL_USER_POS, MOCK_ROUTES, MOCK_LANDMARKS, MOCK_INCIDENTS, MOCK_TRUSTED_CONTACTS } from './data/mockData';
 import { calculateRouteLighting, StreetLamp } from './services/overpass';
 import { Navbar } from './components/Navbar';
@@ -16,14 +16,31 @@ import { CommunityReportModal } from './components/CommunityReportModal';
 import { SafeHavensDrawer } from './components/SafeHavensDrawer';
 import { GuardianDashboard, CommuterProfile } from './components/GuardianDashboard';
 import { CivicHeatmapDashboard } from './components/CivicHeatmapDashboard';
-
+import { AuthPage } from './components/AuthPage';
+import { UserProfileModal } from './components/UserProfileModal';
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
 import { playSilentConfirmPing, stopSiren } from './utils/audio';
 import { fetchRealRoutes, LocationSuggestion } from './services/geocodingService';
 
 export const App: React.FC = () => {
+  // Authentication & Safety Profile State
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
+    const saved = localStorage.getItem('safesafar_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null; // Start unauthenticated to showcase the dedicated Auth Page
+  });
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
+
   // Navigation & View Views
   const [currentView, setCurrentView] = useState<'mobile' | 'guardian' | 'civic'>('mobile');
+
+
   const [deviceFrameMode, setDeviceFrameMode] = useState<boolean>(false);
 
   // Mapbox token: read from .env at build time only (pk.* public token, safe for client)
@@ -37,18 +54,18 @@ export const App: React.FC = () => {
 
   // Dynamic User-Entered Guardians (persisted in localStorage)
   const [trustedContacts, setTrustedContacts] = useState<TrustedContact[]>(() => {
-    const saved = localStorage.getItem('safesafar_guardians');
+    const saved = localStorage.getItem('safesafar_guardians') || localStorage.getItem('safesafar_trusted_contacts');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed;
         }
       } catch (e) {
         console.error('Error loading saved guardians', e);
       }
     }
-    return [];
+    return MOCK_TRUSTED_CONTACTS;
   });
 
   // Commuter Profile (persisted in localStorage)
@@ -126,6 +143,12 @@ export const App: React.FC = () => {
     }
   }, [routes, selectedRoute.id]);
 
+  const handleUpdateTrustedContacts = (contacts: TrustedContact[]) => {
+    setTrustedContacts(contacts);
+    localStorage.setItem('safesafar_guardians', JSON.stringify(contacts));
+    localStorage.setItem('safesafar_trusted_contacts', JSON.stringify(contacts));
+  };
+
   // User State & Telemetry
   const [userLocation, setUserLocation] = useState<[number, number]>(INITIAL_USER_POS);
   const [batteryLevel] = useState<number>(88);
@@ -198,6 +221,34 @@ export const App: React.FC = () => {
   };
 
 
+
+  // User Authentication Handlers
+  const handleLoginSuccess = (user: UserProfile) => {
+    setCurrentUser(user);
+    localStorage.setItem('safesafar_user', JSON.stringify(user));
+
+    if (user.role === 'guardian') {
+      setCurrentView('guardian');
+    } else if (user.role === 'civic') {
+      setCurrentView('civic');
+    } else {
+      setCurrentView('mobile');
+    }
+
+    showToast(`✓ Welcome back, ${user.name}! Mode: ${user.role.toUpperCase()}`);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('safesafar_user');
+    showToast('Signed out from SafeSafar. Public guest mode active.');
+  };
+
+  const handleUpdateUser = (updated: UserProfile) => {
+    setCurrentUser(updated);
+    localStorage.setItem('safesafar_user', JSON.stringify(updated));
+    showToast('✓ Security PINs and profile updated successfully!');
+  };
 
   // SOS State
   const [sosState, setSosState] = useState<ActiveSOSState>({
@@ -372,6 +423,21 @@ export const App: React.FC = () => {
     localStorage.setItem('safesafar_commuter_profile', JSON.stringify(profile));
   };
 
+  // If user is unauthenticated, show the dedicated SafeSafar Auth Page
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-[#0A0E17] text-gray-100 font-sans">
+        <AuthPage onLoginSuccess={handleLoginSuccess} />
+        {toastMessage && (
+          <div className="fixed bottom-6 right-6 z-[10000] bg-[#161f33] border border-purple-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
+            <Sparkles className="w-5 h-5 text-purple-400 shrink-0" />
+            <span className="text-xs font-semibold">{toastMessage}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0A0E17] text-gray-100 flex flex-col font-sans selection:bg-purple-500/30 selection:text-white">
       {/* Decoy Screen Mode (Complete Disguise) */}
@@ -401,6 +467,10 @@ export const App: React.FC = () => {
         onDisarmSOS={handleDisarmSOS}
         sosState={sosState}
         batteryLevel={batteryLevel}
+        currentUser={currentUser}
+        onOpenAuthModal={() => setIsProfileModalOpen(true)}
+        onOpenProfileModal={() => setIsProfileModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Floating System Toast Alert */}
@@ -636,7 +706,22 @@ export const App: React.FC = () => {
         onClose={() => setIsDuressModalOpen(false)}
         onDuressTriggered={handleDuressPinEntered}
         onDisarmed={handleDisarmPinEntered}
+        normalPin={currentUser?.normalPin || '1234'}
+        duressPin={currentUser?.duressPin || '9999'}
       />
+
+      {currentUser && (
+        <UserProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          currentUser={currentUser}
+          onUpdateUser={handleUpdateUser}
+          trustedContacts={trustedContacts}
+          onUpdateTrustedContacts={handleUpdateTrustedContacts}
+          onLogout={handleLogout}
+        />
+      )}
+
 
       <SOSModal
         isOpen={isSOSOpen}
