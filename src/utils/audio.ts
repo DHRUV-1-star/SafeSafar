@@ -159,3 +159,99 @@ export function playSafeArrivalChime(): void {
     // Ignore
   }
 }
+
+/**
+ * Escalation shift alert beep
+ */
+export function playEscalationBeep(): void {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(320, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(240, ctx.currentTime + 0.25);
+
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.25);
+  } catch {
+    // Ignore
+  }
+}
+
+/**
+ * Play authentic DTMF keypad tone for phone dialpad buttons
+ */
+export function playKeypadTone(key: string): void {
+  try {
+    const ctx = getAudioContext();
+    const dtmfFreqs: Record<string, [number, number]> = {
+      '1': [697, 1209],
+      '2': [697, 1336],
+      '3': [697, 1477],
+      '4': [770, 1209],
+      '5': [770, 1336],
+      '6': [770, 1477],
+      '7': [852, 1209],
+      '8': [852, 1336],
+      '9': [852, 1477],
+      '*': [941, 1209],
+      '0': [941, 1336],
+      '#': [941, 1477],
+    };
+
+    const freqs = dtmfFreqs[key] || [800, 1200];
+    const now = ctx.currentTime;
+
+    freqs.forEach((f) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, now);
+
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.16);
+    });
+  } catch {
+    // Ignore
+  }
+}
+
+/**
+ * Call answered / connected chime
+ */
+export function playCallConnectedPing(): void {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.2); // A5
+
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.35);
+  } catch {
+    // Ignore
+  }
+}

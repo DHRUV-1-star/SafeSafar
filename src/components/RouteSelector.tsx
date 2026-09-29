@@ -114,7 +114,14 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
                     <span className="flex items-center gap-1.5 shrink-0">
                       <Lightbulb className="w-3.5 h-3.5 text-yellow-400 shrink-0" /> Lighting
                     </span>
-                    <span className="font-bold text-white shrink-0">{route.lightingPercent}%</span>
+                    <div className="flex items-center gap-1.5">
+                      {route.confidence === 'low' && (
+                        <span className="text-[9px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded">
+                          Sparse OSM Data
+                        </span>
+                      )}
+                      <span className="font-bold text-white shrink-0">{route.lightingPercent}%</span>
+                    </div>
                   </div>
                   <div className="w-full h-2 bg-gray-800/90 rounded-full overflow-hidden p-0.5">
                     <div
@@ -156,7 +163,14 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
           <div className="bg-white/5 border border-white/5 rounded-xl p-2.5 text-center">
             <span className="text-[10px] text-gray-400 block mb-0.5">Lighting Coverage</span>
-            <span className="text-sm font-black text-emerald-400">{selectedRoute.lightingPercent}%</span>
+            <div className="flex items-center justify-center gap-1">
+              <span className="text-sm font-black text-emerald-400">{selectedRoute.lightingPercent}%</span>
+              {selectedRoute.confidence === 'low' && (
+                <span className="text-[8px] font-bold text-amber-300 bg-amber-500/20 px-1 py-0.2 rounded" title="Limited OSM lighting data">
+                  Sparse
+                </span>
+              )}
+            </div>
           </div>
           <div className="bg-white/5 border border-white/5 rounded-xl p-2.5 text-center">
             <span className="text-[10px] text-gray-400 block mb-0.5">Pink / Police Booths</span>
@@ -173,6 +187,14 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
             <span className="text-xs font-bold text-purple-300">Night Factor</span>
           </div>
         </div>
+
+        {/* Low Confidence Lighting Warning Callout */}
+        {selectedRoute.confidence === 'low' && (
+          <div className="mb-3 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-xs text-amber-300">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>Limited lighting data for this stretch (OSM street lamps & amenities sparse)</span>
+          </div>
+        )}
 
         {/* Highlights & Warnings */}
         <div className="space-y-1.5">

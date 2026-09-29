@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { RouteSegment, Landmark, IncidentReport } from '../types';
+import { fetchStreetLamps, BoundingBox, StreetLamp } from '../services/overpass';
 
 interface MapComponentProps {
   routes: RouteSegment[];
@@ -17,6 +18,7 @@ interface MapComponentProps {
   mapboxApiKey?: string;
   startLocationName?: string;
   destinationName?: string;
+  onStreetLampsUpdated?: (lamps: StreetLamp[]) => void;
 }
 
 export const MapComponent: React.FC<MapComponentProps> = ({
@@ -33,6 +35,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   mapboxApiKey,
   startLocationName = 'SVNIT Campus, Dumas Road',
   destinationName = 'Ring Road Hub, Surat',
+  onStreetLampsUpdated,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -40,7 +43,11 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   const routeLayersRef = useRef<L.LayerGroup | null>(null);
   const landmarkLayersRef = useRef<L.LayerGroup | null>(null);
   const incidentLayersRef = useRef<L.LayerGroup | null>(null);
+  const streetLampLayersRef = useRef<L.LayerGroup | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
+  const debounceTimerRef = useRef<any>(null);
+
+  const [streetLamps, setStreetLamps] = useState<StreetLamp[]>([]);
 
   // Initialize Map
   useEffect(() => {
@@ -76,6 +83,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     routeLayersRef.current = L.layerGroup().addTo(map);
     landmarkLayersRef.current = L.layerGroup().addTo(map);
     incidentLayersRef.current = L.layerGroup().addTo(map);
+    streetLampLayersRef.current = L.layerGroup().addTo(map);
 
     // Custom User Marker Icon
     const userIcon = L.divIcon({
@@ -94,6 +102,40 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
     mapInstanceRef.current = map;
 
+    // Trigger fetchStreetLamps on map load and on moveend/zoomend (debounced ~500ms)
+    const queryLamps = () => {
+      if (!mapInstanceRef.current) return;
+      const bounds = mapInstanceRef.current.getBounds();
+      const bBox: BoundingBox = {
+        south: bounds.getSouth(),
+        west: bounds.getWest(),
+        north: bounds.getNorth(),
+        east: bounds.getEast(),
+      };
+
+      fetchStreetLamps(bBox).then((lamps) => {
+        setStreetLamps(lamps);
+        if (onStreetLampsUpdated) {
+          onStreetLampsUpdated(lamps);
+        }
+      });
+    };
+
+    const debouncedQueryLamps = () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      debounceTimerRef.current = setTimeout(() => {
+        queryLamps();
+      }, 500);
+    };
+
+    // Initial load fetch
+    debouncedQueryLamps();
+
+    map.on('moveend', debouncedQueryLamps);
+    map.on('zoomend', debouncedQueryLamps);
+
     // Observe container size adjustments
     const resizeObserver = new ResizeObserver(() => {
       if (mapInstanceRef.current) {
@@ -106,6 +148,11 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     }
 
     return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      map.off('moveend', debouncedQueryLamps);
+      map.off('zoomend', debouncedQueryLamps);
       resizeObserver.disconnect();
       try {
         if (tileLayerRef.current) {
@@ -126,6 +173,11 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           incidentLayersRef.current.clearLayers();
           map.removeLayer(incidentLayersRef.current);
           incidentLayersRef.current = null;
+        }
+        if (streetLampLayersRef.current) {
+          streetLampLayersRef.current.clearLayers();
+          map.removeLayer(streetLampLayersRef.current);
+          streetLampLayersRef.current = null;
         }
         if (userMarkerRef.current) {
           map.removeLayer(userMarkerRef.current);
@@ -408,6 +460,36 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       group.addLayer(marker);
     });
   }, [incidents, showHeatmap]);
+
+  // Render Street Lamps as small CircleMarker dots, gated behind existing showSafeLandmarks toggle
+  useEffect(() => {
+    if (!mapInstanceRef.current || !streetLampLayersRef.current) return;
+    const group = streetLampLayersRef.current;
+    group.clearLayers();
+
+    if (!showSafeLandmarks || streetLamps.length === 0) return;
+
+    streetLamps.forEach((lamp) => {
+      const circle = L.circleMarker([lamp.lat, lamp.lng], {
+        radius: 3.5,
+        color: '#f59e0b',
+        fillColor: '#fef08a',
+        fillOpacity: 0.85,
+        weight: 1.5,
+      });
+
+      circle.bindPopup(`
+        <div style="font-size: 11px; padding: 2px;">
+          <strong style="color: #f59e0b; display: flex; align-items: center; gap: 4px;">💡 OSM Street Lamp</strong>
+          <div style="color: #9ca3af; margin-top: 2px;">OSM Node ID: ${lamp.id}</div>
+          <div style="color: #60a5fa; font-family: monospace;">${lamp.lat.toFixed(5)}, ${lamp.lng.toFixed(5)}</div>
+          <div style="margin-top: 4px; font-size: 10px; color: #10b981; background: rgba(16,185,129,0.15); padding: 2px 4px; border-radius: 4px; display: inline-block;">Verified OSM Light Source</div>
+        </div>
+      `);
+
+      group.addLayer(circle);
+    });
+  }, [streetLamps, showSafeLandmarks]);
 
   return (
     <div className="relative z-0 isolate w-full h-full min-h-[380px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">

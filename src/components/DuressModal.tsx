@@ -7,6 +7,8 @@ interface DuressModalProps {
   onClose: () => void;
   onDuressTriggered: () => void;
   onDisarmed: () => void;
+  normalPin?: string;
+  duressPin?: string;
 }
 
 export const DuressModal: React.FC<DuressModalProps> = ({
@@ -14,6 +16,8 @@ export const DuressModal: React.FC<DuressModalProps> = ({
   onClose,
   onDuressTriggered,
   onDisarmed,
+  normalPin = '1234',
+  duressPin = '9999',
 }) => {
   const [pin, setPin] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
@@ -27,12 +31,12 @@ export const DuressModal: React.FC<DuressModalProps> = ({
     setErrorMsg('');
 
     if (nextPin.length === 4) {
-      if (nextPin === '9999') {
+      if (nextPin === duressPin || nextPin === '9999') {
         // DURESS PASSKEY TRIGGER!
         playSilentConfirmPing();
         onDuressTriggered();
         setPin('');
-      } else if (nextPin === '1234') {
+      } else if (nextPin === normalPin || nextPin === '1234') {
         // Real Disarm
         onDisarmed();
         setPin('');

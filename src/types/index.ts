@@ -16,6 +16,7 @@ export interface RouteSegment {
   durationMin: number;
   color: string;
   lightingPercent: number; // e.g. 92%
+  confidence?: 'high' | 'medium' | 'low'; // OSM data confidence flag
   crowdContext: {
     level: 'High' | 'Moderate' | 'Low' | 'Deserted';
     verifiedSafe: boolean; // Safe-crowd verification (market/transit vs deserted/hostile)
@@ -65,6 +66,7 @@ export interface TrustedContact {
   relation: string;
   phone: string;
   isEmergencyAlert: boolean;
+  isPrimary?: boolean;
   avatar: string;
   batteryStatus?: number;
   lastActive?: string;
@@ -85,3 +87,22 @@ export interface ActiveSOSState {
   policeNotified: boolean;
   duressActive: boolean;
 }
+
+export type UserRole = 'commuter' | 'guardian' | 'civic';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  role: UserRole;
+  avatar: string;
+  organization?: string; // For Civic / Police (e.g. Surat Municipal Corporation / Pink Police)
+  normalPin: string;     // e.g. '1234'
+  duressPin: string;     // e.g. '9999'
+  secretSafeWord?: string; // e.g. 'reach soon'
+  guardianPairingCode: string; // 6-digit sync code
+  emergencyContactCount: number;
+  batteryStatus?: number;
+}
+
