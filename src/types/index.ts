@@ -74,3 +74,22 @@ export interface ActiveSOSState {
   policeNotified: boolean;
   duressActive: boolean;
 }
+
+export type UserRole = 'commuter' | 'guardian' | 'civic';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  role: UserRole;
+  avatar: string;
+  organization?: string; // For Civic / Police (e.g. Surat Municipal Corporation / Pink Police)
+  normalPin: string;     // e.g. '1234'
+  duressPin: string;     // e.g. '9999'
+  secretSafeWord?: string; // e.g. 'reach soon'
+  guardianPairingCode: string; // 6-digit sync code
+  emergencyContactCount: number;
+  batteryStatus?: number;
+}
+

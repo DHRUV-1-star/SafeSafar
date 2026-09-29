@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { RouteSegment, Landmark, IncidentReport, TrustedContact, ActiveSOSState } from './types';
-import { INITIAL_USER_POS, MOCK_ROUTES, MOCK_LANDMARKS, MOCK_INCIDENTS, MOCK_TRUSTED_CONTACTS } from './data/mockData';
+import { RouteSegment, Landmark, IncidentReport, TrustedContact, ActiveSOSState, UserProfile, UserRole } from './types';
+import { INITIAL_USER_POS, MOCK_ROUTES, MOCK_LANDMARKS, MOCK_INCIDENTS, MOCK_TRUSTED_CONTACTS, MOCK_USERS } from './data/mockData';
 import { Navbar } from './components/Navbar';
 import { MapComponent } from './components/MapComponent';
 import { RouteSelector } from './components/RouteSelector';
@@ -15,12 +15,30 @@ import { SafeHavensDrawer } from './components/SafeHavensDrawer';
 import { GuardianDashboard } from './components/GuardianDashboard';
 import { CivicHeatmapDashboard } from './components/CivicHeatmapDashboard';
 import { MapApiKeyModal } from './components/MapApiKeyModal';
+import { AuthModal } from './components/AuthModal';
+import { UserProfileModal } from './components/UserProfileModal';
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
 import { playSilentConfirmPing } from './utils/audio';
 
 export const App: React.FC = () => {
+  // Authentication & Safety Profile State
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
+    const saved = localStorage.getItem('safesafar_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return MOCK_USERS[0];
+      }
+    }
+    return MOCK_USERS[0]; // Diya Patel (SVNIT Student Commuter) active by default
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
+
   // Navigation & View Views
   const [currentView, setCurrentView] = useState<'mobile' | 'guardian' | 'civic'>('mobile');
+
   const [deviceFrameMode, setDeviceFrameMode] = useState<boolean>(false);
 
   // Maps API Key Configuration (reads from localStorage or .env VITE_MAPBOX_TOKEN)
@@ -78,6 +96,49 @@ export const App: React.FC = () => {
       showToast('🗺️ Reset to default free CartoDB / OSM tiles.');
     }
   };
+
+  // User Authentication Handlers
+  const handleLoginSuccess = (user: UserProfile) => {
+    setCurrentUser(user);
+    localStorage.setItem('safesafar_user', JSON.stringify(user));
+
+    if (user.role === 'guardian') {
+      setCurrentView('guardian');
+    } else if (user.role === 'civic') {
+      setCurrentView('civic');
+    } else {
+      setCurrentView('mobile');
+    }
+
+    showToast(`✓ Welcome back, ${user.name}! Mode: ${user.role.toUpperCase()}`);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('safesafar_user');
+    showToast('Signed out from SafeSafar. Public guest mode active.');
+  };
+
+  const handleSwitchRole = (newRole: UserRole) => {
+    const matched = MOCK_USERS.find((u) => u.role === newRole);
+    if (matched) {
+      handleLoginSuccess(matched);
+    } else if (currentUser) {
+      handleLoginSuccess({ ...currentUser, role: newRole });
+    }
+  };
+
+  const handleUpdateUser = (updated: UserProfile) => {
+    setCurrentUser(updated);
+    localStorage.setItem('safesafar_user', JSON.stringify(updated));
+    showToast('✓ Security PINs and profile updated successfully!');
+  };
+
+  const handleEmergencyBypass = () => {
+    triggerSOS('button', false, false);
+    showToast('🚨 Emergency fast-track triggered! SOS beacon dispatched.');
+  };
+
 
   // SOS State
   const [sosState, setSosState] = useState<ActiveSOSState>({
@@ -224,6 +285,9 @@ export const App: React.FC = () => {
         hasCustomMapKey={!!mapboxApiKey}
         onTriggerSOS={() => triggerSOS('button', false, false)}
         batteryLevel={batteryLevel}
+        currentUser={currentUser}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenProfileModal={() => setIsProfileModalOpen(true)}
       />
 
       {/* Floating System Toast Alert */}
@@ -444,7 +508,28 @@ export const App: React.FC = () => {
         onClose={() => setIsDuressModalOpen(false)}
         onDuressTriggered={handleDuressPinEntered}
         onDisarmed={handleDisarmPinEntered}
+        normalPin={currentUser?.normalPin || '1234'}
+        duressPin={currentUser?.duressPin || '9999'}
       />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+        onEmergencyBypass={handleEmergencyBypass}
+      />
+
+      {currentUser && (
+        <UserProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          currentUser={currentUser}
+          onUpdateUser={handleUpdateUser}
+          onLogout={handleLogout}
+          onSwitchRole={handleSwitchRole}
+        />
+      )}
+
 
       <SOSModal
         isOpen={isSOSOpen}

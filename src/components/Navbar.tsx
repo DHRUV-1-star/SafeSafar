@@ -1,5 +1,6 @@
 import React from 'react';
-import { Shield, Smartphone, Monitor, BarChart3, Wifi, WifiOff, PhoneCall, KeyRound, AlertTriangle, Eye, PlusCircle, Compass } from 'lucide-react';
+import { Shield, Smartphone, Monitor, BarChart3, Wifi, WifiOff, PhoneCall, KeyRound, AlertTriangle, Eye, PlusCircle, Compass, LogIn, User } from 'lucide-react';
+import { UserProfile } from '../types';
 
 interface NavbarProps {
   currentView: 'mobile' | 'guardian' | 'civic';
@@ -15,6 +16,9 @@ interface NavbarProps {
   hasCustomMapKey: boolean;
   onTriggerSOS: () => void;
   batteryLevel: number;
+  currentUser: UserProfile | null;
+  onOpenAuthModal: () => void;
+  onOpenProfileModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -31,7 +35,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   hasCustomMapKey,
   onTriggerSOS,
   batteryLevel,
+  currentUser,
+  onOpenAuthModal,
+  onOpenProfileModal,
 }) => {
+
   return (
     <header className="sticky top-0 z-40 bg-[#0B0F19]/90 backdrop-blur-xl border-b border-white/10 px-4 py-3">
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
@@ -170,6 +178,35 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Eye className="w-4 h-4 text-gray-400" />
           </button>
+
+          {/* User Profile / Auth State */}
+          {currentUser ? (
+            <button
+              onClick={onOpenProfileModal}
+              className="flex items-center gap-2 p-1 pl-2 pr-3 rounded-xl bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/40 transition-all text-left shadow-sm"
+              title="View Safety Profile & Security PINs"
+            >
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="w-6 h-6 rounded-full object-cover border border-purple-400"
+              />
+              <div className="hidden sm:block">
+                <p className="text-[11px] font-bold text-white leading-tight">{currentUser.name.split(' ')[0]}</p>
+                <span className="text-[9px] text-purple-300 uppercase font-mono tracking-wider font-semibold">
+                  {currentUser.role}
+                </span>
+              </div>
+            </button>
+          ) : (
+            <button
+              onClick={onOpenAuthModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-purple-600/30 transition-all"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Sign In</span>
+            </button>
+          )}
 
           {/* Immediate SOS Emergency Panic Button */}
           <button

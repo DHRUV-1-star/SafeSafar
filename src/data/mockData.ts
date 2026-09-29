@@ -1,4 +1,4 @@
-import { RouteSegment, Landmark, IncidentReport, TrustedContact } from '../types';
+import { RouteSegment, Landmark, IncidentReport, TrustedContact, UserProfile } from '../types';
 
 export const INITIAL_USER_POS: [number, number] = [21.1663, 72.7832]; // SVNIT Campus, Surat
 export const DESTINATION_POS: [number, number] = [21.1960, 72.8190]; // Athwa / Ring Road Hub, Surat
@@ -263,3 +263,48 @@ export const MOCK_TRUSTED_CONTACTS: TrustedContact[] = [
     lastActive: 'Active now',
   },
 ];
+
+export const MOCK_USERS: UserProfile[] = [
+  {
+    id: 'user-commuter',
+    name: 'Diya Patel',
+    phone: '+91 98251 44321',
+    email: 'diya.patel@svnit.ac.in',
+    role: 'commuter',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+    normalPin: '1234',
+    duressPin: '9999',
+    secretSafeWord: 'reach soon',
+    guardianPairingCode: 'SAF-8492',
+    emergencyContactCount: 3,
+    batteryStatus: 88,
+  },
+  {
+    id: 'user-guardian',
+    name: 'Rajesh Gohil',
+    phone: '+91 87808 88428',
+    email: 'rajesh.gohil@gmail.com',
+    role: 'guardian',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
+    normalPin: '1234',
+    duressPin: '9999',
+    guardianPairingCode: 'SAF-8492',
+    emergencyContactCount: 2,
+    batteryStatus: 72,
+  },
+  {
+    id: 'user-civic',
+    name: 'Er. Dharmik Solanki',
+    phone: '+91 94280 11223',
+    email: 'd.solanki@suratmunicipal.org',
+    role: 'civic',
+    organization: 'Surat Municipal Corporation (SMC) & Pink Police Liaison',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80',
+    normalPin: '1234',
+    duressPin: '9999',
+    guardianPairingCode: 'CIV-0012',
+    emergencyContactCount: 0,
+    batteryStatus: 95,
+  },
+];
+
