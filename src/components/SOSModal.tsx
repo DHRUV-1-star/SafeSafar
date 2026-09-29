@@ -50,11 +50,6 @@ export const SOSModal: React.FC<SOSModalProps> = ({
   const [isCountingDown, setIsCountingDown] = useState<boolean>(true);
   const [sirenAudible, setSirenAudible] = useState<boolean>(false);
 
-  const handleTurnOffSOS = useCallback(() => {
-    stopSiren();
-    onDisarm();
-  }, [onDisarm]);
-
   // Fallback contacts if user contacts array is empty
   const sortedContacts: TrustedContact[] = useMemo(() => {
     if (!trustedContacts || trustedContacts.length === 0) {
