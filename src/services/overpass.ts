@@ -58,7 +58,9 @@ out body 150;`;
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.warn(`[Overpass] Request failed with status: ${response.status}`);
+      if (response.status === 429) {
+        cache.set(cacheKey, { timestamp: Date.now() + 30000, data: [] });
+      }
       return [];
     }
 
