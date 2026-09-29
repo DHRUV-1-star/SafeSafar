@@ -187,6 +187,50 @@ export function playEscalationBeep(): void {
 }
 
 /**
+ * Play authentic DTMF keypad tone for phone dialpad buttons
+ */
+export function playKeypadTone(key: string): void {
+  try {
+    const ctx = getAudioContext();
+    const dtmfFreqs: Record<string, [number, number]> = {
+      '1': [697, 1209],
+      '2': [697, 1336],
+      '3': [697, 1477],
+      '4': [770, 1209],
+      '5': [770, 1336],
+      '6': [770, 1477],
+      '7': [852, 1209],
+      '8': [852, 1336],
+      '9': [852, 1477],
+      '*': [941, 1209],
+      '0': [941, 1336],
+      '#': [941, 1477],
+    };
+
+    const freqs = dtmfFreqs[key] || [800, 1200];
+    const now = ctx.currentTime;
+
+    freqs.forEach((f) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, now);
+
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.16);
+    });
+  } catch {
+    // Ignore
+  }
+}
+
+/**
  * Call answered / connected chime
  */
 export function playCallConnectedPing(): void {
