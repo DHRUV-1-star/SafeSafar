@@ -1,5 +1,6 @@
 import React from 'react';
-import { Shield, Smartphone, Monitor, BarChart3, Wifi, WifiOff, PhoneCall, KeyRound, AlertTriangle, Eye, PlusCircle, Compass } from 'lucide-react';
+import { Shield, Smartphone, Monitor, BarChart3, Wifi, WifiOff, PhoneCall, KeyRound, AlertTriangle, Eye, PlusCircle, Compass, Power } from 'lucide-react';
+import { ActiveSOSState } from '../types';
 
 interface NavbarProps {
   currentView: 'mobile' | 'guardian' | 'civic';
@@ -14,6 +15,8 @@ interface NavbarProps {
   onOpenMapApiKeyModal: () => void;
   hasCustomMapKey: boolean;
   onTriggerSOS: () => void;
+  onDisarmSOS?: () => void;
+  sosState?: ActiveSOSState;
   batteryLevel: number;
 }
 
@@ -30,6 +33,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenMapApiKeyModal,
   hasCustomMapKey,
   onTriggerSOS,
+  onDisarmSOS,
+  sosState,
   batteryLevel,
 }) => {
   return (
@@ -171,14 +176,25 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Eye className="w-4 h-4 text-gray-400" />
           </button>
 
-          {/* Immediate SOS Emergency Panic Button */}
-          <button
-            onClick={onTriggerSOS}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black tracking-wide shadow-lg shadow-red-600/40 active:scale-95 transition-all"
-          >
-            <AlertTriangle className="w-3.5 h-3.5 fill-white" />
-            <span>SOS</span>
-          </button>
+          {/* Immediate SOS Emergency Panic Button / Turn Off SOS */}
+          {sosState?.isActive ? (
+            <button
+              onClick={onDisarmSOS}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-amber-600 to-emerald-600 hover:from-red-500 hover:to-emerald-500 text-white text-xs font-black tracking-wide shadow-lg shadow-red-600/40 animate-pulse active:scale-95 transition-all"
+              title="Click to Turn Off Active SOS"
+            >
+              <Power className="w-3.5 h-3.5 fill-white" />
+              <span>TURN OFF SOS</span>
+            </button>
+          ) : (
+            <button
+              onClick={onTriggerSOS}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black tracking-wide shadow-lg shadow-red-600/40 active:scale-95 transition-all"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 fill-white" />
+              <span>SOS</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

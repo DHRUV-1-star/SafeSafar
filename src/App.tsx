@@ -16,7 +16,7 @@ import { GuardianDashboard } from './components/GuardianDashboard';
 import { CivicHeatmapDashboard } from './components/CivicHeatmapDashboard';
 import { MapApiKeyModal } from './components/MapApiKeyModal';
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
-import { playSilentConfirmPing } from './utils/audio';
+import { playSilentConfirmPing, stopSiren } from './utils/audio';
 
 export const App: React.FC = () => {
   // Navigation & View Views
@@ -139,6 +139,22 @@ export const App: React.FC = () => {
     showToast(duress ? '🔒 Covert Duress Distress Dispatched!' : '🚨 Live Emergency SOS Broadcast Initiated!');
   };
 
+  // Completely Disarm and Turn Off SOS
+  const handleDisarmSOS = () => {
+    stopSiren();
+    setSosState((prev) => ({
+      ...prev,
+      isActive: false,
+      duressActive: false,
+      audioRecordingActive: false,
+      broadcastSentToContacts: false,
+      policeNotified: false,
+    }));
+    setIsSOSOpen(false);
+    setIsDuressModalOpen(false);
+    showToast('✓ SOS Emergency Stand-Down: Security disarmed safely.');
+  };
+
   // Covert Fake Call SOS Conversion (Flagship Innovation)
   const handleCovertSOSFromCall = (details: { trigger: string; simulatedAudio: boolean }) => {
     setSosState({
@@ -169,10 +185,7 @@ export const App: React.FC = () => {
 
   // Disarm SOS with normal 1234
   const handleDisarmPinEntered = () => {
-    setIsDuressModalOpen(false);
-    setIsSOSOpen(false);
-    setSosState((prev) => ({ ...prev, isActive: false, duressActive: false }));
-    showToast('✓ SafeSafar security guard disarmed safely.');
+    handleDisarmSOS();
   };
 
   // Shake Gesture simulation
@@ -223,6 +236,8 @@ export const App: React.FC = () => {
         onOpenMapApiKeyModal={() => setIsMapApiKeyModalOpen(true)}
         hasCustomMapKey={!!mapboxApiKey}
         onTriggerSOS={() => triggerSOS('button', false, false)}
+        onDisarmSOS={handleDisarmSOS}
+        sosState={sosState}
         batteryLevel={batteryLevel}
       />
 
@@ -412,10 +427,7 @@ export const App: React.FC = () => {
             batteryLevel={batteryLevel}
             trustedContacts={trustedContacts}
             onTriggerRemoteSOS={() => triggerSOS('button', false, false)}
-            onClearSOS={() => {
-              setSosState((prev) => ({ ...prev, isActive: false, duressActive: false }));
-              showToast('SOS Cleared by Guardian');
-            }}
+            onClearSOS={handleDisarmSOS}
           />
         )}
 
@@ -448,10 +460,14 @@ export const App: React.FC = () => {
 
       <SOSModal
         isOpen={isSOSOpen}
-        onClose={() => setIsSOSOpen(false)}
+        onClose={handleDisarmSOS}
+        onDisarm={handleDisarmSOS}
         sosState={sosState}
         trustedContacts={trustedContacts}
-        onDisarmClick={() => setIsDuressModalOpen(true)}
+        onDisarmClick={() => {
+          setIsSOSOpen(false);
+          setIsDuressModalOpen(true);
+        }}
         isOfflineMode={isOfflineMode}
       />
 

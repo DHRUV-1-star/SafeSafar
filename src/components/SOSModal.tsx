@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, PhoneCall, Volume2, VolumeX, Shield, CheckCircle2, MessageSquare, Radio, X } from 'lucide-react';
+import { AlertTriangle, PhoneCall, Volume2, VolumeX, Shield, CheckCircle2, MessageSquare, Radio, X, Power } from 'lucide-react';
 import { ActiveSOSState, TrustedContact } from '../types';
 import { startSiren, stopSiren } from '../utils/audio';
 
 interface SOSModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onDisarm: () => void;
   sosState: ActiveSOSState;
   trustedContacts: TrustedContact[];
   onDisarmClick: () => void;
@@ -15,6 +16,7 @@ interface SOSModalProps {
 export const SOSModal: React.FC<SOSModalProps> = ({
   isOpen,
   onClose,
+  onDisarm,
   sosState,
   trustedContacts,
   onDisarmClick,
@@ -66,11 +68,25 @@ export const SOSModal: React.FC<SOSModalProps> = ({
     }
   };
 
+  const handleTurnOffSOS = () => {
+    stopSiren();
+    onDisarm();
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-lg p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-md bg-[#160d14] border-2 border-red-500/50 rounded-3xl p-6 text-white shadow-2xl overflow-hidden flex flex-col items-center">
+        {/* Close & Disarm X button */}
+        <button
+          onClick={handleTurnOffSOS}
+          className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-white rounded-full bg-white/10 hover:bg-white/20 transition-all"
+          title="Turn Off SOS / Close"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         {/* Glowing emergency backdrop halo */}
         <div className="absolute -top-24 -left-24 w-64 h-64 bg-red-600/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
@@ -91,17 +107,18 @@ export const SOSModal: React.FC<SOSModalProps> = ({
             </p>
 
             <button
-              onClick={onClose}
-              className="mt-8 px-8 py-3.5 rounded-full bg-gray-800 hover:bg-gray-700 text-white font-semibold text-sm border border-white/20 active:scale-95 transition-transform"
+              onClick={handleTurnOffSOS}
+              className="mt-8 px-8 py-3.5 rounded-full bg-red-600/20 hover:bg-red-600/40 text-red-300 font-semibold text-sm border border-red-500/50 active:scale-95 transition-transform flex items-center gap-2"
             >
-              Cancel / False Alarm
+              <Power className="w-4 h-4" />
+              <span>Cancel / Stand Down SOS</span>
             </button>
           </div>
         ) : (
           /* Active SOS Active Dispatch Screen */
           <div className="w-full flex flex-col items-center">
             {/* Header */}
-            <div className="flex items-center justify-between w-full pb-3 border-b border-white/10">
+            <div className="flex items-center justify-between w-full pb-3 border-b border-white/10 pr-8">
               <div className="flex items-center gap-2">
                 <span className="relative flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -154,7 +171,7 @@ export const SOSModal: React.FC<SOSModalProps> = ({
                 ))}
               </div>
 
-              {/* 2G SMS Payload Preview (Page 4 & 7 highlight) */}
+              {/* 2G SMS Payload Preview */}
               {isOfflineMode && (
                 <div className="mt-3 p-2 bg-yellow-950/40 border border-yellow-500/20 rounded-xl text-[11px] text-yellow-300">
                   <div className="font-semibold flex items-center gap-1">
@@ -169,7 +186,7 @@ export const SOSModal: React.FC<SOSModalProps> = ({
             </div>
 
             {/* Quick Emergency Helplines */}
-            <div className="grid grid-cols-3 gap-2 w-full mb-5">
+            <div className="grid grid-cols-3 gap-2 w-full mb-4">
               <a
                 href="tel:112"
                 className="flex flex-col items-center justify-center p-3 rounded-2xl bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-300 text-center transition-all"
@@ -202,13 +219,24 @@ export const SOSModal: React.FC<SOSModalProps> = ({
               </button>
             </div>
 
-            {/* Disarm with Security / Duress PIN */}
-            <button
-              onClick={onDisarmClick}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-700 hover:to-gray-600 text-white font-semibold text-sm border border-white/10 shadow-lg flex items-center justify-center gap-2"
-            >
-              <span>Disarm SOS with Security PIN</span>
-            </button>
+            {/* Turn Off / Disarm Controls */}
+            <div className="w-full space-y-2">
+              <button
+                onClick={handleTurnOffSOS}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-all"
+              >
+                <Power className="w-4 h-4" />
+                <span>Turn Off SOS / Stand Down Alert</span>
+              </button>
+
+              <button
+                onClick={onDisarmClick}
+                className="w-full py-2.5 rounded-2xl bg-gray-800/80 hover:bg-gray-700 text-gray-300 font-medium text-xs border border-white/10 flex items-center justify-center gap-1.5 transition-all"
+              >
+                <Shield className="w-3.5 h-3.5 text-amber-400" />
+                <span>Disarm with Security PIN (1234 / 9999)</span>
+              </button>
+            </div>
           </div>
         )}
       </div>
