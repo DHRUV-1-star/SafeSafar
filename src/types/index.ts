@@ -55,6 +55,7 @@ export interface TrustedContact {
   relation: string;
   phone: string;
   isEmergencyAlert: boolean;
+  isPrimary?: boolean;
   avatar: string;
   batteryStatus?: number;
   lastActive?: string;

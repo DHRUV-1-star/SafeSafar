@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { RouteSegment, Landmark, IncidentReport, TrustedContact, ActiveSOSState, UserProfile, UserRole } from './types';
-import { INITIAL_USER_POS, MOCK_ROUTES, MOCK_LANDMARKS, MOCK_INCIDENTS, MOCK_TRUSTED_CONTACTS, MOCK_USERS } from './data/mockData';
+import { RouteSegment, Landmark, IncidentReport, TrustedContact, ActiveSOSState, UserProfile } from './types';
+import { INITIAL_USER_POS, MOCK_ROUTES, MOCK_LANDMARKS, MOCK_INCIDENTS, MOCK_TRUSTED_CONTACTS } from './data/mockData';
 import { Navbar } from './components/Navbar';
 import { MapComponent } from './components/MapComponent';
 import { RouteSelector } from './components/RouteSelector';
@@ -15,7 +15,7 @@ import { SafeHavensDrawer } from './components/SafeHavensDrawer';
 import { GuardianDashboard } from './components/GuardianDashboard';
 import { CivicHeatmapDashboard } from './components/CivicHeatmapDashboard';
 import { MapApiKeyModal } from './components/MapApiKeyModal';
-import { AuthModal } from './components/AuthModal';
+import { AuthPage } from './components/AuthPage';
 import { UserProfileModal } from './components/UserProfileModal';
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
 import { playSilentConfirmPing } from './utils/audio';
@@ -27,17 +27,17 @@ export const App: React.FC = () => {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
-        return MOCK_USERS[0];
+      } catch {
+        return null;
       }
     }
-    return MOCK_USERS[0]; // Diya Patel (SVNIT Student Commuter) active by default
+    return null; // Start unauthenticated to showcase the dedicated Auth Page
   });
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
 
   // Navigation & View Views
   const [currentView, setCurrentView] = useState<'mobile' | 'guardian' | 'civic'>('mobile');
+
 
   const [deviceFrameMode, setDeviceFrameMode] = useState<boolean>(false);
 
@@ -52,7 +52,23 @@ export const App: React.FC = () => {
   const [selectedRoute, setSelectedRoute] = useState<RouteSegment>(MOCK_ROUTES[0]);
   const [landmarks] = useState<Landmark[]>(MOCK_LANDMARKS);
   const [incidents, setIncidents] = useState<IncidentReport[]>(MOCK_INCIDENTS);
-  const [trustedContacts] = useState<TrustedContact[]>(MOCK_TRUSTED_CONTACTS);
+  const [trustedContacts, setTrustedContacts] = useState<TrustedContact[]>(() => {
+    const saved = localStorage.getItem('safesafar_trusted_contacts');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return MOCK_TRUSTED_CONTACTS;
+      }
+    }
+    return MOCK_TRUSTED_CONTACTS;
+  });
+
+  const handleUpdateTrustedContacts = (contacts: TrustedContact[]) => {
+    setTrustedContacts(contacts);
+    localStorage.setItem('safesafar_trusted_contacts', JSON.stringify(contacts));
+  };
+
 
   // User State & Telemetry
   const [userLocation, setUserLocation] = useState<[number, number]>(INITIAL_USER_POS);
@@ -119,26 +135,11 @@ export const App: React.FC = () => {
     showToast('Signed out from SafeSafar. Public guest mode active.');
   };
 
-  const handleSwitchRole = (newRole: UserRole) => {
-    const matched = MOCK_USERS.find((u) => u.role === newRole);
-    if (matched) {
-      handleLoginSuccess(matched);
-    } else if (currentUser) {
-      handleLoginSuccess({ ...currentUser, role: newRole });
-    }
-  };
-
   const handleUpdateUser = (updated: UserProfile) => {
     setCurrentUser(updated);
     localStorage.setItem('safesafar_user', JSON.stringify(updated));
     showToast('✓ Security PINs and profile updated successfully!');
   };
-
-  const handleEmergencyBypass = () => {
-    triggerSOS('button', false, false);
-    showToast('🚨 Emergency fast-track triggered! SOS beacon dispatched.');
-  };
-
 
   // SOS State
   const [sosState, setSosState] = useState<ActiveSOSState>({
@@ -257,6 +258,21 @@ export const App: React.FC = () => {
     showToast('✓ Community safety condition posted! Pending trust peer audit.');
   };
 
+  // If user is unauthenticated, show the dedicated SafeSafar Auth Page
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-[#0A0E17] text-gray-100 font-sans">
+        <AuthPage onLoginSuccess={handleLoginSuccess} />
+        {toastMessage && (
+          <div className="fixed bottom-6 right-6 z-[10000] bg-[#161f33] border border-purple-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
+            <Sparkles className="w-5 h-5 text-purple-400 shrink-0" />
+            <span className="text-xs font-semibold">{toastMessage}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0A0E17] text-gray-100 flex flex-col font-sans selection:bg-purple-500/30 selection:text-white">
       {/* Decoy Screen Mode (Complete Disguise) */}
@@ -286,8 +302,9 @@ export const App: React.FC = () => {
         onTriggerSOS={() => triggerSOS('button', false, false)}
         batteryLevel={batteryLevel}
         currentUser={currentUser}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenAuthModal={() => setIsProfileModalOpen(true)}
         onOpenProfileModal={() => setIsProfileModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Floating System Toast Alert */}
@@ -512,21 +529,15 @@ export const App: React.FC = () => {
         duressPin={currentUser?.duressPin || '9999'}
       />
 
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onLoginSuccess={handleLoginSuccess}
-        onEmergencyBypass={handleEmergencyBypass}
-      />
-
       {currentUser && (
         <UserProfileModal
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
           currentUser={currentUser}
           onUpdateUser={handleUpdateUser}
+          trustedContacts={trustedContacts}
+          onUpdateTrustedContacts={handleUpdateTrustedContacts}
           onLogout={handleLogout}
-          onSwitchRole={handleSwitchRole}
         />
       )}
 
