@@ -33,18 +33,60 @@ create table if not exists public.guardians (
   email text,
   is_emergency_alert boolean default true,
   avatar text,
+  battery_status integer default 90,
+  last_active text default 'Active now',
+  is_primary boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table if not exists public.landmarks (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  type text not null,
+  lat double precision not null,
+  lng double precision not null,
+  address text,
+  phone text,
+  open_hours text,
+  verified boolean default true,
+  distance_meters integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table if not exists public.incidents (
+  id uuid default gen_random_uuid() primary key,
+  type text not null,
+  severity text not null,
+  lat double precision not null,
+  lng double precision not null,
+  title text not null,
+  description text,
+  timestamp_str text default 'Just now',
+  confirmations integer default 1,
+  required_confirmations integer default 3,
+  verified boolean default false,
+  decay_hours_left integer default 48,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
 alter table public.profiles enable row level security;
 alter table public.guardians enable row level security;
+alter table public.landmarks enable row level security;
+alter table public.incidents enable row level security;
 
 create policy "Users can view own profile" on public.profiles for select using (auth.uid() = id);
 create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
+
 create policy "Users can view own guardians" on public.guardians for select using (auth.uid() = user_id);
 create policy "Users can insert own guardians" on public.guardians for insert with check (auth.uid() = user_id);
 create policy "Users can update own guardians" on public.guardians for update using (auth.uid() = user_id);
-create policy "Users can delete own guardians" on public.guardians for delete using (auth.uid() = user_id);`;
+create policy "Users can delete own guardians" on public.guardians for delete using (auth.uid() = user_id);
+
+create policy "Anyone can read landmarks" on public.landmarks for select using (true);
+create policy "Anyone can read incidents" on public.incidents for select using (true);
+create policy "Anyone can insert incidents" on public.incidents for insert with check (true);
+create policy "Anyone can update incidents" on public.incidents for update using (true);`;
+
 
   const handleCopy = () => {
     navigator.clipboard.writeText(sqlCode);

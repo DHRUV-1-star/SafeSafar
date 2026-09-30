@@ -131,13 +131,16 @@ export const GuardianDashboard: React.FC<GuardianDashboardProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <a
-              href="tel:112"
+            <button
+              onClick={() => {
+                onShowToast("Initiating call to Surat Police (112)...");
+                window.location.href = 'tel:112';
+              }}
               className="px-5 py-3 rounded-2xl bg-white text-red-600 font-bold text-sm hover:bg-gray-100 shadow-lg flex items-center gap-2"
             >
               <Phone className="w-4 h-4" />
               <span>Call Surat Police (112)</span>
-            </a>
+            </button>
             <button
               onClick={onClearSOS}
               className="px-4 py-3 rounded-2xl bg-red-900/60 hover:bg-red-800 text-white font-semibold text-xs border border-red-400/40"
@@ -441,13 +444,16 @@ export const GuardianDashboard: React.FC<GuardianDashboardProps> = ({
                 <span>Trigger Remote Distress Check</span>
               </button>
 
-              <a
-                href="tel:1091"
+              <button
+                onClick={() => {
+                  onShowToast("Initiating call to Women Police Helpline (1091)...");
+                  window.location.href = 'tel:1091';
+                }}
                 className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 font-semibold text-xs flex items-center justify-center gap-2 transition-all"
               >
                 <Shield className="w-3.5 h-3.5 text-purple-400" />
                 <span>Dial Women Police Helpline 1091</span>
-              </a>
+              </button>
             </div>
           </div>
         </div>

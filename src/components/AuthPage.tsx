@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { UserProfile, UserRole } from '../types';
 import { MOCK_USERS } from '../data/mockData';
+import { loginWithGoogle } from '../services/databaseService';
 
 interface AuthPageProps {
   onLoginSuccess: (user: UserProfile) => void;
@@ -249,13 +250,15 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     }, 800);
   };
 
-  // Google Sign In (mocked securely)
-  const handleGoogleSignIn = () => {
+  // Google Sign In (Real OAuth)
+  const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    setTimeout(() => {
+    const { error } = await loginWithGoogle();
+    if (error) {
+      setErrorMsg(error);
       setIsLoading(false);
-      onLoginSuccess(MOCK_USERS[0]);
-    }, 600);
+    }
+    // If successful, the page will redirect to Google's OAuth flow
   };
 
   // Demo auto-fill helper for judges / testers
