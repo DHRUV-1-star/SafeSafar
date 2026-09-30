@@ -66,8 +66,21 @@ export const App: React.FC = () => {
   const [landmarks, setLandmarks] = useState<Landmark[]>(MOCK_LANDMARKS);
   const [incidents, setIncidents] = useState<IncidentReport[]>(MOCK_INCIDENTS);
 
-  // Dynamic User Guardians (Loaded from Database for active user)
-  const [trustedContacts, setTrustedContacts] = useState<TrustedContact[]>([]);
+  // Dynamic User Guardians (Loaded from Database / Local Storage for active user, defaults to empty)
+  const [trustedContacts, setTrustedContacts] = useState<TrustedContact[]>(() => {
+    const saved = localStorage.getItem('safesafar_guardians') || localStorage.getItem('safesafar_trusted_contacts');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((c: TrustedContact) => c && c.id && !c.id.startsWith('tc-'));
+        }
+      } catch (e) {
+        console.error('Error loading saved guardians', e);
+      }
+    }
+    return [];
+  });
 
   // Initialize and load user & user-specific guardians from database
   useEffect(() => {
@@ -96,7 +109,9 @@ export const App: React.FC = () => {
 
         // Load guardians from database specifically for this user
         const dbGuardians = await fetchUserGuardians(activeUser.id);
-        setTrustedContacts(dbGuardians);
+        if (dbGuardians && dbGuardians.length > 0) {
+          setTrustedContacts(dbGuardians.filter((c: TrustedContact) => c && c.id && !c.id.startsWith('tc-')));
+        }
       }
     };
     initDatabaseAndUser();
