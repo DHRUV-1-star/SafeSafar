@@ -32,6 +32,9 @@ import {
   logoutUser,
   updateUserProfile,
   AuthUser,
+  fetchLandmarks,
+  fetchIncidents,
+  saveIncidentToDatabase,
 } from './services/databaseService';
 
 export const App: React.FC = () => {
@@ -63,8 +66,8 @@ export const App: React.FC = () => {
   // Core Data & Real Routing State
   const [routes, setRoutes] = useState<RouteSegment[]>(MOCK_ROUTES);
   const [selectedRoute, setSelectedRoute] = useState<RouteSegment>(MOCK_ROUTES[0]);
-  const [landmarks, setLandmarks] = useState<Landmark[]>(MOCK_LANDMARKS);
-  const [incidents, setIncidents] = useState<IncidentReport[]>(MOCK_INCIDENTS);
+  const [landmarks, setLandmarks] = useState<Landmark[]>([]);
+  const [incidents, setIncidents] = useState<IncidentReport[]>([]);
 
   // Dynamic User Guardians (Loaded from Database / Local Storage for active user, defaults to empty)
   const [trustedContacts, setTrustedContacts] = useState<TrustedContact[]>(() => {
@@ -113,6 +116,12 @@ export const App: React.FC = () => {
           setTrustedContacts(dbGuardians.filter((c: TrustedContact) => c && c.id && !c.id.startsWith('tc-')));
         }
       }
+
+      // Load global public data (Landmarks and Incidents)
+      const dbLandmarks = await fetchLandmarks();
+      const dbIncidents = await fetchIncidents();
+      setLandmarks(dbLandmarks);
+      setIncidents(dbIncidents);
     };
     initDatabaseAndUser();
   }, []);
@@ -529,17 +538,17 @@ export const App: React.FC = () => {
   };
 
   // Add Community Report
-  const handleAddCommunityReport = (newReport: any) => {
-    const reportItem: IncidentReport = {
+  const handleAddCommunityReport = async (newReport: any) => {
+    const reportItem = {
       ...newReport,
-      id: `inc-${Date.now()}`,
       timestamp: 'Just now',
       confirmations: 1,
       requiredConfirmations: 3,
       verified: false,
       decayHoursLeft: 48,
     };
-    setIncidents([reportItem, ...incidents]);
+    const saved = await saveIncidentToDatabase(reportItem);
+    setIncidents([saved, ...incidents]);
     showToast('✓ Community safety condition posted! Pending trust peer audit.');
   };
 
@@ -604,7 +613,7 @@ export const App: React.FC = () => {
         onOpenSafeHavens={() => setIsSafeHavensOpen(true)}
 
         onTriggerSOS={() => triggerSOS('button', false, false)}
-        onDisarmSOS={handleDisarmSOS}
+        onDisarmSOS={() => setIsDuressModalOpen(true)}
         sosState={sosState}
         batteryLevel={batteryLevel}
         currentUser={currentUser}

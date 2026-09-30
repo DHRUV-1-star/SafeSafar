@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
-import { TrustedContact } from '../types';
+import { TrustedContact, Landmark, IncidentReport } from '../types';
+import { MOCK_LANDMARKS, MOCK_INCIDENTS } from '../data/mockData';
 
 export interface AuthUser {
   id: string;
@@ -202,6 +203,30 @@ export async function loginUser(
   const { passwordHash, ...cleanUser } = found;
   localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, JSON.stringify(cleanUser));
   return { user: cleanUser, error: null };
+}
+
+/**
+ * Sign in with Google using Supabase OAuth
+ */
+export async function loginWithGoogle(): Promise<{ error: string | null }> {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) {
+        return { error: error.message };
+      }
+      return { error: null };
+    } catch (err: any) {
+      console.warn('[Supabase Auth] Google login error:', err);
+      return { error: err.message || 'Failed to initialize Google login' };
+    }
+  }
+  return { error: 'Cloud database not configured. Google Sign-In requires Supabase.' };
 }
 
 /**
@@ -495,4 +520,153 @@ export async function updateUserProfile(
 
   localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, JSON.stringify(updated));
   return updated;
+}
+
+// ============================================================================
+// PUBLIC DATA (Landmarks & Incidents)
+// ============================================================================
+
+const LOCAL_STORAGE_LANDMARKS_KEY = 'safesafar_db_landmarks';
+const LOCAL_STORAGE_INCIDENTS_KEY = 'safesafar_db_incidents';
+
+export async function fetchLandmarks(): Promise<Landmark[]> {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase.from('landmarks').select('*');
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return data.map((item) => ({
+          id: item.id,
+          name: item.name,
+          type: item.type as any,
+          lat: item.lat,
+          lng: item.lng,
+          address: item.address,
+          phone: item.phone,
+          openHours: item.open_hours,
+          verified: item.verified,
+          distanceMeters: item.distance_meters,
+        }));
+      }
+    } catch (err) {
+      console.warn('[Supabase DB] Failed to fetch landmarks, checking local DB:', err);
+    }
+  }
+
+  // Local fallback
+  const raw = localStorage.getItem(LOCAL_STORAGE_LANDMARKS_KEY);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch (e) {
+      console.error('Error parsing local landmarks', e);
+    }
+  }
+
+  // Seed default if empty
+  localStorage.setItem(LOCAL_STORAGE_LANDMARKS_KEY, JSON.stringify(MOCK_LANDMARKS));
+  return MOCK_LANDMARKS;
+}
+
+export async function fetchIncidents(): Promise<IncidentReport[]> {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('incidents')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return data.map((item) => ({
+          id: item.id,
+          type: item.type as any,
+          severity: item.severity as any,
+          lat: item.lat,
+          lng: item.lng,
+          title: item.title,
+          description: item.description,
+          timestamp: item.timestamp_str,
+          confirmations: item.confirmations,
+          requiredConfirmations: item.required_confirmations,
+          verified: item.verified,
+          decayHoursLeft: item.decay_hours_left,
+        }));
+      }
+    } catch (err) {
+      console.warn('[Supabase DB] Failed to fetch incidents, checking local DB:', err);
+    }
+  }
+
+  // Local fallback
+  const raw = localStorage.getItem(LOCAL_STORAGE_INCIDENTS_KEY);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch (e) {
+      console.error('Error parsing local incidents', e);
+    }
+  }
+
+  // Seed default if empty
+  localStorage.setItem(LOCAL_STORAGE_INCIDENTS_KEY, JSON.stringify(MOCK_INCIDENTS));
+  return MOCK_INCIDENTS;
+}
+
+export async function saveIncidentToDatabase(incidentData: Omit<IncidentReport, 'id'>): Promise<IncidentReport> {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('incidents')
+        .insert({
+          type: incidentData.type,
+          severity: incidentData.severity,
+          lat: incidentData.lat,
+          lng: incidentData.lng,
+          title: incidentData.title,
+          description: incidentData.description,
+          timestamp_str: incidentData.timestamp,
+          confirmations: incidentData.confirmations,
+          required_confirmations: incidentData.requiredConfirmations,
+          verified: incidentData.verified,
+          decay_hours_left: incidentData.decayHoursLeft,
+        })
+        .select()
+        .single();
+
+      if (!error && data) {
+        const saved: IncidentReport = {
+          id: data.id,
+          type: data.type as any,
+          severity: data.severity as any,
+          lat: data.lat,
+          lng: data.lng,
+          title: data.title,
+          description: data.description,
+          timestamp: data.timestamp_str,
+          confirmations: data.confirmations,
+          requiredConfirmations: data.required_confirmations,
+          verified: data.verified,
+          decayHoursLeft: data.decay_hours_left,
+        };
+
+        const current = await fetchIncidents();
+        localStorage.setItem(LOCAL_STORAGE_INCIDENTS_KEY, JSON.stringify([saved, ...current]));
+        return saved;
+      }
+    } catch (err) {
+      console.warn('[Supabase DB] Failed to insert incident:', err);
+    }
+  }
+
+  // Local fallback
+  const current = await fetchIncidents();
+  const newIncident: IncidentReport = {
+    ...incidentData,
+    id: `inc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+  };
+
+  const updated = [newIncident, ...current];
+  localStorage.setItem(LOCAL_STORAGE_INCIDENTS_KEY, JSON.stringify(updated));
+  return newIncident;
 }

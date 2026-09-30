@@ -297,17 +297,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <Settings className="w-4 h-4 text-gray-400 shrink-0" />
                       <span>Settings</span>
                     </button>
-
-                    {onOpenDatabaseSetup && (
-                      <button
-                        type="button"
-                        onClick={() => handleDropdownAction(onOpenDatabaseSetup)}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-colors text-left font-medium"
-                      >
-                        <Database className="w-4 h-4 text-amber-400 shrink-0" />
-                        <span>Database & Cloud</span>
-                      </button>
-                    )}
                   </div>
 
                   {/* Divider & Sign Out */}
