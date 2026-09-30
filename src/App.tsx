@@ -541,7 +541,7 @@ export const App: React.FC = () => {
         onOpenSafeHavens={() => setIsSafeHavensOpen(true)}
 
         onTriggerSOS={() => triggerSOS('button', false, false)}
-        onDisarmSOS={handleDisarmSOS}
+        onDisarmSOS={() => setIsDuressModalOpen(true)}
         sosState={sosState}
         batteryLevel={batteryLevel}
         currentUser={currentUser}

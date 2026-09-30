@@ -13,7 +13,8 @@ import {
   AlertOctagon, 
   Check, 
   ExternalLink,
-  Power
+  Power,
+  Key
 } from 'lucide-react';
 import { ActiveSOSState, TrustedContact } from '../types';
 import { 
@@ -667,24 +668,15 @@ export const SOSModal: React.FC<SOSModalProps> = ({
               </a>
             </div>
 
-            {/* Turn Off / Disarm Controls */}
-            <div className="w-full space-y-2 pt-2">
-              <button
-                type="button"
-                onClick={handleTurnOffSOS}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
-              >
-                <Power className="w-4 h-4" />
-                <span>Turn Off SOS / Stand Down Alert</span>
-              </button>
-
+            {/* Turn Off / Disarm Controls: Authenticated via Security PIN */}
+            <div className="w-full pt-2">
               <button
                 type="button"
                 onClick={onDisarmClick}
-                className="w-full py-2.5 rounded-2xl bg-gray-800/80 hover:bg-gray-700 text-gray-300 font-medium text-xs border border-white/10 flex items-center justify-center gap-1.5 transition-all"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 border border-white/20 transition-all active:scale-[0.99]"
               >
-                <Shield className="w-3.5 h-3.5 text-amber-400" />
-                <span>Disarm with Security PIN (1234 / 9999)</span>
+                <Key className="w-4 h-4 text-amber-300" />
+                <span>Disarm with Security PIN</span>
               </button>
             </div>
           </div>
