@@ -771,7 +771,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-400">
               <div>
                 <p className="font-bold text-gray-300">About SafeSafar</p>
-                <p className="text-[11px] text-gray-500">Version 1.0.0 • IEEE WIE ILS 2026</p>
+                <p className="text-[11px] text-gray-500">Version 1.0.0</p>
               </div>
               <div className="flex items-center gap-3 text-[11px]">
                 <button type="button" onClick={() => showToast('Help & Support: support@safesafar.org')} className="hover:text-white transition-colors">

@@ -292,9 +292,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-black tracking-tight text-white">SafeSafar</span>
-                <span className="text-[11px] font-semibold bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full">
-                  IEEE WIE ILS 2026
-                </span>
               </div>
             </div>
 

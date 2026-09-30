@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface UserAvatarProps {
   name: string;
@@ -24,22 +24,19 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setImageError(false);
   }, [avatar]);
 
-  // Size variations
   const sizeClasses = {
     xs: 'w-6 h-6 text-[10px]',
     sm: 'w-7 h-7 text-xs',
     md: 'w-9 h-9 text-xs',
-    lg: 'w-16 h-16 text-lg font-bold',
+    lg: 'w-14 h-14 text-base font-bold',
     xl: 'w-20 h-20 text-xl font-bold',
   };
 
   const initials = getInitials(name);
-
-  // Only display image if avatar is provided and hasn't errored
   const hasValidImage = avatar && avatar.trim().length > 0 && !imageError;
 
   if (hasValidImage) {
@@ -53,7 +50,6 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     );
   }
 
-  // Clean initials fallback with modern gradient
   return (
     <div
       className={`${sizeClasses[size]} rounded-full bg-gradient-to-tr from-purple-700 via-indigo-600 to-pink-600 flex items-center justify-center font-bold text-white tracking-wider border border-white/15 shadow-sm shrink-0 select-none ${className}`}
