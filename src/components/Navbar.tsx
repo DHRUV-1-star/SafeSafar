@@ -110,17 +110,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-600/30">
             <Shield className="w-4 h-4 fill-white/20" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-black tracking-tight text-white leading-tight">
-                SafeSafar
-              </span>
-              <span className="text-[10px] font-bold bg-pink-500/10 border border-pink-500/30 text-pink-400 px-2 py-0.5 rounded-full hidden sm:inline">
-                IEEE WIE ILS 2026
-              </span>
-            </div>
-            <p className="text-[10px] text-gray-400 hidden sm:block">SheLeads Safe Route Navigator</p>
-          </div>
+          <span className="text-base font-black tracking-tight text-white leading-tight">
+            SafeSafar
+          </span>
         </div>
 
         {/* ========================================================= */}
