@@ -96,6 +96,22 @@ export async function registerUser(
       }
 
       if (data.user) {
+        const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name.trim())}&backgroundColor=7c3aed,4f46e5`;
+
+        // Explicitly insert into public.profiles table to guarantee persistence
+        try {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            full_name: name.trim(),
+            phone: phone?.trim() || '',
+            role,
+            avatar_url: avatarUrl,
+            updated_at: new Date().toISOString(),
+          });
+        } catch (profileErr) {
+          console.warn('[Supabase DB] Explicit profile upsert notice:', profileErr);
+        }
+
         const newUser: AuthUser = {
           id: data.user.id,
           email: cleanEmail,
@@ -103,7 +119,7 @@ export async function registerUser(
           phone: phone?.trim() || '',
           role,
           hub: 'SVNIT Surat Hub',
-          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name.trim())}&backgroundColor=7c3aed,4f46e5`,
+          avatar: avatarUrl,
         };
         return { user: newUser, error: null };
       }
@@ -438,6 +454,10 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   return cleanDefault;
 }
 
+const isValidUUID = (id: string): boolean => {
+  return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+};
+
 // ============================================================================
 // GUARDIAN DATABASE CRUD FUNCTIONS (Linked to User ID)
 // ============================================================================
@@ -448,8 +468,8 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 export async function fetchUserGuardians(userId: string): Promise<TrustedContact[]> {
   if (!userId) return [];
 
-  // 1. Supabase Cloud Database Query
-  if (isSupabaseConfigured() && supabase) {
+  // 1. Supabase Cloud Database Query (Only for valid UUID user IDs)
+  if (isSupabaseConfigured() && supabase && isValidUUID(userId)) {
     try {
       const { data, error } = await supabase
         .from('guardians')
@@ -473,8 +493,8 @@ export async function fetchUserGuardians(userId: string): Promise<TrustedContact
           lastActive: item.last_active || 'Active now',
         }));
       }
-    } catch (err) {
-      console.warn('[Supabase DB] Failed to fetch guardians, checking local DB:', err);
+    } catch {
+      // Silently fall back to local database
     }
   }
 
@@ -506,8 +526,8 @@ export async function saveGuardianToDatabase(
     guardianData.avatar ||
     `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(guardianData.name)}&backgroundColor=7c3aed,4f46e5,db2777`;
 
-  // 1. Supabase Cloud Database Insert
-  if (isSupabaseConfigured() && supabase) {
+  // 1. Supabase Cloud Database Insert (Only for valid UUID user IDs)
+  if (isSupabaseConfigured() && supabase && isValidUUID(userId)) {
     try {
       const { data, error } = await supabase
         .from('guardians')
@@ -547,8 +567,8 @@ export async function saveGuardianToDatabase(
 
         return saved;
       }
-    } catch (err) {
-      console.warn('[Supabase DB] Failed to insert guardian into Supabase:', err);
+    } catch {
+      // Silently fall back to local database
     }
   }
 
@@ -578,7 +598,7 @@ export async function updateGuardianInDatabase(
   updates: Partial<TrustedContact>
 ): Promise<TrustedContact[]> {
   // 1. Supabase Cloud Database Update
-  if (isSupabaseConfigured() && supabase) {
+  if (isSupabaseConfigured() && supabase && isValidUUID(userId)) {
     try {
       const payload: Record<string, any> = {};
       if (updates.name !== undefined) payload.name = updates.name;
@@ -594,8 +614,8 @@ export async function updateGuardianInDatabase(
         .update(payload)
         .eq('id', guardianId)
         .eq('user_id', userId);
-    } catch (err) {
-      console.warn('[Supabase DB] Failed to update guardian in Supabase:', err);
+    } catch {
+      // Silently fall back to local database
     }
   }
 
@@ -615,15 +635,15 @@ export async function deleteGuardianFromDatabase(
   guardianId: string
 ): Promise<TrustedContact[]> {
   // 1. Supabase Cloud Database Delete
-  if (isSupabaseConfigured() && supabase) {
+  if (isSupabaseConfigured() && supabase && isValidUUID(userId)) {
     try {
       await supabase
         .from('guardians')
         .delete()
         .eq('id', guardianId)
         .eq('user_id', userId);
-    } catch (err) {
-      console.warn('[Supabase DB] Failed to delete guardian in Supabase:', err);
+    } catch {
+      // Silently fall back to local database
     }
   }
 

@@ -38,47 +38,68 @@ create table if not exists public.guardians (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 3. LANDMARKS TABLE (Safe Havens, Police Booths, Pink Booths)
+create table if not exists public.landmarks (
+  id text primary key,
+  name text not null,
+  type text not null check (type in ('police', 'pink_booth', 'hospital', 'pharmacy', 'safe_haven')),
+  lat double precision not null,
+  lng double precision not null,
+  address text,
+  phone text,
+  open_hours text default '24/7 Open',
+  verified boolean default true,
+  distance_meters integer default 150,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 4. INCIDENTS TABLE (Community Safety & Harassment Reports)
+create table if not exists public.incidents (
+  id text primary key,
+  type text not null check (type in ('poor_lighting', 'harassment', 'deserted', 'suspicious', 'blocked_path', 'well_lit')),
+  severity text default 'medium' check (severity in ('low', 'medium', 'high', 'safe')),
+  lat double precision not null,
+  lng double precision not null,
+  title text not null,
+  description text,
+  timestamp_str text,
+  confirmations integer default 1,
+  required_confirmations integer default 3,
+  verified boolean default false,
+  decay_hours_left integer default 48,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- Indices for performance
 create index if not exists guardians_user_id_idx on public.guardians (user_id);
 create index if not exists profiles_role_idx on public.profiles (role);
+create index if not exists landmarks_type_idx on public.landmarks (type);
+create index if not exists incidents_created_idx on public.incidents (created_at desc);
 
 -- ========================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
--- Ensures users can ONLY see, edit, and manage their own data & guardians!
 -- ========================================================================
 
 alter table public.profiles enable row level security;
 alter table public.guardians enable row level security;
+alter table public.landmarks enable row level security;
+alter table public.incidents enable row level security;
 
--- Profiles: Users can view and update their own profile
-create policy "Users can view own profile"
-  on public.profiles for select
-  using (auth.uid() = id);
+-- Profiles
+create policy "Users can view own profile" on public.profiles for select using (auth.uid() = id);
+create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
+create policy "Users can insert own profile" on public.profiles for insert with check (auth.uid() = id);
 
-create policy "Users can update own profile"
-  on public.profiles for update
-  using (auth.uid() = id);
+-- Guardians
+create policy "Users can view own guardians" on public.guardians for select using (auth.uid() = user_id);
+create policy "Users can insert own guardians" on public.guardians for insert with check (auth.uid() = user_id);
+create policy "Users can update own guardians" on public.guardians for update using (auth.uid() = user_id);
+create policy "Users can delete own guardians" on public.guardians for delete using (auth.uid() = user_id);
 
-create policy "Users can insert own profile"
-  on public.profiles for insert
-  with check (auth.uid() = id);
-
--- Guardians: Users can view, insert, update, delete only their own guardians
-create policy "Users can view own guardians"
-  on public.guardians for select
-  using (auth.uid() = user_id);
-
-create policy "Users can insert own guardians"
-  on public.guardians for insert
-  with check (auth.uid() = user_id);
-
-create policy "Users can update own guardians"
-  on public.guardians for update
-  using (auth.uid() = user_id);
-
-create policy "Users can delete own guardians"
-  on public.guardians for delete
-  using (auth.uid() = user_id);
+-- Landmarks & Incidents (Public Read for all users)
+create policy "Anyone can view landmarks" on public.landmarks for select using (true);
+create policy "Anyone can view incidents" on public.incidents for select using (true);
+create policy "Authenticated users can insert incidents" on public.incidents for insert with check (true);
 
 -- ========================================================================
 -- AUTOMATIC PROFILE CREATION TRIGGER ON SIGNUP
