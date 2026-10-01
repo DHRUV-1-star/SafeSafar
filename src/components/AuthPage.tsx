@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { UserProfile, UserRole } from '../types';
 import { MOCK_USERS } from '../data/mockData';
-import { loginWithGoogle } from '../services/databaseService';
+import { loginWithGoogle, registerUser, loginUser } from '../services/databaseService';
 
 interface AuthPageProps {
   onLoginSuccess: (user: UserProfile) => void;
@@ -167,8 +167,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     }, 700);
   };
 
-  // Handle Email Sign In
-  const handleEmailSignIn = (e: React.FormEvent) => {
+  // Handle Email Sign In (real Supabase or local fallback)
+  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
       setErrorMsg('Please enter a valid email address.');
@@ -182,29 +182,47 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
     setErrorMsg(null);
 
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // First try mock users for demo accounts
       const existing = MOCK_USERS.find((u) => u.email?.toLowerCase() === email.toLowerCase());
-      const user: UserProfile = existing || {
-        id: `user-${Date.now()}`,
-        name: email.split('@')[0],
-        phone: '+91 98251 44321',
-        email: email,
-        role: 'commuter',
-        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80',
-        normalPin: '1234',
-        duressPin: '9999',
-        guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
-        emergencyContactCount: 2,
-        batteryStatus: 92,
-      };
+      if (existing) {
+        setIsLoading(false);
+        onLoginSuccess(existing);
+        return;
+      }
 
-      onLoginSuccess(user);
-    }, 700);
+      // Otherwise use real Supabase / local auth
+      const { user, error: loginError } = await loginUser(email, password);
+      if (loginError) {
+        setErrorMsg(loginError);
+        return;
+      }
+      if (user) {
+        const profile: UserProfile = {
+          id: user.id,
+          name: user.name,
+          phone: user.phone || '',
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=7c3aed,4f46e5`,
+          normalPin: '1234',
+          duressPin: '9999',
+          guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
+          emergencyContactCount: 0,
+          batteryStatus: 92,
+          hub: user.hub,
+        };
+        onLoginSuccess(profile);
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Handle Registration
-  const handleRegister = (e: React.FormEvent) => {
+  // Handle Registration (real Supabase or local fallback)
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) {
       setErrorMsg('Please enter your full name.');
@@ -230,24 +248,42 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
     setErrorMsg(null);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      const newUser: UserProfile = {
-        id: `user-${Date.now()}`,
-        name: fullName.trim(),
-        phone: `+91 ${phone}`,
-        email: email.trim(),
-        role: 'commuter',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
-        normalPin: '1234',
-        duressPin: '9999',
-        guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
-        emergencyContactCount: 0,
-        batteryStatus: 95,
-      };
+    try {
+      const { user, error: regError } = await registerUser(
+        email.trim(),
+        password,
+        fullName.trim(),
+        `+91${phone}`,
+        'commuter'
+      );
 
-      onLoginSuccess(newUser);
-    }, 800);
+      if (regError) {
+        setErrorMsg(regError);
+        return;
+      }
+
+      if (user) {
+        const newUser: UserProfile = {
+          id: user.id,
+          name: user.name,
+          phone: user.phone || `+91 ${phone}`,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=7c3aed,4f46e5`,
+          normalPin: '1234',
+          duressPin: '9999',
+          guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
+          emergencyContactCount: 0,
+          batteryStatus: 95,
+          hub: user.hub,
+        };
+        onLoginSuccess(newUser);
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Google Sign In (Real OAuth)
