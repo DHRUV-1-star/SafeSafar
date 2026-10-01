@@ -178,11 +178,37 @@ export async function loginUser(
 
       if (data.user) {
         // Fetch user profile from database
-        const { data: profile } = await supabase
+        let { data: profile } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', data.user.id)
-          .single();
+          .maybeSingle();
+
+        if (!profile) {
+          // Auto-create missing profile row if trigger didn't run
+          const name = data.user.user_metadata?.full_name || cleanEmail.split('@')[0] || 'SafeSafar User';
+          const phone = data.user.user_metadata?.phone || '';
+          const role = data.user.user_metadata?.role || 'commuter';
+          const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=7c3aed,4f46e5`;
+
+          try {
+            const { data: newProfile } = await supabase
+              .from('profiles')
+              .upsert({
+                id: data.user.id,
+                full_name: name,
+                phone,
+                role,
+                avatar_url: avatarUrl,
+                updated_at: new Date().toISOString(),
+              })
+              .select()
+              .maybeSingle();
+            if (newProfile) profile = newProfile;
+          } catch (e) {
+            console.warn('[Supabase DB] Auto profile creation notice:', e);
+          }
+        }
 
         const authUser: AuthUser = {
           id: data.user.id,
@@ -665,17 +691,19 @@ export async function updateUserProfile(
   const current = (await getCurrentUser()) || DEMO_USERS[0];
   const updated: AuthUser = { ...current, ...updates };
 
-  if (isSupabaseConfigured() && supabase) {
+  if (isSupabaseConfigured() && supabase && isValidUUID(userId)) {
     try {
       await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: userId,
           full_name: updated.name,
-          phone: updated.phone,
-          hub: updated.hub,
-          avatar_url: updated.avatar,
-        })
-        .eq('id', userId);
+          phone: updated.phone || '',
+          hub: updated.hub || 'SVNIT Surat Hub',
+          avatar_url: updated.avatar || '',
+          role: updated.role || 'commuter',
+          updated_at: new Date().toISOString(),
+        });
     } catch (err) {
       console.warn('[Supabase DB] Failed to update profile:', err);
     }
