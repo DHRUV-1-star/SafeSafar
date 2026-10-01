@@ -95,36 +95,36 @@ create policy "Anyone can update incidents" on public.incidents for update using
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#202D2D]/80 backdrop-blur-md animate-in fade-in duration-200">
       <div
-        className="bg-[#111827] border border-purple-500/30 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+        className="bg-[#FFFFFF] border border-[#2F5F5E]/30 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all"
+          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#2F5F5E]/5 hover:bg-[#2F5F5E]/8 flex items-center justify-center text-[#7A8582] hover:text-[#202D2D] transition-all"
         >
           <X className="w-4 h-4" />
         </button>
 
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+          <div className="w-12 h-12 rounded-2xl bg-[#2F5F5E]/20 border border-[#2F5F5E]/30 flex items-center justify-center text-[#7CA982]">
             <Database className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <h3 className="text-xl font-bold text-[#202D2D] flex items-center gap-2">
               <span>Database & Cloud Storage Setup</span>
               {isConfigured ? (
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono">
+                <span className="text-[10px] bg-[#7CA982]/20 text-[#7CA982] border border-[#7CA982]/30 px-2 py-0.5 rounded-full font-mono">
                   ● Cloud Connected
                 </span>
               ) : (
-                <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-mono">
+                <span className="text-[10px] bg-[#F9C950]/20 text-[#B08D28] border border-[#F9C950]/30 px-2 py-0.5 rounded-full font-mono">
                   ⚡ Local DB Active
                 </span>
               )}
             </h3>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-[#7A8582]">
               PostgreSQL database configuration for user authentication and guardian persistence.
             </p>
           </div>
@@ -134,15 +134,15 @@ create policy "Anyone can update incidents" on public.incidents for update using
         <div
           className={`p-4 rounded-2xl border mb-5 ${
             isConfigured
-              ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300'
-              : 'bg-amber-950/30 border-amber-500/30 text-amber-200'
+              ? 'bg-[#234A45]/30 border-[#7CA982]/30 text-[#2F5F5E]'
+              : 'bg-[#6B5A24]/30 border-[#F9C950]/30 text-[#8B742C]'
           }`}
         >
           <div className="flex items-start gap-2.5">
             {isConfigured ? (
-              <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <ShieldCheck className="w-5 h-5 text-[#7CA982] shrink-0 mt-0.5" />
             ) : (
-              <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-[#F9C950] shrink-0 mt-0.5" />
             )}
             <div className="text-xs leading-relaxed">
               {isConfigured ? (
@@ -154,7 +154,7 @@ create policy "Anyone can update incidents" on public.incidents for update using
                 <span>
                   <strong>Currently operating in Local Database Mode.</strong> User accounts and guardian records
                   are saved in persistent local storage per user. To connect your cloud PostgreSQL database, add your
-                  Supabase keys to your <code className="bg-black/40 px-1 py-0.5 rounded text-amber-300">.env</code> file below.
+                  Supabase keys to your <code className="bg-[#202D2D]/40 px-1 py-0.5 rounded text-[#B08D28]">.env</code> file below.
                 </span>
               )}
             </div>
@@ -163,23 +163,23 @@ create policy "Anyone can update incidents" on public.incidents for update using
 
         {/* 3 Step Setup Guide */}
         <div className="space-y-4 mb-5">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-purple-300">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#2F5F5E]">
             How to Connect Supabase (Free in 2 Minutes)
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-1.5">
-              <div className="w-6 h-6 rounded-full bg-purple-600/30 text-purple-300 flex items-center justify-center font-bold text-[11px]">
+            <div className="bg-[#2F5F5E]/5 border border-[#2F5F5E]/15 rounded-2xl p-3.5 space-y-1.5">
+              <div className="w-6 h-6 rounded-full bg-[#24504F]/30 text-[#2F5F5E] flex items-center justify-center font-bold text-[11px]">
                 1
               </div>
-              <h5 className="font-semibold text-white">Create Free Project</h5>
-              <p className="text-gray-400 text-[11px]">
+              <h5 className="font-semibold text-[#202D2D]">Create Free Project</h5>
+              <p className="text-[#7A8582] text-[11px]">
                 Sign in to{' '}
                 <a
                   href="https://supabase.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-purple-400 underline inline-flex items-center gap-0.5"
+                  className="text-[#7CA982] underline inline-flex items-center gap-0.5"
                 >
                   supabase.com <ExternalLink className="w-2.5 h-2.5" />
                 </a>{' '}
@@ -187,23 +187,23 @@ create policy "Anyone can update incidents" on public.incidents for update using
               </p>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-1.5">
-              <div className="w-6 h-6 rounded-full bg-purple-600/30 text-purple-300 flex items-center justify-center font-bold text-[11px]">
+            <div className="bg-[#2F5F5E]/5 border border-[#2F5F5E]/15 rounded-2xl p-3.5 space-y-1.5">
+              <div className="w-6 h-6 rounded-full bg-[#24504F]/30 text-[#2F5F5E] flex items-center justify-center font-bold text-[11px]">
                 2
               </div>
-              <h5 className="font-semibold text-white">Run SQL Schema</h5>
-              <p className="text-gray-400 text-[11px]">
+              <h5 className="font-semibold text-[#202D2D]">Run SQL Schema</h5>
+              <p className="text-[#7A8582] text-[11px]">
                 Open the Supabase SQL Editor and run the schema script below to create tables & security policies.
               </p>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-1.5">
-              <div className="w-6 h-6 rounded-full bg-purple-600/30 text-purple-300 flex items-center justify-center font-bold text-[11px]">
+            <div className="bg-[#2F5F5E]/5 border border-[#2F5F5E]/15 rounded-2xl p-3.5 space-y-1.5">
+              <div className="w-6 h-6 rounded-full bg-[#24504F]/30 text-[#2F5F5E] flex items-center justify-center font-bold text-[11px]">
                 3
               </div>
-              <h5 className="font-semibold text-white">Paste Keys in .env</h5>
-              <p className="text-gray-400 text-[11px]">
-                Copy <code className="text-purple-300">URL</code> and <code className="text-purple-300">anon key</code> into your project's <code className="text-purple-300">.env</code>.
+              <h5 className="font-semibold text-[#202D2D]">Paste Keys in .env</h5>
+              <p className="text-[#7A8582] text-[11px]">
+                Copy <code className="text-[#2F5F5E]">URL</code> and <code className="text-[#2F5F5E]">anon key</code> into your project's <code className="text-[#2F5F5E]">.env</code>.
               </p>
             </div>
           </div>
@@ -212,24 +212,24 @@ create policy "Anyone can update incidents" on public.incidents for update using
         {/* Copyable SQL Schema */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-300">SQL Schema Script</span>
+            <span className="text-xs font-semibold text-[#65716F]">SQL Schema Script</span>
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold border border-purple-500/30 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#24504F]/20 hover:bg-[#24504F]/30 text-[#2F5F5E] text-xs font-semibold border border-[#2F5F5E]/30 transition-all"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-[#7CA982]" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? 'Copied to Clipboard!' : 'Copy SQL'}</span>
             </button>
           </div>
-          <pre className="p-3.5 rounded-xl bg-black/60 border border-white/10 text-gray-300 text-[11px] font-mono overflow-x-auto max-h-48 leading-relaxed">
+          <pre className="p-3.5 rounded-xl bg-[#202D2D]/60 border border-[#2F5F5E]/15 text-[#65716F] text-[11px] font-mono overflow-x-auto max-h-48 leading-relaxed">
             {sqlCode}
           </pre>
         </div>
 
-        <div className="mt-5 pt-4 border-t border-white/10 flex justify-end">
+        <div className="mt-5 pt-4 border-t border-[#2F5F5E]/15 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg transition-all"
+            className="px-5 py-2.5 rounded-xl bg-[#24504F] hover:bg-[#2F5F5E] text-[#202D2D] text-xs font-bold shadow-lg transition-all"
           >
             Done
           </button>

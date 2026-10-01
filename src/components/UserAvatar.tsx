@@ -45,14 +45,14 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         src={avatar}
         alt={name}
         onError={() => setImageError(true)}
-        className={`${sizeClasses[size]} rounded-full object-cover border border-purple-500/30 shrink-0 ${className}`}
+        className={`${sizeClasses[size]} rounded-full object-cover border border-[#2F5F5E]/30 shrink-0 ${className}`}
       />
     );
   }
 
   return (
     <div
-      className={`${sizeClasses[size]} rounded-full bg-gradient-to-tr from-purple-700 via-indigo-600 to-pink-600 flex items-center justify-center font-bold text-white tracking-wider border border-white/15 shadow-sm shrink-0 select-none ${className}`}
+      className={`${sizeClasses[size]} rounded-full bg-gradient-to-tr from-[#24504F] via-[#2F5F5E] to-[#C85D67] flex items-center justify-center font-bold text-[#202D2D] tracking-wider border border-[#2F5F5E]/15 shadow-sm shrink-0 select-none ${className}`}
       aria-label={name}
     >
       <span>{initials}</span>

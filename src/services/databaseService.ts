@@ -229,6 +229,149 @@ export async function loginWithGoogle(): Promise<{ error: string | null }> {
   return { error: 'Cloud database not configured. Google Sign-In requires Supabase.' };
 }
 
+// ============================================================================
+// EMAIL OTP AUTHENTICATION (Supabase-only — requires VITE_SUPABASE_* keys)
+// ============================================================================
+
+/**
+ * Send a real 6-digit OTP to the given email address via Supabase Auth.
+ * Uses supabase.auth.signInWithOtp — Supabase delivers the email automatically.
+ * Returns { error: null } on success, { error: message } on failure.
+ */
+export async function sendEmailOTP(
+  email: string
+): Promise<{ error: string | null }> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return {
+      error:
+        'Cloud database not configured. Email OTP requires Supabase credentials in .env.',
+    };
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      email: cleanEmail,
+      options: {
+        // Allow new users to be created via OTP (first-time sign-up)
+        shouldCreateUser: true,
+      },
+    });
+
+    if (error) {
+      // Return Supabase's message directly — they are already user-readable
+      return { error: error.message };
+    }
+
+    return { error: null };
+  } catch (err: unknown) {
+    const msg =
+      err instanceof Error ? err.message : 'Failed to send verification email.';
+    console.warn('[Supabase Auth] sendEmailOTP error:', err);
+    return { error: msg };
+  }
+}
+
+/**
+ * Verify the 6-digit OTP that Supabase emailed to the user.
+ * Uses supabase.auth.verifyOtp — Supabase validates the token and creates a session.
+ *
+ * Verification chain (adjustment #3 in implementation plan):
+ *   1. supabase.auth.verifyOtp  → confirms OTP, returns session + auth.users record
+ *   2. data.session             → confirms a real Supabase auth session exists
+ *   3. data.user.id             → the canonical auth.users identity
+ *   4. public.profiles query    → loads the SafeSafar profile (created by DB trigger)
+ *   5. AuthUser mapping         → converts Supabase data into the existing AuthUser shape
+ *
+ * Does NOT fall back to DEMO_USERS or MOCK_USERS after a successful Supabase call.
+ * Falls back to null/error only when Supabase itself rejects the OTP.
+ */
+export async function verifyEmailOTP(
+  email: string,
+  token: string
+): Promise<{ user: AuthUser | null; error: string | null }> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return {
+      user: null,
+      error: 'Cloud database not configured. Email OTP requires Supabase credentials in .env.',
+    };
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanToken = token.trim();
+
+  try {
+    // Step 1: Verify the OTP — Supabase validates and creates the auth session
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: cleanEmail,
+      token: cleanToken,
+      type: 'email',
+    });
+
+    if (error) {
+      return { user: null, error: error.message };
+    }
+
+    // Step 2: Confirm a real session was established (safety check)
+    if (!data.session) {
+      return {
+        user: null,
+        error: 'Authentication succeeded but no session was created. Please try again.',
+      };
+    }
+
+    // Step 3: Confirm we have the auth.users identity
+    if (!data.user) {
+      return {
+        user: null,
+        error: 'Session created but user identity is missing. Please try again.',
+      };
+    }
+
+    // Step 4: Load the public.profiles record
+    // The on_auth_user_created DB trigger creates this row on first sign-up.
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
+
+    if (profileError) {
+      // Profile may not exist yet if the DB trigger hasn't fired (rare timing).
+      // Log the warning but continue — we fall back to user_metadata from Google/OTP.
+      console.warn('[Supabase DB] Profile fetch after OTP verify:', profileError.message);
+    }
+
+    // Step 5: Map to the existing AuthUser shape used throughout the app
+    const authUser: AuthUser = {
+      id: data.user.id,
+      email: cleanEmail,
+      name:
+        profile?.full_name ??
+        data.user.user_metadata?.full_name ??
+        cleanEmail.split('@')[0] ??
+        'SafeSafar User',
+      phone: profile?.phone ?? data.user.user_metadata?.phone ?? '',
+      role: (profile?.role as AuthUser['role']) ?? 'commuter',
+      hub: profile?.hub ?? 'SVNIT Surat Hub',
+      avatar:
+        profile?.avatar_url ??
+        data.user.user_metadata?.avatar_url ??
+        `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+          profile?.full_name ?? cleanEmail.split('@')[0] ?? 'User'
+        )}&backgroundColor=7c3aed,4f46e5`,
+    };
+
+    return { user: authUser, error: null };
+  } catch (err: unknown) {
+    const msg =
+      err instanceof Error ? err.message : 'OTP verification failed. Please try again.';
+    console.warn('[Supabase Auth] verifyEmailOTP error:', err);
+    return { user: null, error: msg };
+  }
+}
+
 /**
  * Sign out current user
  */

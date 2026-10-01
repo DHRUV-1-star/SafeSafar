@@ -162,18 +162,18 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
       {/* Phone Screen Container */}
-      <div className="relative w-full max-w-sm h-[680px] bg-gradient-to-b from-[#111827] via-[#0B0F19] to-black rounded-[42px] border-4 border-[#374151] shadow-2xl flex flex-col justify-between p-6 text-white overflow-hidden select-none">
+      <div className="relative w-full max-w-sm h-[680px] bg-gradient-to-b from-[#FFFFFF] via-[#FAF9F6] to-black rounded-[42px] border-4 border-[#C9C4BC] shadow-2xl flex flex-col justify-between p-6 text-[#202D2D] overflow-hidden select-none">
         
         {/* Dynamic Island / Status Bar */}
-        <div className="flex justify-between items-center text-xs text-gray-400 px-4 pt-1">
+        <div className="flex justify-between items-center text-xs text-[#7A8582] px-4 pt-1">
           <span>9:41</span>
-          <div className="w-24 h-4 bg-black rounded-full border border-gray-800 flex items-center justify-center">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+          <div className="w-24 h-4 bg-black rounded-full border border-[#E7E3DD] flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full bg-[#7CA982] animate-pulse"></div>
           </div>
           <div className="flex items-center gap-1.5">
             <span>5G</span>
             <div className="w-5 h-2.5 border border-gray-400 rounded-sm p-0.5">
-              <div className="w-full h-full bg-emerald-400"></div>
+              <div className="w-full h-full bg-[#7CA982]"></div>
             </div>
           </div>
         </div>
@@ -184,16 +184,16 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
           <div className="flex flex-col items-center flex-1 justify-between my-2 animate-in fade-in zoom-in-95 duration-150">
             {/* Top Dialpad Header */}
             <div className="flex flex-col items-center mt-1">
-              <div className="flex items-center gap-1.5 text-xs text-gray-400">
+              <div className="flex items-center gap-1.5 text-xs text-[#7A8582]">
                 <span>{callerName}</span>
                 <span>•</span>
-                <span className="font-mono text-emerald-400">{formatDuration(callDuration)}</span>
+                <span className="font-mono text-[#7CA982]">{formatDuration(callDuration)}</span>
               </div>
               
               {/* Dialed string display */}
               <div className="h-10 flex items-center justify-center mt-2 px-4 w-full">
-                <span className="text-2xl font-mono tracking-widest text-white truncate">
-                  {dialedInput || <span className="text-gray-600 text-lg font-sans">Enter #911 for SOS</span>}
+                <span className="text-2xl font-mono tracking-widest text-[#202D2D] truncate">
+                  {dialedInput || <span className="text-[#B7B1A8] text-lg font-sans">Enter #911 for SOS</span>}
                 </span>
               </div>
             </div>
@@ -204,11 +204,11 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
                 <button
                   key={digit}
                   onClick={() => handleKeyPress(digit)}
-                  className="flex flex-col items-center justify-center w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white transition-all shadow-md active:scale-95 mx-auto"
+                  className="flex flex-col items-center justify-center w-16 h-16 rounded-full bg-[#2F5F5E]/8 hover:bg-[#2F5F5E]/12 active:bg-white/30 text-[#202D2D] transition-all shadow-md active:scale-95 mx-auto"
                 >
                   <span className="text-2xl font-normal leading-none">{digit}</span>
                   {sub && (
-                    <span className="text-[9px] font-semibold tracking-wider text-gray-400 mt-0.5 leading-none">
+                    <span className="text-[9px] font-semibold tracking-wider text-[#7A8582] mt-0.5 leading-none">
                       {sub}
                     </span>
                   )}
@@ -220,7 +220,7 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
             <div className="flex items-center justify-between w-full max-w-[260px] px-2 pt-2">
               <button
                 onClick={() => setShowKeypad(false)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-800/80 hover:bg-gray-700 text-gray-300 text-xs font-medium transition-all"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#E7E3DD]/90 hover:bg-[#D9D4CC] text-[#65716F] text-xs font-medium transition-all"
                 title="Hide Keypad"
               >
                 <ChevronDown className="w-4 h-4" />
@@ -229,7 +229,7 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
 
               <button
                 onClick={handleDecline}
-                className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center text-white shadow-lg shadow-red-600/40 active:scale-95 transition-transform"
+                className="w-14 h-14 rounded-full bg-[#D95C5C] hover:bg-[#B94747] flex items-center justify-center text-[#202D2D] shadow-lg shadow-[#D95C5C]/40 active:scale-95 transition-transform"
                 title="End Call"
               >
                 <PhoneOff className="w-6 h-6" />
@@ -238,7 +238,7 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
               {dialedInput.length > 0 ? (
                 <button
                   onClick={handleDeleteDigit}
-                  className="p-2.5 rounded-full bg-gray-800/80 hover:bg-gray-700 text-gray-300 transition-all active:scale-90"
+                  className="p-2.5 rounded-full bg-[#E7E3DD]/90 hover:bg-[#D9D4CC] text-[#65716F] transition-all active:scale-90"
                   title="Backspace"
                 >
                   <Delete className="w-5 h-5" />
@@ -254,28 +254,28 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
             {/* Top Caller Info */}
             <div className="flex flex-col items-center mt-6 text-center">
               <div className="relative mb-4">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-3xl font-semibold shadow-xl border-2 border-white/20">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#24504F] to-[#7CA982] flex items-center justify-center text-3xl font-semibold shadow-xl border-2 border-[#2F5F5E]/20">
                   👨‍👧
                 </div>
                 {covertSOSDispatched && (
                   <span className="absolute -bottom-1 -right-1 flex h-6 w-6">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-6 w-6 bg-purple-600 border-2 border-black items-center justify-center text-[10px]">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7CA982] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-6 w-6 bg-[#24504F] border-2 border-black items-center justify-center text-[10px]">
                       ✓
                     </span>
                   </span>
                 )}
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-white">{callerName}</h2>
-              <p className="text-sm text-gray-400 mt-1">{callerNumber}</p>
+              <h2 className="text-2xl font-bold tracking-tight text-[#202D2D]">{callerName}</h2>
+              <p className="text-sm text-[#7A8582] mt-1">{callerNumber}</p>
               <div className="mt-2 text-sm font-medium">
                 {callState === 'incoming' && (
-                  <span className="text-emerald-400 animate-pulse">Incoming Call...</span>
+                  <span className="text-[#7CA982] animate-pulse">Incoming Call...</span>
                 )}
                 {callState === 'connected' && (
-                  <span className="text-gray-300 tracking-wider font-mono">{formatDuration(callDuration)}</span>
+                  <span className="text-[#65716F] tracking-wider font-mono">{formatDuration(callDuration)}</span>
                 )}
-                {callState === 'ended' && <span className="text-red-400">Call Ended</span>}
+                {callState === 'ended' && <span className="text-[#E57373]">Call Ended</span>}
               </div>
             </div>
 
@@ -287,7 +287,7 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
                   <button
                     onClick={handleMuteClick}
                     className={`flex flex-col items-center justify-center w-16 h-16 rounded-full transition-all ${
-                      isMuted ? 'bg-white text-black' : 'bg-gray-800/80 hover:bg-gray-700 text-white'
+                      isMuted ? 'bg-white text-black' : 'bg-[#E7E3DD]/90 hover:bg-[#D9D4CC] text-[#202D2D]'
                     }`}
                   >
                     <Mic className="w-6 h-6" />
@@ -297,7 +297,7 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
                   <button
                     onClick={() => setIsSpeaker(!isSpeaker)}
                     className={`flex flex-col items-center justify-center w-16 h-16 rounded-full transition-all ${
-                      isSpeaker ? 'bg-white text-black' : 'bg-gray-800/80 hover:bg-gray-700 text-white'
+                      isSpeaker ? 'bg-white text-black' : 'bg-[#E7E3DD]/90 hover:bg-[#D9D4CC] text-[#202D2D]'
                     }`}
                   >
                     <Volume2 className="w-6 h-6" />
@@ -306,7 +306,7 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
 
                   <button
                     onClick={() => setShowKeypad(true)}
-                    className="flex flex-col items-center justify-center w-16 h-16 rounded-full bg-gray-800/80 hover:bg-gray-700 text-white transition-all active:scale-95"
+                    className="flex flex-col items-center justify-center w-16 h-16 rounded-full bg-[#E7E3DD]/90 hover:bg-[#D9D4CC] text-[#202D2D] transition-all active:scale-95"
                     title="Open In-Call Keypad"
                   >
                     <Grid className="w-6 h-6" />
@@ -316,33 +316,33 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
 
                 {/* Secret Covert SOS Status Indicator (Discreet) */}
                 {covertSOSDispatched ? (
-                  <div className="w-full bg-purple-950/60 border border-purple-500/30 rounded-2xl p-3 text-left animate-in slide-in-from-bottom duration-300">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-purple-300">
-                      <CheckCircle2 className="w-4 h-4 text-purple-400" />
+                  <div className="w-full bg-[#1E3D3C]/60 border border-[#2F5F5E]/30 rounded-2xl p-3 text-left animate-in slide-in-from-bottom duration-300">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-[#2F5F5E]">
+                      <CheckCircle2 className="w-4 h-4 text-[#7CA982]" />
                       <span>Covert SOS Active & Transmitting</span>
                     </div>
-                    <p className="text-[11px] text-gray-300 mt-1">
+                    <p className="text-[11px] text-[#65716F] mt-1">
                       Live GPS, battery level & 30s background audio silently sent to Trusted Circle and Police Helpline 112. Disguise holds safely.
                     </p>
-                    <div className="text-[10px] text-purple-400 font-mono mt-1">
+                    <div className="text-[10px] text-[#7CA982] font-mono mt-1">
                       Trigger: {voiceHeardKeyword}
                     </div>
                   </div>
                 ) : (
                   <div className="text-center px-4">
-                    <p className="text-xs text-gray-400 italic">
-                      "Speak secret trigger <span className="text-purple-300 font-semibold">'reach soon'</span>, <span className="text-purple-300 font-semibold">'traffic'</span>, tap <span className="text-purple-300 font-semibold">Keypad (#911)</span>, or double-tap <span className="text-purple-300 font-semibold">Mute</span> to covertly alert your circle without alerting anyone nearby."
+                    <p className="text-xs text-[#7A8582] italic">
+                      "Speak secret trigger <span className="text-[#2F5F5E] font-semibold">'reach soon'</span>, <span className="text-[#2F5F5E] font-semibold">'traffic'</span>, tap <span className="text-[#2F5F5E] font-semibold">Keypad (#911)</span>, or double-tap <span className="text-[#2F5F5E] font-semibold">Mute</span> to covertly alert your circle without alerting anyone nearby."
                     </p>
                   </div>
                 )}
               </div>
             ) : (
               <div className="my-auto text-center px-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs mb-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#2F5F5E]/10 border border-[#2F5F5E]/20 text-[#2F5F5E] text-xs mb-3">
                   <ShieldAlert className="w-3.5 h-3.5" />
                   <span>Covert Fake Call Shield</span>
                 </div>
-                <p className="text-xs text-gray-400 leading-relaxed">
+                <p className="text-xs text-[#7A8582] leading-relaxed">
                   Looks and sounds identical to a real incoming call. Anyone standing next to you will believe you are talking to family.
                 </p>
               </div>
@@ -355,28 +355,28 @@ export const FakeCallModal: React.FC<FakeCallModalProps> = ({
                   <div className="flex flex-col items-center">
                     <button
                       onClick={handleDecline}
-                      className="w-18 h-18 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center text-white shadow-lg shadow-red-600/40 active:scale-95 transition-transform"
+                      className="w-18 h-18 rounded-full bg-[#D95C5C] hover:bg-[#B94747] flex items-center justify-center text-[#202D2D] shadow-lg shadow-[#D95C5C]/40 active:scale-95 transition-transform"
                     >
                       <PhoneOff className="w-8 h-8" />
                     </button>
-                    <span className="text-xs text-gray-400 mt-2 font-medium">Decline</span>
+                    <span className="text-xs text-[#7A8582] mt-2 font-medium">Decline</span>
                   </div>
 
                   <div className="flex flex-col items-center">
                     <button
                       onClick={handleAnswer}
-                      className="w-18 h-18 rounded-full bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center text-white shadow-lg shadow-emerald-600/40 active:scale-95 transition-transform animate-bounce"
+                      className="w-18 h-18 rounded-full bg-[#2F5F5E] hover:bg-[#2F5F5E] flex items-center justify-center text-[#202D2D] shadow-lg shadow-[#2F5F5E]/40 active:scale-95 transition-transform animate-bounce"
                     >
                       <Phone className="w-8 h-8" />
                     </button>
-                    <span className="text-xs text-gray-400 mt-2 font-medium">Accept</span>
+                    <span className="text-xs text-[#7A8582] mt-2 font-medium">Accept</span>
                   </div>
                 </div>
               ) : (
                 <div className="flex justify-center items-center">
                   <button
                     onClick={handleDecline}
-                    className="w-18 h-18 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center text-white shadow-lg shadow-red-600/40 active:scale-95 transition-transform"
+                    className="w-18 h-18 rounded-full bg-[#D95C5C] hover:bg-[#B94747] flex items-center justify-center text-[#202D2D] shadow-lg shadow-[#D95C5C]/40 active:scale-95 transition-transform"
                   >
                     <PhoneOff className="w-8 h-8" />
                   </button>

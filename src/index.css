@@ -1,37 +1,35 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --bg-primary: #0a0e17;
-  --bg-card: rgba(18, 24, 38, 0.85);
-  --bg-glass: rgba(22, 30, 49, 0.75);
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(168, 85, 247, 0.25);
-  
-  --brand-purple: #9333ea;
-  --brand-pink: #ec4899;
-  --brand-gradient: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-  
-  --safe-green: #10b981;
-  --safe-green-glow: rgba(16, 185, 129, 0.35);
-  
-  --warning-amber: #f59e0b;
-  --danger-red: #ef4444;
-  --danger-red-glow: rgba(239, 68, 68, 0.4);
-  
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-  
+  --bg-primary: #F5FAF7;
+  --bg-card: rgba(255,255,255,0.97);
+  --bg-glass: rgba(255,255,255,0.88);
+  --border-glass: rgba(45,106,94,0.14);
+  --border-glow: rgba(45,106,94,0.24);
+
+  --brand-teal: #2D6A5E;
+  --brand-teal-dark: #214F48;
+  --brand-mint: #72A892;
+  --brand-rose: #D97883;
+  --brand-gradient: linear-gradient(135deg, #2D6A5E 0%, #397B6D 100%);
+
+  --safe-green: #55A184;
+  --safe-green-glow: rgba(85,161,132,0.22);
+  --tech-blue: #5C7F8A;
+
+  --warning-amber: #C99B3E;
+  --danger-red: #D97883;
+  --danger-red-glow: rgba(217,120,131,0.24);
+
+  --text-primary: #243A35;
+  --text-secondary: #61746E;
+  --text-muted: #879792;
+
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  -webkit-tap-highlight-color: transparent;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body {
   background-color: var(--bg-primary);
@@ -39,135 +37,104 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   line-height: 1.5;
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(147, 51, 234, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.06) 0%, transparent 45%);
+  background-image:
+    radial-gradient(circle at 8% 8%, rgba(114,168,146,0.13) 0%, transparent 34%),
+    radial-gradient(circle at 92% 18%, rgba(217,120,131,0.055) 0%, transparent 28%),
+    linear-gradient(rgba(45,106,94,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45,106,94,0.018) 1px, transparent 1px);
+  background-size: auto, auto, 28px 28px, 28px 28px;
   background-attachment: fixed;
 }
 
-/* Glassmorphism Classes */
+button { font-family: inherit; }
+
 .glass-panel {
   background: var(--bg-card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-glass);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: 0 14px 36px rgba(35,79,72,0.08);
 }
 
 .glass-pill {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255,255,255,0.78);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(45,106,94,0.12);
 }
 
-.glow-safe {
-  box-shadow: 0 0 20px var(--safe-green-glow);
-}
+.glow-safe { box-shadow: 0 0 20px var(--safe-green-glow); }
+.glow-danger { box-shadow: 0 0 25px var(--danger-red-glow); }
 
-.glow-danger {
-  box-shadow: 0 0 25px var(--danger-red-glow);
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(45,106,94,0.04); }
+::-webkit-scrollbar-thumb { background: rgba(45,106,94,0.20); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(45,106,94,0.32); }
 
-/* Custom Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.15);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Radar & Pulse Animations */
 @keyframes pulse-ring {
-  0% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.15);
-    opacity: 0.3;
-  }
-  100% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
+  0% { transform: scale(0.95); opacity: 0.78; }
+  50% { transform: scale(1.15); opacity: 0.25; }
+  100% { transform: scale(0.95); opacity: 0.78; }
 }
-
-.animate-pulse-ring {
-  animation: pulse-ring 2.5s infinite ease-in-out;
-}
+.animate-pulse-ring { animation: pulse-ring 2.5s infinite ease-in-out; }
 
 @keyframes sos-strobe {
-  0%, 100% {
-    background-color: #dc2626;
-    box-shadow: 0 0 35px rgba(220, 38, 38, 0.8);
-  }
-  50% {
-    background-color: #991b1b;
-    box-shadow: 0 0 15px rgba(153, 27, 27, 0.4);
-  }
+  0%,100% { background-color:#D97883; box-shadow:0 0 24px rgba(217,120,131,0.28); }
+  50% { background-color:#C96874; box-shadow:0 0 12px rgba(217,120,131,0.16); }
 }
-
-.animate-sos-strobe {
-  animation: sos-strobe 1s infinite ease-in-out;
-}
+.animate-sos-strobe { animation: sos-strobe 1s infinite ease-in-out; }
 
 @keyframes ping-once {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(2.2); opacity: 0; }
+  0% { transform:scale(1); opacity:1; }
+  100% { transform:scale(2.2); opacity:0; }
 }
+.animate-ping-once { animation: ping-once 1.2s cubic-bezier(0,0,0.2,1) infinite; }
 
-.animate-ping-once {
-  animation: ping-once 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-/* Leaflet Overrides for Dark Sleek Map */
 .leaflet-container {
-  width: 100%;
-  height: 100%;
-  background: #0d121f !important;
-  font-family: inherit;
-  z-index: 0 !important;
-  isolation: isolate;
+  width:100%; height:100%; background:#E7F0EC !important; font-family:inherit;
+  z-index:0 !important; isolation:isolate;
 }
-
-.leaflet-control-zoom {
-  border: none !important;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.5) !important;
-}
-
+.leaflet-control-zoom { border:none !important; box-shadow:0 5px 14px rgba(35,79,72,0.12) !important; }
 .leaflet-control-zoom a {
-  background-color: #1e2638 !important;
-  color: #fff !important;
-  border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+  background:#FFFFFF !important; color:#2D6A5E !important;
+  border-bottom:1px solid rgba(45,106,94,0.10) !important;
 }
-
-.leaflet-control-zoom a:hover {
-  background-color: #2b364e !important;
-}
-
+.leaflet-control-zoom a:hover { background:#EDF7F2 !important; }
 .leaflet-popup-content-wrapper {
-  background: #111827 !important;
-  color: #f9fafb !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.6) !important;
+  background:#FFFFFF !important; color:#243A35 !important;
+  border:1px solid rgba(45,106,94,0.12) !important; border-radius:14px !important;
+  box-shadow:0 12px 28px rgba(35,79,72,0.14) !important;
 }
+.leaflet-popup-tip { background:#FFFFFF !important; }
 
-.leaflet-popup-tip {
-  background: #111827 !important;
-}
-
-/* Shimmer gradient utility */
 .shimmer-text {
-  background: linear-gradient(90deg, #ec4899 0%, #a855f7 50%, #38bdf8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background:linear-gradient(90deg,#2D6A5E 0%,#5C7F8A 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
+
+:root {
+  --sage-900:#214F48;
+  --sage-700:#2D6A5E;
+  --sage-500:#55A184;
+  --sage-200:#D8ECE2;
+  --sage-100:#EDF7F2;
+  --rose-500:#D97883;
+  --rose-100:#F9E9EB;
+  --ink:#243A35;
+  --muted:#6A7B76;
+}
+
+/* Keep legacy utility classes in the same visual family without changing layout. */
+[class*="bg-purple"] { background-color:var(--sage-700) !important; }
+[class*="bg-emerald"] { background-color:var(--sage-700) !important; }
+[class*="text-purple"], [class*="text-emerald"] { color:var(--sage-700) !important; }
+[class*="border-purple"], [class*="border-emerald"] { border-color:rgba(45,106,94,.22) !important; }
+
+/* Neutralise old mixed gradients so primary actions remain crisp and technical. */
+[class*="from-[#24504F]"][class*="via-[#C85D67]"],
+[class*="from-[#24504F]"][class*="to-[#2F5F5E]"],
+[class*="from-[#2F5F5E]"][class*="to-[#7CA982]"] {
+  background:var(--brand-gradient) !important;
+  color:#FFFFFF !important;
+}
+
+[class*="bg-[#F4F1EC]"], [class*="bg-[#E7E3DD]"] { background-color:#F3F8F5 !important; }

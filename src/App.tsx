@@ -575,11 +575,11 @@ export const App: React.FC = () => {
   // If user is unauthenticated, show the dedicated SafeSafar Auth Page
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[#0A0E17] text-gray-100 font-sans">
+      <div className="min-h-screen bg-[#F7F8F2] text-[#30433F] font-sans">
         <AuthPage onLoginSuccess={handleLoginSuccess} />
         {toastMessage && (
-          <div className="fixed bottom-6 right-6 z-[10000] bg-[#161f33] border border-purple-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
-            <Sparkles className="w-5 h-5 text-purple-400 shrink-0" />
+          <div className="fixed bottom-6 right-6 z-[10000] bg-[#F1D9D9] border border-[#2F5F5E]/40 text-[#30433F] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
+            <Sparkles className="w-5 h-5 text-[#7CA982] shrink-0" />
             <span className="text-xs font-semibold">{toastMessage}</span>
           </div>
         )}
@@ -588,7 +588,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E17] text-gray-100 flex flex-col font-sans selection:bg-purple-500/30 selection:text-white">
+    <div className="min-h-screen bg-[#F7F8F2] text-[#30433F] flex flex-col font-sans selection:bg-[#2F5F5E]/30 selection:text-[#30433F]">
       {/* Decoy Screen Mode (Complete Disguise) */}
       {isDecoyOpen && (
         <DecoyScreen
@@ -625,8 +625,8 @@ export const App: React.FC = () => {
 
       {/* Floating System Toast Alert */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-[10000] bg-[#161f33] border border-purple-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
-          <Sparkles className="w-5 h-5 text-purple-400 shrink-0" />
+        <div className="fixed bottom-6 right-6 z-[10000] bg-[#F1D9D9] border border-[#2F5F5E]/40 text-[#30433F] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
+          <Sparkles className="w-5 h-5 text-[#7CA982] shrink-0" />
           <span className="text-xs font-semibold">{toastMessage}</span>
         </div>
       )}
@@ -637,14 +637,14 @@ export const App: React.FC = () => {
         {currentView === 'mobile' && (
           <div className="space-y-6">
             {/* Top Innovation Banner & Sub-Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-purple-950/40 via-gray-900 to-indigo-950/40 border border-purple-500/20 rounded-2xl p-3.5 px-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-[#EAF1E9] border border-[#D4E2D5] rounded-2xl p-3.5 px-5">
               <div className="flex items-center gap-2.5">
                 <span className="flex h-3 w-3 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7CA982] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#7CA982]"></span>
                 </span>
-                <span className="text-xs font-bold text-white">Safe Route Intelligence: Surat Pilot Corridor</span>
-                <span className="text-[10px] text-purple-300 font-mono hidden md:inline">SVNIT ➔ Ring Road Hub</span>
+                <span className="text-xs font-bold text-[#30433F]">Safe Route Intelligence: Surat Pilot Corridor</span>
+                <span className="text-[10px] text-[#2F5F5E] font-mono hidden md:inline">SVNIT ➔ Ring Road Hub</span>
               </div>
 
               {/* Map Layer Toggles & Shake Demo */}
@@ -652,7 +652,7 @@ export const App: React.FC = () => {
                 <button
                   onClick={() => setShowSafeLandmarks(!showSafeLandmarks)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
-                    showSafeLandmarks ? 'bg-pink-500/20 border-pink-500/50 text-pink-300' : 'bg-white/5 border-white/10 text-gray-400'
+                    showSafeLandmarks ? 'bg-[#F8E9EA] border-[#D58A93]/45 text-[#B96570]' : 'bg-white border-[#D4E2D5] text-[#73807B]'
                   }`}
                 >
                   Pink & Police Posts
@@ -661,7 +661,7 @@ export const App: React.FC = () => {
                 <button
                   onClick={() => setShowHeatmap(!showHeatmap)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
-                    showHeatmap ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-white/5 border-white/10 text-gray-400'
+                    showHeatmap ? 'bg-[#F5EEDB] border-[#D9C58B] text-[#8A7131]' : 'bg-white border-[#D4E2D5] text-[#73807B]'
                   }`}
                 >
                   <Flame className="w-3 h-3 inline mr-1" />
@@ -671,7 +671,7 @@ export const App: React.FC = () => {
                 <button
                   onClick={() => setDeviceFrameMode(!deviceFrameMode)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1 ${
-                    deviceFrameMode ? 'bg-purple-600 border-purple-400 text-white' : 'bg-white/5 border-white/10 text-gray-300 hover:text-white'
+                    deviceFrameMode ? 'bg-[#356B62] border-[#356B62] text-white' : 'bg-white border-[#D4E2D5] text-[#687873] hover:text-[#30433F]'
                   }`}
                   title="Toggle Mobile Device Mockup Frame"
                 >
@@ -681,7 +681,7 @@ export const App: React.FC = () => {
 
                 <button
                   onClick={handleSimulateShake}
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 transition-all flex items-center gap-1"
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#F8E9EA] hover:bg-[#F5DEE0] border border-[#E7B9BE] text-[#B96570] transition-all flex items-center gap-1"
                   title="Simulate rapid phone shake or 3-tap panic gesture"
                 >
                   <span>Shake SOS</span>
@@ -703,7 +703,7 @@ export const App: React.FC = () => {
             />
 
             {/* Layout: Interactive Leaflet Map + Controls */}
-            <div className={deviceFrameMode ? "max-w-[460px] mx-auto bg-black/95 p-4 rounded-[48px] border-[5px] border-[#374151] shadow-2xl space-y-4 relative z-10" : "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start relative z-10"}>
+            <div className={deviceFrameMode ? "max-w-[460px] mx-auto bg-[#202D2D]/95 p-4 rounded-[48px] border-[5px] border-[#C9C4BC] shadow-2xl space-y-4 relative z-10" : "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start relative z-10"}>
               {/* Map Visualizer (Left/Top) */}
               <div className={deviceFrameMode ? "flex flex-col gap-4 w-full" : "lg:col-span-7 xl:col-span-8 flex flex-col gap-4"}>
                 <div className={deviceFrameMode ? "h-[340px] w-full relative z-0 isolate" : "h-[460px] sm:h-[520px] w-full relative z-0 isolate"}>
@@ -729,7 +729,7 @@ export const App: React.FC = () => {
 
                   {/* Active SOS Watermark on Map */}
                   {sosState.isActive && (
-                    <div className="absolute top-4 left-4 z-10 bg-red-600/90 text-white px-3 py-1.5 rounded-full text-xs font-black tracking-wide shadow-xl flex items-center gap-2 animate-bounce pointer-events-none">
+                    <div className="absolute top-4 left-4 z-10 bg-[#D95C5C]/90 text-[#30433F] px-3 py-1.5 rounded-full text-xs font-black tracking-wide shadow-xl flex items-center gap-2 animate-bounce pointer-events-none">
                       <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
                       <span>SOS TELEMETRY TRANSMITTING LIVE</span>
                     </div>
@@ -773,39 +773,39 @@ export const App: React.FC = () => {
                 />
 
                 {/* Quick Covert Toolkit Card */}
-                <div className="bg-[#111827]/80 border border-white/10 rounded-3xl p-5 shadow-xl">
+                <div className="bg-[#FFFFFF]/80 border border-[#2F5F5E]/15 rounded-3xl p-5 shadow-xl">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">Covert Safety Arsenal</span>
-                    <span className="text-[10px] bg-purple-500/10 text-purple-300 px-2 py-0.5 rounded-md border border-purple-500/20">
+                    <span className="text-xs font-bold text-[#7CA982] uppercase tracking-wider">Covert Safety Arsenal</span>
+                    <span className="text-[10px] bg-[#2F5F5E]/10 text-[#2F5F5E] px-2 py-0.5 rounded-md border border-[#2F5F5E]/20">
                       Novel Innovations
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-400 mb-4">
+                  <p className="text-xs text-[#7A8582] mb-4">
                     Covert mechanisms built specifically for situations where visible action would escalate danger:
                   </p>
 
                   <div className="grid grid-cols-2 gap-2.5">
                     <button
                       onClick={() => setIsFakeCallOpen(true)}
-                      className="p-3 rounded-2xl bg-purple-900/30 hover:bg-purple-900/50 border border-purple-500/30 text-left transition-all group"
+                      className="p-3 rounded-2xl bg-[#234A45]/30 hover:bg-[#234A45]/50 border border-[#2F5F5E]/30 text-left transition-all group"
                     >
-                      <span className="text-xs font-bold text-white block group-hover:text-purple-300">
+                      <span className="text-xs font-bold text-[#30433F] block group-hover:text-[#2F5F5E]">
                         📞 Fake Call to SOS
                       </span>
-                      <span className="text-[10px] text-gray-400 leading-tight block mt-0.5">
+                      <span className="text-[10px] text-[#7A8582] leading-tight block mt-0.5">
                         Trigger secret alert using voice keyword "reach soon"
                       </span>
                     </button>
 
                     <button
                       onClick={() => setIsDuressModalOpen(true)}
-                      className="p-3 rounded-2xl bg-amber-900/20 hover:bg-amber-900/30 border border-amber-500/30 text-left transition-all group"
+                      className="p-3 rounded-2xl bg-[#806B2B]/20 hover:bg-[#806B2B]/30 border border-[#F9C950]/30 text-left transition-all group"
                     >
-                      <span className="text-xs font-bold text-white block group-hover:text-amber-300">
+                      <span className="text-xs font-bold text-[#30433F] block group-hover:text-[#B08D28]">
                         🔢 Duress PIN (9999)
                       </span>
-                      <span className="text-[10px] text-gray-400 leading-tight block mt-0.5">
+                      <span className="text-[10px] text-[#7A8582] leading-tight block mt-0.5">
                         Deceives attacker with Decoy Calculator while alerting police
                       </span>
                     </button>
