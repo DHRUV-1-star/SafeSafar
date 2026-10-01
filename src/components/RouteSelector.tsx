@@ -18,16 +18,16 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
   onOpenWalkMeHome,
 }) => {
   return (
-    <div className="bg-[#111827]/90 backdrop-blur-xl border border-white/10 rounded-3xl p-5 shadow-2xl">
+    <div className="bg-white/95 backdrop-blur-xl border border-[#2D6A5E]/15 rounded-3xl p-5 shadow-2xl">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <div>
-          <span className="text-xs font-semibold tracking-wider uppercase text-purple-400">Smart Route Intelligence</span>
-          <h2 className="text-lg font-bold text-white leading-snug">
+          <span className="text-xs font-semibold tracking-wider uppercase text-[#55A184]">Smart Route Intelligence</span>
+          <h2 className="text-lg font-bold text-[#243A35] leading-snug">
             {routes.length > 1 ? 'Compare Distinct Routes for Safety' : 'Optimal Safe Route Found'}
           </h2>
         </div>
-        <div className="text-xs text-gray-400 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-1.5 shrink-0">
-          <Info className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+        <div className="text-xs text-[#73847F] bg-[#2D6A5E]/5 border border-[#2D6A5E]/15 px-3 py-1.5 rounded-full flex items-center gap-1.5 shrink-0">
+          <Info className="w-3.5 h-3.5 text-[#55A184] shrink-0" />
           <span>{routes.length} {routes.length === 1 ? 'Distinct Real Route' : 'Distinct Real Routes'}</span>
         </div>
       </div>
@@ -39,18 +39,18 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
           const isSafest = route.category === 'safest';
           const isFastest = route.category === 'fastest';
 
-          let badgeColor = 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
-          let scoreBg = 'from-emerald-500 to-teal-600';
-          let icon = <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />;
+          let badgeColor = 'bg-[#72A892]/15 text-[#55A184] border-[#72A892]/30';
+          let scoreBg = 'from-[#2D6A5E] to-[#2D6A5E]';
+          let icon = <ShieldCheck className="w-4 h-4 text-[#55A184] shrink-0" />;
 
           if (route.category === 'balanced') {
-            badgeColor = 'bg-amber-500/15 text-amber-400 border-amber-500/30';
-            scoreBg = 'from-amber-500 to-orange-600';
-            icon = <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />;
+            badgeColor = 'bg-[#F9C950]/15 text-[#F9C950] border-[#F9C950]/30';
+            scoreBg = 'from-[#C99B3E] to-[#B48836]';
+            icon = <AlertTriangle className="w-4 h-4 text-[#F9C950] shrink-0" />;
           } else if (route.category === 'fastest') {
-            badgeColor = 'bg-red-500/15 text-red-400 border-red-500/30';
-            scoreBg = 'from-red-500 to-rose-600';
-            icon = <ShieldAlert className="w-4 h-4 text-red-400 shrink-0" />;
+            badgeColor = 'bg-[#D97883]/15 text-[#D97883] border-[#D97883]/30';
+            scoreBg = 'from-[#D97883] to-[#C96874]';
+            icon = <ShieldAlert className="w-4 h-4 text-[#D97883] shrink-0" />;
           }
 
           return (
@@ -59,8 +59,8 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
               onClick={() => onSelectRoute(route)}
               className={`cursor-pointer rounded-2xl p-4 transition-all border ${
                 isSelected
-                  ? 'bg-gradient-to-b from-gray-800/95 to-gray-900 border-purple-500 shadow-xl shadow-purple-500/10 ring-1 ring-purple-500/30'
-                  : 'bg-gray-900/60 border-white/10 hover:border-white/25 hover:bg-gray-900/80'
+                  ? 'bg-[#EDF7F2] border-[#55A184] shadow-xl shadow-[#2D6A5E]/10 ring-1 ring-[#2D6A5E]/30'
+                  : 'bg-white border-[#D3E5DE] hover:border-[#72A892]/55 hover:bg-[#F8FCFA]'
               }`}
             >
               {/* Header Row: Category Badge + Special Tag & Safety Score */}
@@ -73,73 +73,73 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
                     </div>
 
                     {isSafest && (
-                      <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm tracking-wide">
+                      <span className="bg-[#D8ECE2] text-[#2D6A5E] text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm tracking-wide">
                         ★ RECOMMENDED
                       </span>
                     )}
 
                     {isFastest && (
-                      <span className="bg-red-600 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm tracking-wide">
+                      <span className="bg-[#F9E9EB] text-[#B85F6B] border border-[#E8BEC4] text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm tracking-wide">
                         ⚠️ HIGH RISK AT NIGHT
                       </span>
                     )}
                   </div>
 
-                  <h3 className="font-bold text-white text-sm leading-snug mt-0.5">{route.name}</h3>
+                  <h3 className="font-bold text-[#243A35] text-sm leading-snug mt-0.5">{route.name}</h3>
                 </div>
 
                 <div className="text-right shrink-0">
                   <div className={`px-2.5 py-1 rounded-xl bg-gradient-to-br ${scoreBg} text-white font-black text-sm shadow-md inline-block`}>
                     {route.safetyScore}<span className="text-[10px] font-normal opacity-90">/100</span>
                   </div>
-                  <div className="text-[10px] font-medium text-gray-400 leading-tight mt-1">Safety Index</div>
+                  <div className="text-[10px] font-medium text-[#73847F] leading-tight mt-1">Safety Index</div>
                 </div>
               </div>
 
               {/* Duration & Distance Row */}
-              <div className="flex items-center gap-2 text-xs text-gray-300 mb-3 font-medium">
+              <div className="flex items-center gap-2 text-xs text-[#61746E] mb-3 font-medium">
                 <span className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                  <Clock className="w-3.5 h-3.5 text-[#73847F] shrink-0" />
                   {route.durationMin} mins
                 </span>
-                <span className="text-gray-600">•</span>
+                <span className="text-[#B7B1A8]">•</span>
                 <span>{route.distanceKm} km</span>
               </div>
 
               {/* Telemetry Breakdown */}
-              <div className="pt-3 border-t border-white/10 space-y-2 text-xs">
+              <div className="pt-3 border-t border-[#2D6A5E]/15 space-y-2 text-xs">
                 {/* Lighting Bar */}
                 <div>
-                  <div className="flex justify-between items-center text-gray-400 gap-2 mb-1">
+                  <div className="flex justify-between items-center text-[#73847F] gap-2 mb-1">
                     <span className="flex items-center gap-1.5 shrink-0">
                       <Lightbulb className="w-3.5 h-3.5 text-yellow-400 shrink-0" /> Lighting
                     </span>
                     <div className="flex items-center gap-1.5">
                       {route.confidence === 'low' && (
-                        <span className="text-[9px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded">
+                        <span className="text-[9px] font-medium text-[#A67B22] bg-[#F9C950]/10 border border-[#F9C950]/20 px-1.5 py-0.2 rounded">
                           Sparse OSM Data
                         </span>
                       )}
-                      <span className="font-bold text-white shrink-0">{route.lightingPercent}%</span>
+                      <span className="font-bold text-[#243A35] shrink-0">{route.lightingPercent}%</span>
                     </div>
                   </div>
-                  <div className="w-full h-2 bg-gray-800/90 rounded-full overflow-hidden p-0.5">
+                  <div className="w-full h-2 bg-[#E7E3DD]/95 rounded-full overflow-hidden p-0.5">
                     <div
                       className="h-full rounded-full transition-all duration-300"
                       style={{
                         width: `${route.lightingPercent}%`,
-                        backgroundColor: route.lightingPercent > 80 ? '#10B981' : route.lightingPercent > 50 ? '#F59E0B' : '#EF4444',
+                        backgroundColor: route.lightingPercent > 80 ? '#72A892' : route.lightingPercent > 50 ? '#F9C950' : '#D97883',
                       }}
                     />
                   </div>
                 </div>
 
                 {/* Crowd Context */}
-                <div className="flex justify-between items-center gap-2 text-gray-400 pt-0.5">
+                <div className="flex justify-between items-center gap-2 text-[#73847F] pt-0.5">
                   <span className="flex items-center gap-1.5 shrink-0">
-                    <Users className="w-3.5 h-3.5 text-blue-400 shrink-0" /> Crowd Context
+                    <Users className="w-3.5 h-3.5 text-[#55A184] shrink-0" /> Crowd Context
                   </span>
-                  <span className={`font-bold text-xs text-right truncate shrink-0 ${route.crowdContext.verifiedSafe ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <span className={`font-bold text-xs text-right truncate shrink-0 ${route.crowdContext.verifiedSafe ? 'text-[#55A184]' : 'text-[#D97883]'}`}>
                     {route.crowdContext.level} {route.crowdContext.verifiedSafe ? '✓ Verified' : '⚠️ Deserted'}
                   </span>
                 </div>
@@ -150,48 +150,48 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
       </div>
 
       {/* Selected Route Explainability Breakdown */}
-      <div className="bg-gray-900/80 border border-white/10 rounded-2xl p-4 mb-5">
+      <div className="bg-[#F3F8F5]/90 border border-[#2D6A5E]/15 rounded-2xl p-4 mb-5">
         <div className="flex flex-wrap items-center justify-between gap-1 mb-2">
-          <span className="text-xs font-bold text-gray-200">Why this score? (Explainable Safety Engine)</span>
-          <span className="text-[10px] text-purple-400 font-mono bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md">
+          <span className="text-xs font-bold text-[#3E544E]">Why this score? (Explainable Safety Engine)</span>
+          <span className="text-[10px] text-[#55A184] font-mono bg-[#2D6A5E]/10 border border-[#2D6A5E]/20 px-2 py-0.5 rounded-md">
             Dynamic Multi-Factor Weight
           </span>
         </div>
 
-        <p className="text-xs text-gray-300 leading-relaxed mb-3">{selectedRoute.crowdContext.description}</p>
+        <p className="text-xs text-[#61746E] leading-relaxed mb-3">{selectedRoute.crowdContext.description}</p>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-          <div className="bg-white/5 border border-white/5 rounded-xl p-2.5 text-center">
-            <span className="text-[10px] text-gray-400 block mb-0.5">Lighting Coverage</span>
+          <div className="bg-[#2D6A5E]/5 border border-[#2D6A5E]/10 rounded-xl p-2.5 text-center">
+            <span className="text-[10px] text-[#73847F] block mb-0.5">Lighting Coverage</span>
             <div className="flex items-center justify-center gap-1">
-              <span className="text-sm font-black text-emerald-400">{selectedRoute.lightingPercent}%</span>
+              <span className="text-sm font-black text-[#55A184]">{selectedRoute.lightingPercent}%</span>
               {selectedRoute.confidence === 'low' && (
-                <span className="text-[8px] font-bold text-amber-300 bg-amber-500/20 px-1 py-0.2 rounded" title="Limited OSM lighting data">
+                <span className="text-[8px] font-bold text-[#A67B22] bg-[#F9C950]/20 px-1 py-0.2 rounded" title="Limited OSM lighting data">
                   Sparse
                 </span>
               )}
             </div>
           </div>
-          <div className="bg-white/5 border border-white/5 rounded-xl p-2.5 text-center">
-            <span className="text-[10px] text-gray-400 block mb-0.5">Pink / Police Booths</span>
-            <span className="text-sm font-black text-blue-400">{selectedRoute.safeLandmarksCount} havens</span>
+          <div className="bg-[#2D6A5E]/5 border border-[#2D6A5E]/10 rounded-xl p-2.5 text-center">
+            <span className="text-[10px] text-[#73847F] block mb-0.5">Pink / Police Booths</span>
+            <span className="text-sm font-black text-[#55A184]">{selectedRoute.safeLandmarksCount} havens</span>
           </div>
-          <div className="bg-white/5 border border-white/5 rounded-xl p-2.5 text-center">
-            <span className="text-[10px] text-gray-400 block mb-0.5">Reported Incidents</span>
-            <span className={`text-sm font-black ${selectedRoute.incidentsReported === 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          <div className="bg-[#2D6A5E]/5 border border-[#2D6A5E]/10 rounded-xl p-2.5 text-center">
+            <span className="text-[10px] text-[#73847F] block mb-0.5">Reported Incidents</span>
+            <span className={`text-sm font-black ${selectedRoute.incidentsReported === 0 ? 'text-[#55A184]' : 'text-[#D97883]'}`}>
               {selectedRoute.incidentsReported} past
             </span>
           </div>
-          <div className="bg-white/5 border border-white/5 rounded-xl p-2.5 text-center">
-            <span className="text-[10px] text-gray-400 block mb-0.5">Time-of-Day Risk</span>
-            <span className="text-xs font-bold text-purple-300">Night Factor</span>
+          <div className="bg-[#2D6A5E]/5 border border-[#2D6A5E]/10 rounded-xl p-2.5 text-center">
+            <span className="text-[10px] text-[#73847F] block mb-0.5">Time-of-Day Risk</span>
+            <span className="text-xs font-bold text-[#2D6A5E]">Night Factor</span>
           </div>
         </div>
 
         {/* Low Confidence Lighting Warning Callout */}
         {selectedRoute.confidence === 'low' && (
-          <div className="mb-3 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-xs text-amber-300">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <div className="mb-3 px-3 py-1.5 rounded-xl bg-[#F9C950]/10 border border-[#F9C950]/30 flex items-center gap-2 text-xs text-[#A67B22]">
+            <AlertTriangle className="w-3.5 h-3.5 text-[#F9C950] shrink-0" />
             <span>Limited lighting data for this stretch (OSM street lamps & amenities sparse)</span>
           </div>
         )}
@@ -199,13 +199,13 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
         {/* Highlights & Warnings */}
         <div className="space-y-1.5">
           {selectedRoute.highlights.map((hl, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-xs text-emerald-400 leading-snug">
+            <div key={i} className="flex items-start gap-1.5 text-xs text-[#55A184] leading-snug">
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               <span>{hl}</span>
             </div>
           ))}
           {selectedRoute.warnings.map((wn, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-xs text-amber-400 leading-snug">
+            <div key={i} className="flex items-start gap-1.5 text-xs text-[#F9C950] leading-snug">
               <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               <span>{wn}</span>
             </div>
@@ -217,7 +217,7 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
       <div className="flex flex-col sm:flex-row gap-3">
         <button
           onClick={onStartTrip}
-          className="flex-1 py-3.5 px-5 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-purple-600/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+          className="flex-1 py-3.5 px-5 rounded-2xl bg-[#214F48] hover:bg-[#2D6A5E] text-white font-bold text-sm shadow-lg shadow-[#214F48]/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
           <Navigation2 className="w-4 h-4 fill-white shrink-0" />
           <span>Start Navigation ({selectedRoute.durationMin}m)</span>
@@ -225,9 +225,9 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
 
         <button
           onClick={onOpenWalkMeHome}
-          className="py-3.5 px-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 shrink-0"
+          className="py-3.5 px-4 rounded-2xl bg-[#2D6A5E]/8 hover:bg-[#2D6A5E]/10 border border-[#2D6A5E]/15 text-[#243A35] font-semibold text-sm transition-all flex items-center justify-center gap-2 shrink-0"
         >
-          <Users className="w-4 h-4 text-purple-400 shrink-0" />
+          <Users className="w-4 h-4 text-[#55A184] shrink-0" />
           <span>Walk Me Home</span>
         </button>
       </div>

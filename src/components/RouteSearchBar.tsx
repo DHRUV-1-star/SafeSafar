@@ -108,13 +108,13 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
   };
 
   return (
-    <div className="bg-[#111827]/95 backdrop-blur-xl border border-white/10 rounded-3xl p-4 sm:p-5 shadow-2xl space-y-3 relative z-20">
+    <div className="bg-white/95 backdrop-blur-xl border border-[#D3E5DE] rounded-3xl p-4 sm:p-5 shadow-2xl space-y-3 relative z-20">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse"></span>
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider">India Dynamic Safe Route Finder</h2>
+          <span className="w-2.5 h-2.5 rounded-full bg-[#2D6A5E] animate-pulse"></span>
+          <h2 className="text-sm font-bold text-[#243A35] uppercase tracking-wider">India Dynamic Safe Route Finder</h2>
         </div>
-        <span className="text-[11px] text-purple-400 font-mono bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 rounded-full">
+        <span className="text-[11px] text-[#55A184] font-mono bg-[#2D6A5E]/10 border border-[#C7DFD4] px-2.5 py-0.5 rounded-full">
           Live Geocoding Active
         </span>
       </div>
@@ -124,10 +124,10 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
         <div className="flex-1 w-full flex flex-col gap-2.5">
           {/* Start Location Input */}
           <div ref={startContainerRef} className="relative w-full">
-            <div className="flex items-center bg-gray-900/90 border border-white/10 hover:border-emerald-500/50 focus-within:border-emerald-500 rounded-2xl px-3.5 py-2.5 transition-all">
-              <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mr-2.5" />
+            <div className="flex items-center bg-[#F3F8F5]/95 border border-[#D3E5DE] hover:border-[#72A892]/50 focus-within:border-[#72A892] rounded-2xl px-3.5 py-2.5 transition-all">
+              <MapPin className="w-4 h-4 text-[#55A184] shrink-0 mr-2.5" />
               <div className="flex-1 min-w-0">
-                <label className="block text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
+                <label className="block text-[10px] font-bold text-[#55A184] uppercase tracking-wide">
                   Starting Point (Origin in India)
                 </label>
                 <input
@@ -136,17 +136,17 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
                   onChange={(e) => onStartLocationInputChange(e.target.value)}
                   onFocus={() => setShowStartDropdown(true)}
                   placeholder="Type any landmark or city in India (e.g. SVNIT Surat, Connaught Place Delhi, Marine Drive Mumbai)..."
-                  className="w-full bg-transparent text-xs font-semibold text-white focus:outline-none placeholder:text-gray-500 truncate"
+                  className="w-full bg-transparent text-xs font-semibold text-[#243A35] focus:outline-none placeholder:text-[#899894] truncate"
                 />
               </div>
 
               {isSearchingStart ? (
-                <Loader2 className="w-4 h-4 text-purple-400 animate-spin shrink-0 ml-2" />
+                <Loader2 className="w-4 h-4 text-[#55A184] animate-spin shrink-0 ml-2" />
               ) : (
                 <button
                   type="button"
                   onClick={handleUseCurrentGPS}
-                  className="p-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-semibold flex items-center gap-1 shrink-0 ml-2 border border-emerald-500/20"
+                  className="p-1 rounded-lg bg-[#72A892]/10 hover:bg-[#72A892]/20 text-[#55A184] text-[10px] font-semibold flex items-center gap-1 shrink-0 ml-2 border border-[#72A892]/20"
                   title="Use Current Device GPS Location"
                 >
                   <LocateFixed className="w-3 h-3" />
@@ -157,7 +157,7 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
 
             {/* Live Autocomplete Dropdown Panel for Start */}
             {showStartDropdown && startSuggestions.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-[#162035] border-2 border-emerald-500/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-30 overflow-hidden max-h-56 overflow-y-auto divide-y divide-white/10">
+              <div className="absolute left-0 right-0 top-full mt-2 bg-[#FFFFFF] border-2 border-[#72A892]/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-30 overflow-hidden max-h-56 overflow-y-auto divide-y divide-[#2D6A5E]/10">
                 {startSuggestions.map((sug, i) => (
                   <button
                     key={i}
@@ -166,12 +166,12 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
                       onSelectStartLocation(sug);
                       setShowStartDropdown(false);
                     }}
-                    className="w-full p-3 text-left hover:bg-emerald-500/20 transition-colors flex items-start gap-2.5 group cursor-pointer"
+                    className="w-full p-3 text-left hover:bg-[#72A892]/20 transition-colors flex items-start gap-2.5 group cursor-pointer"
                   >
-                    <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                    <MapPin className="w-4 h-4 text-[#55A184] shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
                     <div className="flex-1 min-w-0">
-                      <span className="text-xs font-bold text-white block truncate">{sug.displayName.split(',')[0]}</span>
-                      <span className="text-[10px] text-gray-300 block truncate leading-tight mt-0.5">{sug.displayName}</span>
+                      <span className="text-xs font-bold text-[#243A35] block truncate">{sug.displayName.split(',')[0]}</span>
+                      <span className="text-[10px] text-[#61746E] block truncate leading-tight mt-0.5">{sug.displayName}</span>
                     </div>
                   </button>
                 ))}
@@ -181,10 +181,10 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
 
           {/* Destination Input */}
           <div ref={destContainerRef} className="relative w-full">
-            <div className="flex items-center bg-gray-900/90 border border-white/10 hover:border-pink-500/50 focus-within:border-pink-500 rounded-2xl px-3.5 py-2.5 transition-all">
-              <Navigation className="w-4 h-4 text-pink-400 shrink-0 mr-2.5" />
+            <div className="flex items-center bg-[#F3F8F5]/95 border border-[#D3E5DE] hover:border-[#D97883]/45 focus-within:border-[#72A892] rounded-2xl px-3.5 py-2.5 transition-all">
+              <Navigation className="w-4 h-4 text-[#B85F6B] shrink-0 mr-2.5" />
               <div className="flex-1 min-w-0">
-                <label className="block text-[10px] font-bold text-pink-400 uppercase tracking-wide">
+                <label className="block text-[10px] font-bold text-[#61746E] uppercase tracking-wide">
                   Destination Point (India)
                 </label>
                 <input
@@ -193,16 +193,16 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
                   onChange={(e) => onDestinationInputChange(e.target.value)}
                   onFocus={() => setShowDestDropdown(true)}
                   placeholder="Type any destination in India (e.g. Ring Road Surat, Airport Jaipur, MG Road Bengaluru)..."
-                  className="w-full bg-transparent text-xs font-semibold text-white focus:outline-none placeholder:text-gray-500 truncate"
+                  className="w-full bg-transparent text-xs font-semibold text-[#243A35] focus:outline-none placeholder:text-[#899894] truncate"
                 />
               </div>
 
-              {isSearchingDest && <Loader2 className="w-4 h-4 text-purple-400 animate-spin shrink-0 ml-2" />}
+              {isSearchingDest && <Loader2 className="w-4 h-4 text-[#55A184] animate-spin shrink-0 ml-2" />}
             </div>
 
             {/* Live Autocomplete Dropdown Panel for Destination */}
             {showDestDropdown && destSuggestions.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-[#162035] border-2 border-pink-500/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-30 overflow-hidden max-h-56 overflow-y-auto divide-y divide-white/10">
+              <div className="absolute left-0 right-0 top-full mt-2 bg-[#FFFFFF] border-2 border-[#D97883]/45 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-30 overflow-hidden max-h-56 overflow-y-auto divide-y divide-[#2D6A5E]/10">
                 {destSuggestions.map((sug, i) => (
                   <button
                     key={i}
@@ -211,12 +211,12 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
                       onSelectDestination(sug);
                       setShowDestDropdown(false);
                     }}
-                    className="w-full p-3 text-left hover:bg-pink-500/20 transition-colors flex items-start gap-2.5 group cursor-pointer"
+                    className="w-full p-3 text-left hover:bg-[#F9E9EB] transition-colors flex items-start gap-2.5 group cursor-pointer"
                   >
-                    <Navigation className="w-4 h-4 text-pink-400 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                    <Navigation className="w-4 h-4 text-[#B85F6B] shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
                     <div className="flex-1 min-w-0">
-                      <span className="text-xs font-bold text-white block truncate">{sug.displayName.split(',')[0]}</span>
-                      <span className="text-[10px] text-gray-300 block truncate leading-tight mt-0.5">{sug.displayName}</span>
+                      <span className="text-xs font-bold text-[#243A35] block truncate">{sug.displayName.split(',')[0]}</span>
+                      <span className="text-[10px] text-[#61746E] block truncate leading-tight mt-0.5">{sug.displayName}</span>
                     </div>
                   </button>
                 ))}
@@ -230,10 +230,10 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
           <button
             type="button"
             onClick={onSwapLocations}
-            className="flex-1 sm:flex-none p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all flex items-center justify-center gap-1.5"
+            className="flex-1 sm:flex-none p-3 rounded-2xl bg-[#EFF7F3] hover:bg-[#E5F3EC] border border-[#D3E5DE] text-[#61746E] hover:text-[#243A35] transition-all flex items-center justify-center gap-1.5"
             title="Swap Starting Point & Destination"
           >
-            <ArrowUpDown className="w-4 h-4 text-purple-400" />
+            <ArrowUpDown className="w-4 h-4 text-[#55A184]" />
             <span className="text-xs font-semibold sm:hidden">Swap</span>
           </button>
 
@@ -241,7 +241,7 @@ export const RouteSearchBar: React.FC<RouteSearchBarProps> = ({
             type="button"
             onClick={onSearchRoutes}
             disabled={isLoadingRoutes}
-            className="flex-1 sm:flex-none p-3 px-5 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-purple-600/30 active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="flex-1 sm:flex-none p-3 px-5 rounded-2xl bg-[#2D6A5E] hover:bg-[#214F48] disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-[#2D6A5E]/20 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             {isLoadingRoutes ? (
               <Loader2 className="w-4 h-4 animate-spin fill-white shrink-0" />

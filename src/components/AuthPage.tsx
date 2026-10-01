@@ -64,14 +64,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
   // Password Strength Checker
   const getPasswordStrength = (pass: string) => {
     if (!pass) return { score: 0, label: '', color: '' };
-    if (pass.length < 6) return { score: 1, label: 'Weak', color: 'bg-rose-500' };
+    if (pass.length < 6) return { score: 1, label: 'Weak', color: 'bg-[#E57373]' };
     const hasLetters = /[a-zA-Z]/.test(pass);
     const hasNumbers = /[0-9]/.test(pass);
     const hasSpecial = /[^a-zA-Z0-9]/.test(pass);
     const score = (pass.length >= 8 ? 1 : 0) + (hasLetters ? 1 : 0) + (hasNumbers ? 1 : 0) + (hasSpecial ? 1 : 0);
-    if (score <= 2) return { score: 2, label: 'Fair', color: 'bg-amber-500' };
-    if (score === 3) return { score: 3, label: 'Good', color: 'bg-blue-500' };
-    return { score: 4, label: 'Strong', color: 'bg-emerald-500' };
+    if (score <= 2) return { score: 2, label: 'Fair', color: 'bg-[#F9C950]' };
+    if (score === 3) return { score: 3, label: 'Good', color: 'bg-[#2F5F5E]' };
+    return { score: 4, label: 'Strong', color: 'bg-[#7CA982]' };
   };
 
   const passwordStrength = getPasswordStrength(password);
@@ -279,7 +279,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0E17] text-gray-100 flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#202D2D] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
       <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         
         {/* ========================================================= */}
@@ -290,80 +290,80 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
           {/* Brand Wordmark & Hackathon Track */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-600/30">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#24504F] to-[#2F5F5E] flex items-center justify-center text-[#202D2D] shadow-md shadow-[#24504F]/30">
                 <Shield className="w-5 h-5 fill-white/20" />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-black tracking-tight text-white">SafeSafar</span>
+                <span className="text-2xl font-black tracking-tight text-[#202D2D]">SafeSafar</span>
               </div>
             </div>
 
             {/* Core Slogan */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-[1.15]">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#202D2D] leading-[1.15]">
               Move freely.<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-300">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7CA982] via-[#E57373] to-[#2F5F5E]">
                 Travel safely.
               </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-gray-400 max-w-md leading-relaxed">
+            <p className="text-sm sm:text-base text-[#7A8582] max-w-md leading-relaxed">
               Safety-aware navigation and a trusted safety network for every journey.
             </p>
           </div>
 
           {/* Integrated Visual Representation: Live Safety Route Card */}
-          <div className="hidden sm:block relative bg-[#111726]/80 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-xl backdrop-blur-sm space-y-4">
+          <div className="hidden sm:block relative bg-[#FFFFFF]/80 border border-[#2F5F5E]/15 rounded-2xl p-4 sm:p-5 shadow-xl backdrop-blur-sm space-y-4">
             
             {/* Live Map Preview Simulation */}
-            <div className="relative h-32 rounded-xl overflow-hidden bg-[#0B0F19] border border-white/5 flex items-center justify-center">
+            <div className="relative h-32 rounded-xl overflow-hidden bg-[#FAF9F6] border border-[#2F5F5E]/10 flex items-center justify-center">
               {/* Grid Lines */}
               <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#8b5cf6_1px,transparent_1px)] [background-size:16px_16px]"></div>
               
               {/* Stylized Safe Route Path */}
               <svg className="w-full h-full absolute inset-0" viewBox="0 0 400 120" preserveAspectRatio="none">
                 {/* Secondary dim route */}
-                <path d="M 40 80 Q 150 110 360 40" stroke="#374151" strokeWidth="3" fill="none" strokeDasharray="4 4" />
+                <path d="M 40 80 Q 150 110 360 40" stroke="#C9C4BC" strokeWidth="3" fill="none" strokeDasharray="4 4" />
                 {/* Safest Verified Route (Glowing Green) */}
-                <path d="M 40 80 Q 200 20 360 40" stroke="#10B981" strokeWidth="4" fill="none" />
+                <path d="M 40 80 Q 200 20 360 40" stroke="#7CA982" strokeWidth="4" fill="none" />
               </svg>
 
               {/* Waypoint Markers */}
-              <div className="absolute left-8 bottom-6 flex items-center gap-1.5 bg-[#0F1422] border border-white/10 px-2.5 py-1 rounded-lg text-[10px] font-semibold text-gray-300 shadow">
-                <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+              <div className="absolute left-8 bottom-6 flex items-center gap-1.5 bg-[#F4F1EC] border border-[#2F5F5E]/15 px-2.5 py-1 rounded-lg text-[10px] font-semibold text-[#65716F] shadow">
+                <span className="w-2 h-2 rounded-full bg-[#2F5F5E]"></span>
                 <span>SVNIT Campus</span>
               </div>
 
-              <div className="absolute right-8 top-6 flex items-center gap-1.5 bg-[#0F1422] border border-white/10 px-2.5 py-1 rounded-lg text-[10px] font-semibold text-gray-300 shadow">
-                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <div className="absolute right-8 top-6 flex items-center gap-1.5 bg-[#F4F1EC] border border-[#2F5F5E]/15 px-2.5 py-1 rounded-lg text-[10px] font-semibold text-[#65716F] shadow">
+                <span className="w-2 h-2 rounded-full bg-[#7CA982]"></span>
                 <span>Ring Road Hub</span>
               </div>
 
               {/* Safety Badge Floating */}
-              <div className="absolute top-3 left-3 bg-[#0B1522]/90 border border-emerald-500/30 text-emerald-300 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow">
-                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <div className="absolute top-3 left-3 bg-[#F4F1EC]/90 border border-[#7CA982]/30 text-[#2F5F5E] px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-[#7CA982] animate-pulse"></span>
                 <span>Safest Route • 94 Index</span>
               </div>
             </div>
 
             {/* Live Metrics Row */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-[#0B0F19]/60 border border-white/5 p-2.5 rounded-xl flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+              <div className="bg-[#FAF9F6]/60 border border-[#2F5F5E]/10 p-2.5 rounded-xl flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-[#7CA982]/10 border border-[#7CA982]/20 flex items-center justify-center text-[#7CA982] shrink-0">
                   <Compass className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400">Street Lighting</p>
-                  <p className="text-xs font-bold text-white">96% Lumens LED</p>
+                  <p className="text-[10px] text-[#7A8582]">Street Lighting</p>
+                  <p className="text-xs font-bold text-[#202D2D]">96% Lumens LED</p>
                 </div>
               </div>
 
-              <div className="bg-[#0B0F19]/60 border border-white/5 p-2.5 rounded-xl flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
+              <div className="bg-[#FAF9F6]/60 border border-[#2F5F5E]/10 p-2.5 rounded-xl flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-[#2F5F5E]/10 border border-[#2F5F5E]/20 flex items-center justify-center text-[#7CA982] shrink-0">
                   <Users className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400">Trusted Network</p>
-                  <p className="text-xs font-bold text-white">Live Circle Sync</p>
+                  <p className="text-[10px] text-[#7A8582]">Trusted Network</p>
+                  <p className="text-xs font-bold text-[#202D2D]">Live Circle Sync</p>
                 </div>
               </div>
             </div>
@@ -372,26 +372,26 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
           {/* 3 Core Value Benefits */}
           <div className="space-y-3 pt-1">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-[#7CA982] shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs sm:text-sm font-bold text-white">Find safer routes</h4>
-                <p className="text-xs text-gray-400">Dynamic route safety scoring backed by lighting coverage and verified safe havens.</p>
+                <h4 className="text-xs sm:text-sm font-bold text-[#202D2D]">Find safer routes</h4>
+                <p className="text-xs text-[#7A8582]">Dynamic route safety scoring backed by lighting coverage and verified safe havens.</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-[#7CA982] shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs sm:text-sm font-bold text-white">Stay connected with trusted people</h4>
-                <p className="text-xs text-gray-400">Share live trips with family circles and get automatic safe arrival notifications.</p>
+                <h4 className="text-xs sm:text-sm font-bold text-[#202D2D]">Stay connected with trusted people</h4>
+                <p className="text-xs text-[#7A8582]">Share live trips with family circles and get automatic safe arrival notifications.</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-[#7CA982] shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs sm:text-sm font-bold text-white">Get help when you need it</h4>
-                <p className="text-xs text-gray-400">Discreet covert emergency triggers, voice activation, and rapid police dispatch.</p>
+                <h4 className="text-xs sm:text-sm font-bold text-[#202D2D]">Get help when you need it</h4>
+                <p className="text-xs text-[#7A8582]">Discreet covert emergency triggers, voice activation, and rapid police dispatch.</p>
               </div>
             </div>
           </div>
@@ -401,27 +401,27 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
         {/* RIGHT COLUMN: CLEAN AUTHENTICATION CARD                   */}
         {/* ========================================================= */}
         <div className="lg:col-span-6 w-full max-w-md mx-auto">
-          <div className="bg-[#111726] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="bg-[#FFFFFF] border border-[#2F5F5E]/15 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
             
             {/* Header */}
             <div>
-              <h2 className="text-2xl font-bold tracking-tight text-white">Welcome to SafeSafar</h2>
-              <p className="text-xs sm:text-sm text-gray-400 mt-1">
+              <h2 className="text-2xl font-bold tracking-tight text-[#202D2D]">Welcome to SafeSafar</h2>
+              <p className="text-xs sm:text-sm text-[#7A8582] mt-1">
                 Your journey deserves a safer route.
               </p>
             </div>
 
             {/* Error & Success Feedback Banners */}
             {errorMsg && (
-              <div className="bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <div className="bg-[#E57373]/10 border border-[#E57373]/20 text-[#E57373] text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-[#E57373]" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
             {successNotice && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+              <div className="bg-[#7CA982]/10 border border-[#7CA982]/20 text-[#2F5F5E] text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-[#7CA982]" />
                 <span>{successNotice}</span>
               </div>
             )}
@@ -438,14 +438,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                       setIsOtpStep(false);
                       setErrorMsg(null);
                     }}
-                    className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs text-[#7A8582] hover:text-[#202D2D] transition-colors"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     <span>Change phone number</span>
                   </button>
-                  <h3 className="text-lg font-bold text-white">Verify your phone</h3>
-                  <p className="text-xs text-gray-400">
-                    We sent a 6-digit verification code to <span className="font-semibold text-white">+91 {phone}</span>
+                  <h3 className="text-lg font-bold text-[#202D2D]">Verify your phone</h3>
+                  <p className="text-xs text-[#7A8582]">
+                    We sent a 6-digit verification code to <span className="font-semibold text-[#202D2D]">+91 {phone}</span>
                   </p>
                 </div>
 
@@ -462,23 +462,23 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                         value={digit}
                         onChange={(e) => handleOtpDigitChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                        className="w-12 h-13 text-center bg-[#0B0F19] border border-white/10 rounded-xl text-lg font-bold text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                        className="w-12 h-13 text-center bg-[#FAF9F6] border border-[#2F5F5E]/15 rounded-xl text-lg font-bold text-[#202D2D] focus:outline-none focus:border-[#2F5F5E] focus:ring-1 focus:ring-[#2F5F5E]"
                         autoFocus={index === 0}
                       />
                     ))}
                   </div>
 
                   {/* Development mode indicator note */}
-                  <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl px-3 py-2 text-[11px] text-purple-300 flex items-center justify-between">
+                  <div className="bg-[#1E3D3C]/20 border border-[#2F5F5E]/20 rounded-xl px-3 py-2 text-[11px] text-[#2F5F5E] flex items-center justify-between">
                     <span>Demo Verification Code:</span>
-                    <span className="font-mono font-bold tracking-wider text-white">202600</span>
+                    <span className="font-mono font-bold tracking-wider text-[#202D2D]">202600</span>
                   </div>
 
                   {/* Verify Action Button */}
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3 rounded-xl bg-[#24504F] hover:bg-[#2F5F5E] text-[#202D2D] font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {isLoading ? (
                       <>
@@ -495,19 +495,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                 </form>
 
                 {/* Resend Code Section */}
-                <div className="text-center text-xs text-gray-400 space-y-1">
+                <div className="text-center text-xs text-[#7A8582] space-y-1">
                   <p>
                     Didn&apos;t receive the code?{' '}
                     <button
                       type="button"
                       disabled={isResending || otpCountdown > 0}
                       onClick={handleResendOtp}
-                      className="font-semibold text-purple-400 hover:text-purple-300 disabled:opacity-50 disabled:no-underline underline ml-1"
+                      className="font-semibold text-[#7CA982] hover:text-[#2F5F5E] disabled:opacity-50 disabled:no-underline underline ml-1"
                     >
                       {isResending ? 'Resending...' : otpCountdown > 0 ? `Resend in ${otpCountdown}s` : 'Resend code'}
                     </button>
                   </p>
-                  <p className="text-[11px] text-gray-500">
+                  <p className="text-[11px] text-[#8A9491]">
                     SafeSafar uses end-to-end device token verification.
                   </p>
                 </div>
@@ -519,14 +519,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
               <div className="space-y-5">
                 
                 {/* Mode Selector Tabs: [ Sign In ] [ Create Account ] */}
-                <div className="flex bg-[#0B0F19] border border-white/5 p-1 rounded-xl">
+                <div className="flex bg-[#FAF9F6] border border-[#2F5F5E]/10 p-1 rounded-xl">
                   <button
                     type="button"
                     onClick={() => handleSwitchMode('signin')}
                     className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
                       authMode === 'signin'
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : 'text-gray-400 hover:text-white'
+                        ? 'bg-[#24504F] text-[#202D2D] shadow-sm'
+                        : 'text-[#7A8582] hover:text-[#202D2D]'
                     }`}
                   >
                     Sign In
@@ -536,8 +536,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                     onClick={() => handleSwitchMode('register')}
                     className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
                       authMode === 'register'
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : 'text-gray-400 hover:text-white'
+                        ? 'bg-[#24504F] text-[#202D2D] shadow-sm'
+                        : 'text-[#7A8582] hover:text-[#202D2D]'
                     }`}
                   >
                     Create Account
@@ -549,7 +549,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                   <div className="space-y-4">
                     
                     {/* Method Toggle: Phone or Email */}
-                    <div className="flex items-center justify-between text-xs text-gray-400">
+                    <div className="flex items-center justify-between text-xs text-[#7A8582]">
                       <span>Sign in using:</span>
                       <div className="flex gap-2 font-medium">
                         <button
@@ -558,7 +558,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                             setSignInMethod('phone');
                             setErrorMsg(null);
                           }}
-                          className={`${signInMethod === 'phone' ? 'text-purple-400 font-bold underline' : 'hover:text-white'}`}
+                          className={`${signInMethod === 'phone' ? 'text-[#7CA982] font-bold underline' : 'hover:text-[#202D2D]'}`}
                         >
                           Phone Number
                         </button>
@@ -569,7 +569,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                             setSignInMethod('email');
                             setErrorMsg(null);
                           }}
-                          className={`${signInMethod === 'email' ? 'text-purple-400 font-bold underline' : 'hover:text-white'}`}
+                          className={`${signInMethod === 'email' ? 'text-[#7CA982] font-bold underline' : 'hover:text-[#202D2D]'}`}
                         >
                           Email & Password
                         </button>
@@ -580,11 +580,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                     {signInMethod === 'phone' ? (
                       <form onSubmit={handlePhoneContinue} className="space-y-4">
                         <div>
-                          <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                          <label className="block text-xs font-medium text-[#65716F] mb-1.5">
                             Phone Number
                           </label>
-                          <div className="flex items-center bg-[#0B0F19] border border-white/10 rounded-xl overflow-hidden focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500">
-                            <span className="px-3 text-xs font-semibold text-gray-400 border-r border-white/10">
+                          <div className="flex items-center bg-[#FAF9F6] border border-[#2F5F5E]/15 rounded-xl overflow-hidden focus-within:border-[#2F5F5E] focus-within:ring-1 focus-within:ring-[#2F5F5E]">
+                            <span className="px-3 text-xs font-semibold text-[#7A8582] border-r border-[#2F5F5E]/15">
                               +91
                             </span>
                             <input
@@ -593,7 +593,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                               onChange={(e) => handlePhoneChange(e.target.value)}
                               placeholder="Enter 10-digit number"
                               maxLength={10}
-                              className="w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none font-mono"
+                              className="w-full bg-transparent px-3 py-2.5 text-sm text-[#202D2D] placeholder-gray-500 focus:outline-none font-mono"
                             />
                           </div>
                         </div>
@@ -601,7 +601,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                         <button
                           type="submit"
                           disabled={isLoading}
-                          className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                          className="w-full py-2.5 rounded-xl bg-[#24504F] hover:bg-[#2F5F5E] text-[#202D2D] font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                           {isLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -617,24 +617,24 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                       /* Email & Password Method */
                       <form onSubmit={handleEmailSignIn} className="space-y-3.5">
                         <div>
-                          <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                          <label className="block text-xs font-medium text-[#65716F] mb-1.5">
                             Email
                           </label>
                           <div className="relative">
-                            <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                            <Mail className="absolute left-3 top-3 w-4 h-4 text-[#7A8582]" />
                             <input
                               type="email"
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
                               placeholder="Enter email"
-                              className="w-full bg-[#0B0F19] border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                              className="w-full bg-[#FAF9F6] border border-[#2F5F5E]/15 rounded-xl pl-9 pr-3 py-2.5 text-sm text-[#202D2D] placeholder-gray-500 focus:outline-none focus:border-[#2F5F5E] focus:ring-1 focus:ring-[#2F5F5E]"
                             />
                           </div>
                         </div>
 
                         <div>
                           <div className="flex items-center justify-between mb-1.5">
-                            <label className="block text-xs font-medium text-gray-300">
+                            <label className="block text-xs font-medium text-[#65716F]">
                               Password
                             </label>
                             <button
@@ -643,24 +643,24 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                                 setShowForgotPassword(!showForgotPassword);
                                 setErrorMsg(null);
                               }}
-                              className="text-[11px] text-purple-400 hover:text-purple-300"
+                              className="text-[11px] text-[#7CA982] hover:text-[#2F5F5E]"
                             >
                               Forgot password?
                             </button>
                           </div>
                           <div className="relative">
-                            <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                            <Lock className="absolute left-3 top-3 w-4 h-4 text-[#7A8582]" />
                             <input
                               type={showPassword ? 'text' : 'password'}
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               placeholder="••••••••"
-                              className="w-full bg-[#0B0F19] border border-white/10 rounded-xl pl-9 pr-10 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                              className="w-full bg-[#FAF9F6] border border-[#2F5F5E]/15 rounded-xl pl-9 pr-10 py-2.5 text-sm text-[#202D2D] placeholder-gray-500 focus:outline-none focus:border-[#2F5F5E] focus:ring-1 focus:ring-[#2F5F5E]"
                             />
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-3 text-gray-400 hover:text-white"
+                              className="absolute right-3 top-3 text-[#7A8582] hover:text-[#202D2D]"
                             >
                               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
@@ -668,15 +668,15 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                         </div>
 
                         {showForgotPassword && (
-                          <div className="bg-[#0B0F19] border border-white/10 p-3 rounded-xl space-y-2">
-                            <p className="text-xs text-gray-300">Password recovery email:</p>
+                          <div className="bg-[#FAF9F6] border border-[#2F5F5E]/15 p-3 rounded-xl space-y-2">
+                            <p className="text-xs text-[#65716F]">Password recovery email:</p>
                             <div className="flex gap-2">
                               <input
                                 type="email"
                                 value={forgotEmail}
                                 onChange={(e) => setForgotEmail(e.target.value)}
                                 placeholder="name@domain.com"
-                                className="flex-1 bg-[#111726] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"
+                                className="flex-1 bg-[#FFFFFF] border border-[#2F5F5E]/15 rounded-lg px-2.5 py-1.5 text-xs text-[#202D2D] focus:outline-none"
                               />
                               <button
                                 type="button"
@@ -685,7 +685,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                                   setSuccessNotice('Reset link sent to ' + (forgotEmail || 'your email'));
                                   setTimeout(() => setSuccessNotice(null), 3000);
                                 }}
-                                className="px-3 py-1.5 bg-purple-600/30 text-purple-300 hover:bg-purple-600/50 rounded-lg text-xs font-semibold"
+                                className="px-3 py-1.5 bg-[#24504F]/30 text-[#2F5F5E] hover:bg-[#24504F]/50 rounded-lg text-xs font-semibold"
                               >
                                 Send
                               </button>
@@ -696,7 +696,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                         <button
                           type="submit"
                           disabled={isLoading}
-                          className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                          className="w-full py-2.5 rounded-xl bg-[#24504F] hover:bg-[#2F5F5E] text-[#202D2D] font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                           {isLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -713,9 +713,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                     {/* Divider */}
                     <div className="relative py-2 flex items-center justify-center">
                       <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-white/10"></div>
+                        <div className="w-full border-t border-[#2F5F5E]/15"></div>
                       </div>
-                      <span className="relative px-3 bg-[#111726] text-[11px] text-gray-500 uppercase tracking-wider">
+                      <span className="relative px-3 bg-[#FFFFFF] text-[11px] text-[#8A9491] uppercase tracking-wider">
                         OR
                       </span>
                     </div>
@@ -724,7 +724,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                     <button
                       type="button"
                       onClick={handleGoogleSignIn}
-                      className="w-full py-2.5 rounded-xl bg-[#0B0F19] hover:bg-[#161F30] border border-white/10 text-gray-200 font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2.5 shadow-sm"
+                      className="w-full py-2.5 rounded-xl bg-[#FAF9F6] hover:bg-[#F1D9D9] border border-[#2F5F5E]/15 text-[#465552] font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2.5 shadow-sm"
                     >
                       <svg className="w-4 h-4" viewBox="0 0 24 24">
                         <path
@@ -754,29 +754,29 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                   <form onSubmit={handleRegister} className="space-y-3.5">
                     {/* Full Name */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-[#65716F] mb-1">
                         Full Name
                       </label>
                       <div className="relative">
-                        <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                        <User className="absolute left-3 top-3 w-4 h-4 text-[#7A8582]" />
                         <input
                           type="text"
                           required
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           placeholder="e.g. Diya Patel"
-                          className="w-full bg-[#0B0F19] border border-white/10 rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                          className="w-full bg-[#FAF9F6] border border-[#2F5F5E]/15 rounded-xl pl-9 pr-3 py-2 text-sm text-[#202D2D] placeholder-gray-500 focus:outline-none focus:border-[#2F5F5E] focus:ring-1 focus:ring-[#2F5F5E]"
                         />
                       </div>
                     </div>
 
                     {/* Phone Number */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-[#65716F] mb-1">
                         Phone Number
                       </label>
-                      <div className="flex items-center bg-[#0B0F19] border border-white/10 rounded-xl overflow-hidden focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500">
-                        <span className="px-3 text-xs font-semibold text-gray-400 border-r border-white/10">
+                      <div className="flex items-center bg-[#FAF9F6] border border-[#2F5F5E]/15 rounded-xl overflow-hidden focus-within:border-[#2F5F5E] focus-within:ring-1 focus-within:ring-[#2F5F5E]">
+                        <span className="px-3 text-xs font-semibold text-[#7A8582] border-r border-[#2F5F5E]/15">
                           +91
                         </span>
                         <input
@@ -786,48 +786,48 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                           onChange={(e) => handlePhoneChange(e.target.value)}
                           placeholder="10-digit mobile number"
                           maxLength={10}
-                          className="w-full bg-transparent px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none font-mono"
+                          className="w-full bg-transparent px-3 py-2 text-sm text-[#202D2D] placeholder-gray-500 focus:outline-none font-mono"
                         />
                       </div>
                     </div>
 
                     {/* Email */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-[#65716F] mb-1">
                         Email
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                        <Mail className="absolute left-3 top-3 w-4 h-4 text-[#7A8582]" />
                         <input
                           type="email"
                           required
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="diya.patel@svnit.ac.in"
-                          className="w-full bg-[#0B0F19] border border-white/10 rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                          className="w-full bg-[#FAF9F6] border border-[#2F5F5E]/15 rounded-xl pl-9 pr-3 py-2 text-sm text-[#202D2D] placeholder-gray-500 focus:outline-none focus:border-[#2F5F5E] focus:ring-1 focus:ring-[#2F5F5E]"
                         />
                       </div>
                     </div>
 
                     {/* Password */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-[#65716F] mb-1">
                         Password
                       </label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                        <Lock className="absolute left-3 top-3 w-4 h-4 text-[#7A8582]" />
                         <input
                           type={showPassword ? 'text' : 'password'}
                           required
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="••••••••"
-                          className="w-full bg-[#0B0F19] border border-white/10 rounded-xl pl-9 pr-10 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                          className="w-full bg-[#FAF9F6] border border-[#2F5F5E]/15 rounded-xl pl-9 pr-10 py-2 text-sm text-[#202D2D] placeholder-gray-500 focus:outline-none focus:border-[#2F5F5E] focus:ring-1 focus:ring-[#2F5F5E]"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-2.5 text-gray-400 hover:text-white"
+                          className="absolute right-3 top-2.5 text-[#7A8582] hover:text-[#202D2D]"
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -836,36 +836,36 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                       {/* Password Strength Indicator */}
                       {password && (
                         <div className="mt-1.5 flex items-center gap-2">
-                          <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden flex gap-1">
+                          <div className="flex-1 h-1 bg-[#2F5F5E]/8 rounded-full overflow-hidden flex gap-1">
                             <div className={`h-full flex-1 ${passwordStrength.score >= 1 ? passwordStrength.color : 'bg-transparent'}`}></div>
                             <div className={`h-full flex-1 ${passwordStrength.score >= 2 ? passwordStrength.color : 'bg-transparent'}`}></div>
                             <div className={`h-full flex-1 ${passwordStrength.score >= 3 ? passwordStrength.color : 'bg-transparent'}`}></div>
                             <div className={`h-full flex-1 ${passwordStrength.score >= 4 ? passwordStrength.color : 'bg-transparent'}`}></div>
                           </div>
-                          <span className="text-[10px] text-gray-400">{passwordStrength.label}</span>
+                          <span className="text-[10px] text-[#7A8582]">{passwordStrength.label}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Confirm Password */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-300 mb-1">
+                      <label className="block text-xs font-medium text-[#65716F] mb-1">
                         Confirm Password
                       </label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                        <Lock className="absolute left-3 top-3 w-4 h-4 text-[#7A8582]" />
                         <input
                           type={showConfirmPassword ? 'text' : 'password'}
                           required
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="••••••••"
-                          className="w-full bg-[#0B0F19] border border-white/10 rounded-xl pl-9 pr-10 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                          className="w-full bg-[#FAF9F6] border border-[#2F5F5E]/15 rounded-xl pl-9 pr-10 py-2 text-sm text-[#202D2D] placeholder-gray-500 focus:outline-none focus:border-[#2F5F5E] focus:ring-1 focus:ring-[#2F5F5E]"
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-2.5 text-gray-400 hover:text-white"
+                          className="absolute right-3 top-2.5 text-[#7A8582] hover:text-[#202D2D]"
                         >
                           {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -875,7 +875,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+                      className="w-full py-2.5 rounded-xl bg-[#24504F] hover:bg-[#2F5F5E] text-[#202D2D] font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
                     >
                       {isLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -890,17 +890,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                 )}
 
                 {/* Subtitle / Discreet Demo Shortcuts for Jury & Evaluators */}
-                <div className="pt-2 border-t border-white/5">
-                  <div className="flex items-center justify-between text-[11px] text-gray-400">
-                    <span className="text-gray-400 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-purple-400" />
+                <div className="pt-2 border-t border-[#2F5F5E]/10">
+                  <div className="flex items-center justify-between text-[11px] text-[#7A8582]">
+                    <span className="text-[#7A8582] flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-[#7CA982]" />
                       Quick demo test logins:
                     </span>
                     <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={() => handleDemoLogin('commuter')}
-                        className="text-purple-400 hover:text-purple-300 font-medium"
+                        className="text-[#7CA982] hover:text-[#2F5F5E] font-medium"
                       >
                         Student
                       </button>
@@ -908,7 +908,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                       <button
                         type="button"
                         onClick={() => handleDemoLogin('guardian')}
-                        className="text-indigo-400 hover:text-indigo-300 font-medium"
+                        className="text-[#7CA982] hover:text-[#2F5F5E] font-medium"
                       >
                         Guardian
                       </button>
@@ -916,7 +916,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                       <button
                         type="button"
                         onClick={() => handleDemoLogin('civic')}
-                        className="text-emerald-400 hover:text-emerald-300 font-medium"
+                        className="text-[#7CA982] hover:text-[#2F5F5E] font-medium"
                       >
                         Civic
                       </button>

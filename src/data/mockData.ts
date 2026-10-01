@@ -11,7 +11,7 @@ export const MOCK_ROUTES: RouteSegment[] = [
     safetyScore: 94,
     distanceKm: 4.8,
     durationMin: 14,
-    color: '#10B981', // Emerald green
+    color: '#4F9C83', // Emerald green
     lightingPercent: 96,
     crowdContext: {
       level: 'High',
@@ -46,7 +46,7 @@ export const MOCK_ROUTES: RouteSegment[] = [
     safetyScore: 78,
     distanceKm: 4.3,
     durationMin: 12,
-    color: '#F59E0B', // Amber
+    color: '#C79A3C', // Amber
     lightingPercent: 74,
     crowdContext: {
       level: 'Moderate',
@@ -80,7 +80,7 @@ export const MOCK_ROUTES: RouteSegment[] = [
     safetyScore: 41,
     distanceKm: 3.6,
     durationMin: 9,
-    color: '#EF4444', // Danger Red
+    color: '#D97883', // Danger Red
     lightingPercent: 28,
     crowdContext: {
       level: 'Deserted',

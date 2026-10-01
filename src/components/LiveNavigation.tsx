@@ -60,31 +60,31 @@ export const LiveNavigation: React.FC<LiveNavigationProps> = ({
   };
 
   return (
-    <div className="bg-[#111827]/95 backdrop-blur-xl border border-white/10 rounded-3xl p-5 shadow-2xl animate-in slide-in-from-bottom duration-300">
+    <div className="bg-[#FFFFFF]/95 backdrop-blur-xl border border-[#2F5F5E]/15 rounded-3xl p-5 shadow-2xl animate-in slide-in-from-bottom duration-300">
       {/* Top Banner */}
-      <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+      <div className="flex items-center justify-between pb-3 border-b border-[#2F5F5E]/15 mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center text-emerald-400 animate-pulse">
-            <Navigation className="w-4 h-4 fill-emerald-400" />
+          <div className="w-8 h-8 rounded-full bg-[#7CA982]/20 border border-[#7CA982] flex items-center justify-center text-[#7CA982] animate-pulse">
+            <Navigation className="w-4 h-4 fill-[#7CA982]" />
           </div>
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Active Safe Navigation</span>
-            <h3 className="text-sm font-bold text-white">{route.name}</h3>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#7CA982]">Active Safe Navigation</span>
+            <h3 className="text-sm font-bold text-[#202D2D]">{route.name}</h3>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSpeechMuted(!speechMuted)}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300"
+            className="p-2 rounded-xl bg-[#2F5F5E]/5 hover:bg-[#2F5F5E]/8 text-[#65716F]"
             title={speechMuted ? 'Unmute Voice Guidance' : 'Mute Voice Guidance'}
           >
-            {speechMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+            {speechMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[#7CA982]" />}
           </button>
 
           <button
             onClick={onEndTrip}
-            className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400"
+            className="p-2 rounded-xl bg-[#E57373]/10 hover:bg-[#E57373]/20 text-[#E57373]"
             title="End Navigation"
           >
             <X className="w-4 h-4" />
@@ -93,14 +93,14 @@ export const LiveNavigation: React.FC<LiveNavigationProps> = ({
       </div>
 
       {/* Main Turn Direction Instruction */}
-      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border border-white/10 rounded-2xl p-4 mb-4">
+      <div className="bg-gradient-to-r from-[#F4F1EC] via-[#E7E3DD] to-[#F4F1EC] border border-[#2F5F5E]/15 rounded-2xl p-4 mb-4">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-purple-600/30 border border-purple-500 flex items-center justify-center text-purple-300 shrink-0 mt-0.5">
-            <MapPin className="w-5 h-5 text-purple-400" />
+          <div className="w-10 h-10 rounded-2xl bg-[#24504F]/30 border border-[#2F5F5E] flex items-center justify-center text-[#2F5F5E] shrink-0 mt-0.5">
+            <MapPin className="w-5 h-5 text-[#7CA982]" />
           </div>
           <div className="flex-1">
-            <h4 className="text-base font-bold text-white leading-snug">{currentInstruction?.text}</h4>
-            <div className="flex items-center gap-2 mt-2 text-xs text-emerald-400">
+            <h4 className="text-base font-bold text-[#202D2D] leading-snug">{currentInstruction?.text}</h4>
+            <div className="flex items-center gap-2 mt-2 text-xs text-[#7CA982]">
               <Shield className="w-3.5 h-3.5" />
               <span>Safe Landmark Ahead: {currentInstruction?.landmark}</span>
             </div>
@@ -110,24 +110,24 @@ export const LiveNavigation: React.FC<LiveNavigationProps> = ({
 
       {/* Route Progress Bar */}
       <div className="mb-4">
-        <div className="flex justify-between items-center text-xs text-gray-400 mb-1">
+        <div className="flex justify-between items-center text-xs text-[#7A8582] mb-1">
           <span>Waypoint {currentCoordIndex + 1} of {totalSteps}</span>
-          <span className="font-mono text-white">{progressPct}% completed</span>
+          <span className="font-mono text-[#202D2D]">{progressPct}% completed</span>
         </div>
-        <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-[#E7E3DD] rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
+            className="h-full bg-gradient-to-r from-[#7CA982] to-[#7CA982] rounded-full transition-all duration-500"
             style={{ width: `${progressPct}%` }}
           />
         </div>
       </div>
 
       {/* Trip Simulation Controls */}
-      <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+      <div className="flex flex-wrap gap-2 pt-2 border-t border-[#2F5F5E]/10">
         <button
           onClick={onStepNextCoord}
           disabled={currentCoordIndex >= totalSteps - 1}
-          className="flex-1 py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5"
+          className="flex-1 py-2.5 px-3 rounded-xl bg-[#24504F] hover:bg-[#2F5F5E] disabled:opacity-40 text-[#202D2D] font-semibold text-xs transition-all flex items-center justify-center gap-1.5"
         >
           <Zap className="w-3.5 h-3.5" />
           <span>Next Step Along Route</span>
@@ -135,15 +135,15 @@ export const LiveNavigation: React.FC<LiveNavigationProps> = ({
 
         <button
           onClick={onSimulateDeviation}
-          className="py-2.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold text-xs transition-all flex items-center justify-center gap-1.5"
+          className="py-2.5 px-3 rounded-xl bg-[#F9C950]/10 hover:bg-[#F9C950]/20 border border-[#F9C950]/30 text-[#B08D28] font-semibold text-xs transition-all flex items-center justify-center gap-1.5"
         >
-          <AlertOctagon className="w-3.5 h-3.5 text-amber-400" />
+          <AlertOctagon className="w-3.5 h-3.5 text-[#F9C950]" />
           <span>Simulate Off-Route</span>
         </button>
 
         <button
           onClick={handleArrivalClick}
-          className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/30"
+          className="py-2.5 px-4 rounded-xl bg-[#2F5F5E] hover:bg-[#7CA982] text-[#202D2D] font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-[#2F5F5E]/30"
         >
           <CheckCircle2 className="w-3.5 h-3.5" />
           <span>Simulate Safe Arrival</span>

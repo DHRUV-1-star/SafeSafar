@@ -52,22 +52,22 @@ export const DuressModal: React.FC<DuressModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-sm bg-[#111827] border border-white/10 rounded-3xl p-6 text-white shadow-2xl flex flex-col items-center">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#202D2D]/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-sm bg-[#FFFFFF] border border-[#2F5F5E]/15 rounded-3xl p-6 text-[#202D2D] shadow-2xl flex flex-col items-center">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-full bg-white/5"
+          className="absolute top-4 right-4 p-2 text-[#7A8582] hover:text-[#202D2D] rounded-full bg-[#2F5F5E]/5"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-3 mt-2">
+        <div className="w-14 h-14 rounded-2xl bg-[#2F5F5E]/10 border border-[#2F5F5E]/30 flex items-center justify-center text-[#7CA982] mb-3 mt-2">
           <Lock className="w-7 h-7" />
         </div>
 
-        <h3 className="text-xl font-bold text-white text-center">Safety PIN Verification</h3>
-        <p className="text-xs text-gray-400 text-center mt-1 max-w-[260px]">
+        <h3 className="text-xl font-bold text-[#202D2D] text-center">Safety PIN Verification</h3>
+        <p className="text-xs text-[#7A8582] text-center mt-1 max-w-[260px]">
           Enter your 4-digit code to disarm security watch or verify your status.
         </p>
 
@@ -78,14 +78,14 @@ export const DuressModal: React.FC<DuressModalProps> = ({
               key={idx}
               className={`w-4 h-4 rounded-full border-2 transition-all ${
                 pin.length > idx
-                  ? 'bg-purple-500 border-purple-400 scale-110 shadow-lg shadow-purple-500/50'
-                  : 'border-gray-600 bg-transparent'
+                  ? 'bg-[#2F5F5E] border-[#7CA982] scale-110 shadow-lg shadow-[#2F5F5E]/50'
+                  : 'border-[#B7B1A8] bg-transparent'
               }`}
             />
           ))}
         </div>
 
-        {errorMsg && <div className="text-xs text-red-400 font-medium mb-3">{errorMsg}</div>}
+        {errorMsg && <div className="text-xs text-[#E57373] font-medium mb-3">{errorMsg}</div>}
 
         {/* Keypad */}
         <div className="grid grid-cols-3 gap-3 w-full max-w-[260px]">
@@ -93,7 +93,7 @@ export const DuressModal: React.FC<DuressModalProps> = ({
             <button
               key={digit}
               onClick={() => handleDigit(digit)}
-              className="h-14 rounded-2xl bg-gray-800/80 hover:bg-gray-700/80 active:bg-purple-600/50 text-xl font-semibold transition-all border border-white/5"
+              className="h-14 rounded-2xl bg-[#E7E3DD]/90 hover:bg-[#D9D4CC]/90 active:bg-[#24504F]/50 text-xl font-semibold transition-all border border-[#2F5F5E]/10"
             >
               {digit}
             </button>
@@ -101,27 +101,27 @@ export const DuressModal: React.FC<DuressModalProps> = ({
           <div />
           <button
             onClick={() => handleDigit('0')}
-            className="h-14 rounded-2xl bg-gray-800/80 hover:bg-gray-700/80 active:bg-purple-600/50 text-xl font-semibold transition-all border border-white/5"
+            className="h-14 rounded-2xl bg-[#E7E3DD]/90 hover:bg-[#D9D4CC]/90 active:bg-[#24504F]/50 text-xl font-semibold transition-all border border-[#2F5F5E]/10"
           >
             0
           </button>
           <button
             onClick={handleDelete}
-            className="h-14 rounded-2xl bg-gray-800/50 hover:bg-gray-700/80 flex items-center justify-center text-gray-400 hover:text-white transition-all border border-white/5"
+            className="h-14 rounded-2xl bg-[#E7E3DD]/75 hover:bg-[#D9D4CC]/90 flex items-center justify-center text-[#7A8582] hover:text-[#202D2D] transition-all border border-[#2F5F5E]/10"
           >
             <Delete className="w-5 h-5" />
           </button>
         </div>
 
         {/* Evaluator Feature Callout */}
-        <div className="mt-6 w-full p-3 rounded-xl bg-purple-950/40 border border-purple-500/20 text-[11px] text-gray-300">
-          <div className="flex items-center gap-1.5 text-purple-300 font-semibold mb-1">
-            <AlertOctagon className="w-3.5 h-3.5 text-purple-400" />
+        <div className="mt-6 w-full p-3 rounded-xl bg-[#1E3D3C]/40 border border-[#2F5F5E]/20 text-[11px] text-[#65716F]">
+          <div className="flex items-center gap-1.5 text-[#2F5F5E] font-semibold mb-1">
+            <AlertOctagon className="w-3.5 h-3.5 text-[#7CA982]" />
             <span>Duress Innovation Demo</span>
           </div>
-          <p className="text-[10px] text-gray-400 leading-tight">
-            • Enter <span className="text-emerald-400 font-bold">1234</span> for Normal Disarm.<br />
-            • Enter <span className="text-pink-400 font-bold">9999</span> for <strong>Duress Passkey</strong> (silently alerts contacts while opening Decoy Calculator to deceive perpetrator).
+          <p className="text-[10px] text-[#7A8582] leading-tight">
+            • Enter <span className="text-[#7CA982] font-bold">1234</span> for Normal Disarm.<br />
+            • Enter <span className="text-[#E57373] font-bold">9999</span> for <strong>Duress Passkey</strong> (silently alerts contacts while opening Decoy Calculator to deceive perpetrator).
           </p>
         </div>
       </div>

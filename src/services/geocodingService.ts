@@ -113,7 +113,7 @@ export async function fetchRealRoutes(
         category: 'safest' as const,
         suffix: 'Main Highway / Illuminated Corridor',
         score: 94,
-        color: '#10B981',
+        color: '#7CA982',
         lighting: 95,
         crowd: {
           level: 'High' as const,
@@ -131,7 +131,7 @@ export async function fetchRealRoutes(
         category: 'balanced' as const,
         suffix: 'Alternate Avenue / Sector Road',
         score: 79,
-        color: '#F59E0B',
+        color: '#F9C950',
         lighting: 76,
         crowd: {
           level: 'Moderate' as const,
@@ -145,7 +145,7 @@ export async function fetchRealRoutes(
         category: 'fastest' as const,
         suffix: 'Direct Bypass Shortcut',
         score: 48,
-        color: '#EF4444',
+        color: '#E57373',
         lighting: 35,
         crowd: {
           level: 'Deserted' as const,
@@ -192,7 +192,7 @@ export async function fetchRealRoutes(
         safetyScore: 92,
         distanceKm: 5.0,
         durationMin: 15,
-        color: '#10B981',
+        color: '#7CA982',
         lightingPercent: 90,
         crowdContext: {
           level: 'High',

@@ -90,8 +90,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       className: 'user-location-marker',
       html: `
         <div style="position: relative; width: 24px; height: 24px;">
-          <div style="position: absolute; width: 24px; height: 24px; background: rgba(147, 51, 234, 0.4); border-radius: 50%; animation: pulse-ring 2s infinite;"></div>
-          <div style="position: absolute; top: 4px; left: 4px; width: 16px; height: 16px; background: #9333ea; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 0 10px rgba(147,51,234,0.8);"></div>
+          <div style="position: absolute; width: 24px; height: 24px; background: rgba(47, 95, 94, 0.25); border-radius: 50%; animation: pulse-ring 2s infinite;"></div>
+          <div style="position: absolute; top: 4px; left: 4px; width: 16px; height: 16px; background: #2D6A5E; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 10px rgba(47,95,94,0.45);"></div>
         </div>
       `,
       iconSize: [24, 24],
@@ -215,7 +215,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     if (key && key.startsWith('pk.')) {
       // High-resolution Mapbox Navigation Night Tiles
       tileLayerRef.current = L.tileLayer(
-        `https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/256/{z}/{x}/{y}@2x?access_token=${key}`,
+        `https://api.mapbox.com/styles/v1/mapbox/navigation-day-v1/tiles/256/{z}/{x}/{y}@2x?access_token=${key}`,
         {
           attribution: '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; OpenStreetMap',
           tileSize: 512,
@@ -292,7 +292,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       });
 
       mainPolyline.bindTooltip(
-        `<div style="font-weight: 600; font-size: 12px; color: #111;">
+        `<div style="font-weight: 600; font-size: 12px; color: #243A35;">
           ${route.name} <br/>
           <span style="color: ${route.color};">Safety Score: ${route.safetyScore}/100</span> (${route.durationMin} min)
         </div>`,
@@ -311,7 +311,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       const startIcon = L.divIcon({
         className: 'start-marker',
         html: `
-          <div title="${startLocationName}" style="background: #064e3b; border: 2px solid #10b981; color: #34d399; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.6); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;">
+          <div title="${startLocationName}" style="background: #E5F3EC; border: 2px solid #55A184; color: #2D6A5E; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 14px rgba(48,67,63,0.16); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;">
             <span>🟢 START: ${shortStartLabel}</span>
           </div>
         `,
@@ -327,7 +327,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       const destIcon = L.divIcon({
         className: 'dest-marker',
         html: `
-          <div title="${destinationName}" style="background: #831843; border: 2px solid #ec4899; color: #f472b6; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.6); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;">
+          <div title="${destinationName}" style="background: #F9E9EB; border: 2px solid #D97883; color: #D97883; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 14px rgba(48,67,63,0.16); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;">
             <span>📍 DEST: ${shortDestLabel}</span>
           </div>
         `,
@@ -353,11 +353,11 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
     landmarks.forEach((lm) => {
       let iconSymbol = '🏛️';
-      let badgeBg = '#1e3a8a';
+      let badgeBg = '#2D6A5E';
 
       if (lm.type === 'pink_booth') {
         iconSymbol = '🛡️ Pink';
-        badgeBg = 'rgba(236, 72, 153, 0.9)';
+        badgeBg = 'rgba(229, 115, 115, 0.9)';
       } else if (lm.type === 'police') {
         iconSymbol = '👮 Police';
         badgeBg = 'rgba(37, 99, 235, 0.9)';
@@ -372,7 +372,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       const lmIcon = L.divIcon({
         className: 'landmark-marker',
         html: `
-          <div style="background: ${badgeBg}; color: #fff; border: 1.5px solid rgba(255,255,255,0.8); border-radius: 9999px; padding: 3px 8px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor: pointer;">
+          <div style="background: ${badgeBg}; color: #FFFFFF; border: 1.5px solid rgba(255,255,255,0.9); border-radius: 9999px; padding: 3px 8px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; box-shadow: 0 4px 10px rgba(48,67,63,0.12); cursor: pointer;">
             ${iconSymbol}
           </div>
         `,
@@ -387,13 +387,13 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
       marker.bindPopup(`
         <div style="padding: 4px;">
-          <h4 style="margin: 0 0 4px 0; color: #fff; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+          <h4 style="margin: 0 0 4px 0; color: #FFFFFF; font-size: 14px; display: flex; align-items: center; gap: 6px;">
             <span>${iconSymbol}</span> ${lm.name}
           </h4>
-          <p style="margin: 0 0 4px 0; font-size: 12px; color: #9ca3af;">${lm.address}</p>
+          <p style="margin: 0 0 4px 0; font-size: 12px; color: #61746E;">${lm.address}</p>
           <div style="display: flex; gap: 6px; font-size: 11px; margin-top: 6px;">
-            <span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 2px 6px; border-radius: 4px;">${lm.openHours}</span>
-            <span style="background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 6px; border-radius: 4px;">Tel: ${lm.phone}</span>
+            <span style="background: rgba(142,173,148,0.16); color: #2D6A5E; padding: 2px 6px; border-radius: 4px;">${lm.openHours}</span>
+            <span style="background: rgba(111,150,128,0.14); color: #67A98A; padding: 2px 6px; border-radius: 4px;">Tel: ${lm.phone}</span>
           </div>
         </div>
       `);
@@ -415,8 +415,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       [21.1770, 72.7910],
       [21.1690, 72.7830],
     ], {
-      color: '#ef4444',
-      fillColor: '#ef4444',
+      color: '#D97883',
+      fillColor: '#D97883',
       fillOpacity: 0.12,
       weight: 1.5,
       dashArray: '4, 6',
@@ -428,13 +428,13 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
     incidents.forEach((inc) => {
       const isSafe = inc.severity === 'safe';
-      const color = isSafe ? '#10b981' : inc.severity === 'high' ? '#ef4444' : '#f59e0b';
+      const color = isSafe ? '#67A98A' : inc.severity === 'high' ? '#D97883' : '#C99B3E';
       const label = inc.type === 'poor_lighting' ? '💡 Dark' : inc.type === 'harassment' ? '⚠️ Risk' : isSafe ? '✨ Verified Safe' : '⚠️ Alert';
 
       const incIcon = L.divIcon({
         className: 'incident-marker',
         html: `
-          <div style="background: #111827; border: 2px solid ${color}; color: ${color}; border-radius: 8px; padding: 2px 6px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.6);">
+          <div style="background: #FFFFFF; border: 2px solid ${color}; color: ${color}; border-radius: 8px; padding: 2px 6px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; box-shadow: 0 2px 8px rgba(48,67,63,0.16);">
             ${label}
           </div>
         `,
@@ -447,12 +447,12 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         <div style="padding: 4px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
             <span style="font-weight: 700; color: ${color}; font-size: 12px;">${inc.title}</span>
-            <span style="font-size: 10px; color: #9ca3af;">${inc.timestamp}</span>
+            <span style="font-size: 10px; color: #61746E;">${inc.timestamp}</span>
           </div>
-          <p style="font-size: 12px; margin: 0 0 6px 0; color: #d1d5db;">${inc.description}</p>
-          <div style="font-size: 11px; color: #9ca3af; display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px;">
+          <p style="font-size: 12px; margin: 0 0 6px 0; color: #53635E;">${inc.description}</p>
+          <div style="font-size: 11px; color: #61746E; display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px;">
             <span>Verified by ${inc.confirmations} users</span>
-            <span style="color: #60a5fa;">Trust Confirmed ✓</span>
+            <span style="color: #67A98A;">Trust Confirmed ✓</span>
           </div>
         </div>
       `);
@@ -472,18 +472,18 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     streetLamps.forEach((lamp) => {
       const circle = L.circleMarker([lamp.lat, lamp.lng], {
         radius: 3.5,
-        color: '#f59e0b',
-        fillColor: '#fef08a',
+        color: '#C99B3E',
+        fillColor: '#FFF5DA',
         fillOpacity: 0.85,
         weight: 1.5,
       });
 
       circle.bindPopup(`
         <div style="font-size: 11px; padding: 2px;">
-          <strong style="color: #f59e0b; display: flex; align-items: center; gap: 4px;">💡 OSM Street Lamp</strong>
-          <div style="color: #9ca3af; margin-top: 2px;">OSM Node ID: ${lamp.id}</div>
-          <div style="color: #60a5fa; font-family: monospace;">${lamp.lat.toFixed(5)}, ${lamp.lng.toFixed(5)}</div>
-          <div style="margin-top: 4px; font-size: 10px; color: #10b981; background: rgba(16,185,129,0.15); padding: 2px 4px; border-radius: 4px; display: inline-block;">Verified OSM Light Source</div>
+          <strong style="color: #C99B3E; display: flex; align-items: center; gap: 4px;">💡 OSM Street Lamp</strong>
+          <div style="color: #61746E; margin-top: 2px;">OSM Node ID: ${lamp.id}</div>
+          <div style="color: #67A98A; font-family: monospace;">${lamp.lat.toFixed(5)}, ${lamp.lng.toFixed(5)}</div>
+          <div style="margin-top: 4px; font-size: 10px; color: #67A98A; background: rgba(16,185,129,0.15); padding: 2px 4px; border-radius: 4px; display: inline-block;">Verified OSM Light Source</div>
         </div>
       `);
 
@@ -492,7 +492,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   }, [streetLamps, showSafeLandmarks]);
 
   return (
-    <div className="relative z-0 isolate w-full h-full min-h-[380px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+    <div className="relative z-0 isolate w-full h-full min-h-[380px] rounded-2xl overflow-hidden shadow-2xl border border-[#2D6A5E]/15">
       <div ref={mapContainerRef} className="w-full h-full min-h-[380px] relative z-0" />
     </div>
   );
