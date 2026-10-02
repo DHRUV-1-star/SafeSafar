@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActiveSOSState, TrustedContact, RouteSegment } from '../types';
 import {
   Shield,
@@ -61,6 +61,11 @@ export const GuardianDashboard: React.FC<GuardianDashboardProps> = ({
   const [isEditingCommuter, setIsEditingCommuter] = useState(false);
   const [tempCommuterName, setTempCommuterName] = useState(commuterProfile.name);
   const [tempCommuterHub, setTempCommuterHub] = useState(commuterProfile.hub);
+
+  useEffect(() => {
+    setTempCommuterName(commuterProfile.name);
+    setTempCommuterHub(commuterProfile.hub);
+  }, [commuterProfile.name, commuterProfile.hub]);
 
   const handleOpenAdd = () => {
     setEditingGuardian(null);

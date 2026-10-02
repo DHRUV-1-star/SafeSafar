@@ -138,17 +138,47 @@ export const App: React.FC = () => {
     const saved = localStorage.getItem('safesafar_commuter_profile');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.name && parsed.name !== 'Dharmik Gohil') {
+          return parsed;
+        }
       } catch (e) {
         console.error('Error loading commuter profile', e);
       }
     }
+    const savedUserStr = localStorage.getItem('safesafar_user');
+    let defaultName = 'Commuter';
+    let defaultAvatar = '';
+    if (savedUserStr) {
+      try {
+        const u = JSON.parse(savedUserStr);
+        if (u?.name) {
+          defaultName = u.name;
+          defaultAvatar = u.avatar || '';
+        }
+      } catch {}
+    }
     return {
-      name: 'Dharmik Gohil',
+      name: defaultName,
       hub: 'Active Walk Me Home Companion • Surat Hub',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+      avatar: defaultAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(defaultName)}&backgroundColor=24504F,2F5F5E`,
     };
   });
+
+  // Keep commuter profile in sync with logged in user
+  useEffect(() => {
+    if (currentUser) {
+      setCommuterProfile((prev) => {
+        const updated = {
+          ...prev,
+          name: currentUser.name,
+          avatar: currentUser.avatar || prev.avatar,
+        };
+        localStorage.setItem('safesafar_commuter_profile', JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [currentUser]);
 
   // Real Locations & Coordinates State
   const [startCoords, setStartCoords] = useState<[number, number]>([21.1663, 72.7832]);
