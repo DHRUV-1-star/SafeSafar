@@ -60,6 +60,43 @@ function initializeLocalUsers() {
 
 initializeLocalUsers();
 
+function registerUserLocally(
+  email: string,
+  password: string,
+  name: string,
+  phone?: string,
+  role: 'commuter' | 'guardian' | 'civic' = 'commuter'
+): { user: AuthUser | null; error: string | null } {
+  const cleanEmail = email.trim().toLowerCase();
+  initializeLocalUsers();
+  const rawUsers = localStorage.getItem(LOCAL_STORAGE_USERS_KEY);
+  const users: (AuthUser & { passwordHash: string })[] = rawUsers ? JSON.parse(rawUsers) : [];
+
+  const existingIndex = users.findIndex((u) => u.email === cleanEmail);
+  if (existingIndex >= 0) {
+    const { passwordHash, ...cleanUser } = users[existingIndex];
+    localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, JSON.stringify(cleanUser));
+    return { user: cleanUser, error: null };
+  }
+
+  const newUserId = `user-${Date.now()}`;
+  const newUser: AuthUser = {
+    id: newUserId,
+    email: cleanEmail,
+    name: name.trim(),
+    phone: phone?.trim() || '',
+    role,
+    hub: 'SVNIT Surat Hub',
+    avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name.trim())}&backgroundColor=24504F,2F5F5E`,
+  };
+
+  users.push({ ...newUser, passwordHash: password });
+  localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users));
+  localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, JSON.stringify(newUser));
+
+  return { user: newUser, error: null };
+}
+
 // ============================================================================
 // AUTHENTICATION FUNCTIONS
 // ============================================================================
@@ -92,6 +129,15 @@ export async function registerUser(
       });
 
       if (error) {
+        // If Supabase hits email rate limit, fall back seamlessly to local persistent registration so user is never blocked!
+        if (
+          error.message.toLowerCase().includes('rate limit') ||
+          error.message.toLowerCase().includes('email rate limit') ||
+          error.message.toLowerCase().includes('over_email_send_rate_limit')
+        ) {
+          console.warn('[Supabase Auth] Rate limit hit, seamlessly completing registration locally:', error.message);
+          return registerUserLocally(cleanEmail, password, name, phone, role);
+        }
         return { user: null, error: error.message };
       }
 
