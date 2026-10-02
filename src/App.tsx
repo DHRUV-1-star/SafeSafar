@@ -64,9 +64,6 @@ export const App: React.FC = () => {
   // Navigation & View Views
   const [currentView, setCurrentView] = useState<'mobile' | 'guardian' | 'civic'>('mobile');
 
-
-  const [deviceFrameMode, setDeviceFrameMode] = useState<boolean>(false);
-
   // Mapbox token: read from .env at build time only (pk.* public token, safe for client)
   const mapboxApiKey = (import.meta.env.VITE_MAPBOX_TOKEN as string) || '';
 
@@ -643,7 +640,6 @@ export const App: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button onClick={() => setShowSafeLandmarks(!showSafeLandmarks)} className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${showSafeLandmarks ? 'bg-[#F8E9EA] border-[#D58A93]/45 text-[#B96570]' : 'bg-white border-[#D4E2D5] text-[#73807B]'}`}>Pink & Police Posts</button>
                 <button onClick={() => setShowHeatmap(!showHeatmap)} className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${showHeatmap ? 'bg-[#F5EEDB] border-[#D9C58B] text-[#8A7131]' : 'bg-white border-[#D4E2D5] text-[#73807B]'}`}><Flame className="w-3 h-3 inline mr-1" />Dark Spot Heatmap</button>
-                <button onClick={() => setDeviceFrameMode(!deviceFrameMode)} className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1 ${deviceFrameMode ? 'bg-[#356B62] border-[#356B62] text-white' : 'bg-white border-[#D4E2D5] text-[#687873] hover:text-[#30433F]'}`}><Smartphone className="w-3.5 h-3.5" /><span>{deviceFrameMode ? 'Frame: Phone' : 'Frame: Full'}</span></button>
                 <button onClick={handleSimulateShake} className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#F8E9EA] hover:bg-[#F5DEE0] border border-[#E7B9BE] text-[#B96570] transition-all">Shake SOS</button>
               </div>
             </div>
@@ -651,8 +647,8 @@ export const App: React.FC = () => {
             {/* Map Container + Below Map Information */}
             <div className="space-y-6 relative z-10">
               {/* Map Box: Full width at top */}
-              <div className={deviceFrameMode ? "max-w-[460px] mx-auto bg-[#202D2D]/95 p-4 rounded-[48px] border-[5px] border-[#C9C4BC] shadow-2xl relative z-10 overflow-hidden" : "w-full relative z-10"}>
-                <div className={deviceFrameMode ? "h-[380px] sm:h-[420px] w-full relative z-0 isolate rounded-3xl overflow-hidden shadow-lg border border-[#2F5F5E]/15" : "h-[420px] sm:h-[480px] w-full relative z-0 isolate rounded-3xl overflow-hidden shadow-lg border border-[#2F5F5E]/15"}>
+              <div className="w-full relative z-10">
+                <div className="h-[420px] sm:h-[480px] w-full relative z-0 isolate rounded-3xl overflow-hidden shadow-lg border border-[#2F5F5E]/15">
                   <MapComponent routes={routes} selectedRoute={selectedRoute} onSelectRoute={setSelectedRoute} landmarks={landmarks} incidents={incidents} userLocation={userLocation} isNavigating={isNavigating} navProgressIndex={navStepIndex} showHeatmap={showHeatmap} showSafeLandmarks={showSafeLandmarks} mapboxApiKey={mapboxApiKey} startLocationName={startLocationName} destinationName={destinationName} onStreetLampsUpdated={handleStreetLampsUpdated} onLandmarkClick={(lm) => { showToast(`Safe Landmark: ${lm.name} (${lm.openHours})`); }} />
                   {sosState.isActive && (<div className="absolute top-4 left-4 z-10 bg-[#D95C5C]/90 text-[#30433F] px-3 py-1.5 rounded-full text-xs font-black tracking-wide shadow-xl flex items-center gap-2 animate-bounce pointer-events-none"><span className="w-2 h-2 rounded-full bg-white animate-ping"></span><span>SOS TELEMETRY TRANSMITTING LIVE</span></div>)}
                   {isOfflineMode && (<div className="absolute top-4 right-14 z-10 bg-yellow-600/90 text-black font-bold px-3 py-1.5 rounded-full text-[11px] shadow-xl pointer-events-none">OFFLINE / 2G MESH ACTIVE</div>)}
