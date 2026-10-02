@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
 interface UserAvatarProps {
-  name: string;
+  name?: string;
   avatar?: string;
+  user?: { name?: string; avatar?: string };
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
@@ -10,6 +11,7 @@ interface UserAvatarProps {
 const getInitials = (name: string): string => {
   if (!name) return 'U';
   const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'U';
   if (parts.length === 1) {
     return parts[0].slice(0, 2).toUpperCase();
   }
@@ -19,14 +21,18 @@ const getInitials = (name: string): string => {
 export const UserAvatar: React.FC<UserAvatarProps> = ({
   name,
   avatar,
+  user,
   size = 'md',
   className = '',
 }) => {
   const [imageError, setImageError] = useState(false);
 
+  const displayName = name || user?.name || 'User';
+  const displayAvatar = avatar || user?.avatar;
+
   useEffect(() => {
     setImageError(false);
-  }, [avatar]);
+  }, [displayAvatar]);
 
   const sizeClasses = {
     xs: 'w-6 h-6 text-[10px]',
@@ -36,14 +42,14 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     xl: 'w-20 h-20 text-xl font-bold',
   };
 
-  const initials = getInitials(name);
-  const hasValidImage = avatar && avatar.trim().length > 0 && !imageError;
+  const initials = getInitials(displayName);
+  const hasValidImage = displayAvatar && displayAvatar.trim().length > 0 && !imageError;
 
   if (hasValidImage) {
     return (
       <img
-        src={avatar}
-        alt={name}
+        src={displayAvatar}
+        alt={displayName}
         onError={() => setImageError(true)}
         className={`${sizeClasses[size]} rounded-full object-cover border border-[#2F5F5E]/30 shrink-0 ${className}`}
       />

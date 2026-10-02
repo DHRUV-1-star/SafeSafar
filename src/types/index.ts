@@ -104,5 +104,6 @@ export interface UserProfile {
   guardianPairingCode: string; // 6-digit sync code
   emergencyContactCount: number;
   batteryStatus?: number;
+  hub?: string;
 }
 
