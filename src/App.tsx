@@ -21,6 +21,8 @@ import { AuthPage } from './components/AuthPage';
 import { DatabaseSetupModal } from './components/DatabaseSetupModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { Sparkles, Smartphone, Flame } from 'lucide-react';
+import { Sidebar, SidebarFeature } from './components/Sidebar';
+import { AiCompanionPage } from './components/AiCompanionPage';
 import { playSilentConfirmPing, stopSiren } from './utils/audio';
 import { fetchRealRoutes, searchLocationSuggestions, generateRouteLandmarks, LocationSuggestion } from './services/geocodingService';
 import {
@@ -53,6 +55,9 @@ export const App: React.FC = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isDatabaseSetupOpen, setIsDatabaseSetupOpen] = useState<boolean>(false);
+
+  // Sidebar active feature
+  const [activeFeature, setActiveFeature] = useState<SidebarFeature>('safe-route');
 
   // Navigation & View Views
   const [currentView, setCurrentView] = useState<'mobile' | 'guardian' | 'civic'>('mobile');
@@ -587,55 +592,12 @@ export const App: React.FC = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-[#F7F8F2] text-[#30433F] flex flex-col font-sans selection:bg-[#2F5F5E]/30 selection:text-[#30433F]">
-      {/* Decoy Screen Mode (Complete Disguise) */}
-      {isDecoyOpen && (
-        <DecoyScreen
-          onExitDecoy={() => setIsDecoyOpen(false)}
-          duressSOSDispatched={sosState.duressActive}
-        />
-      )}
-
-      {/* Top Navbar */}
-      <Navbar
-        currentView={currentView}
-        onSelectView={setCurrentView}
-        isOfflineMode={isOfflineMode}
-        onToggleOffline={() => {
-          setIsOfflineMode(!isOfflineMode);
-          showToast(!isOfflineMode ? '📶 Switched to 2G / SMS Fallback Mode' : '⚡ 5G Online Mode Restored');
-        }}
-        onTriggerFakeCall={() => setIsFakeCallOpen(true)}
-        onOpenDuressModal={() => setIsDuressModalOpen(true)}
-        onOpenDecoy={() => setIsDecoyOpen(true)}
-        onOpenReportModal={() => setIsReportModalOpen(true)}
-        onOpenSafeHavens={() => setIsSafeHavensOpen(true)}
-
-        onTriggerSOS={() => triggerSOS('button', false, false)}
-        onDisarmSOS={() => setIsDuressModalOpen(true)}
-        sosState={sosState}
-        batteryLevel={batteryLevel}
-        currentUser={currentUser}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
-        onOpenProfileModal={() => setIsProfileModalOpen(true)}
-        onLogout={handleLogout}
-        onOpenDatabaseSetup={() => setIsDatabaseSetupOpen(true)}
-      />
-
-      {/* Floating System Toast Alert */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-[10000] bg-[#F1D9D9] border border-[#2F5F5E]/40 text-[#30433F] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
-          <Sparkles className="w-5 h-5 text-[#7CA982] shrink-0" />
-          <span className="text-xs font-semibold">{toastMessage}</span>
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
-        {/* VIEW 1: Mobile Companion View */}
-        {currentView === 'mobile' && (
-          <div className="space-y-6">
+  // Helper to render full-page content based on sidebar feature
+  const renderFeaturePage = () => {
+    switch (activeFeature) {
+      case 'safe-route':
+        return (
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {/* Top Innovation Banner & Sub-Controls */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-[#EAF1E9] border border-[#D4E2D5] rounded-2xl p-3.5 px-5">
               <div className="flex items-center gap-2.5">
@@ -646,201 +608,240 @@ export const App: React.FC = () => {
                 <span className="text-xs font-bold text-[#30433F]">Safe Route Intelligence: Surat Pilot Corridor</span>
                 <span className="text-[10px] text-[#2F5F5E] font-mono hidden md:inline">SVNIT ➔ Ring Road Hub</span>
               </div>
-
-              {/* Map Layer Toggles & Shake Demo */}
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowSafeLandmarks(!showSafeLandmarks)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
-                    showSafeLandmarks ? 'bg-[#F8E9EA] border-[#D58A93]/45 text-[#B96570]' : 'bg-white border-[#D4E2D5] text-[#73807B]'
-                  }`}
-                >
-                  Pink & Police Posts
-                </button>
-
-                <button
-                  onClick={() => setShowHeatmap(!showHeatmap)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
-                    showHeatmap ? 'bg-[#F5EEDB] border-[#D9C58B] text-[#8A7131]' : 'bg-white border-[#D4E2D5] text-[#73807B]'
-                  }`}
-                >
-                  <Flame className="w-3 h-3 inline mr-1" />
-                  Dark Spot Heatmap
-                </button>
-
-                <button
-                  onClick={() => setDeviceFrameMode(!deviceFrameMode)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1 ${
-                    deviceFrameMode ? 'bg-[#356B62] border-[#356B62] text-white' : 'bg-white border-[#D4E2D5] text-[#687873] hover:text-[#30433F]'
-                  }`}
-                  title="Toggle Mobile Device Mockup Frame"
-                >
-                  <Smartphone className="w-3.5 h-3.5" />
-                  <span>{deviceFrameMode ? 'Frame: Phone' : 'Frame: Full'}</span>
-                </button>
-
-                <button
-                  onClick={handleSimulateShake}
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#F8E9EA] hover:bg-[#F5DEE0] border border-[#E7B9BE] text-[#B96570] transition-all flex items-center gap-1"
-                  title="Simulate rapid phone shake or 3-tap panic gesture"
-                >
-                  <span>Shake SOS</span>
-                </button>
+                <button onClick={() => setShowSafeLandmarks(!showSafeLandmarks)} className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${showSafeLandmarks ? 'bg-[#F8E9EA] border-[#D58A93]/45 text-[#B96570]' : 'bg-white border-[#D4E2D5] text-[#73807B]'}`}>Pink & Police Posts</button>
+                <button onClick={() => setShowHeatmap(!showHeatmap)} className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${showHeatmap ? 'bg-[#F5EEDB] border-[#D9C58B] text-[#8A7131]' : 'bg-white border-[#D4E2D5] text-[#73807B]'}`}><Flame className="w-3 h-3 inline mr-1" />Dark Spot Heatmap</button>
+                <button onClick={() => setDeviceFrameMode(!deviceFrameMode)} className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1 ${deviceFrameMode ? 'bg-[#356B62] border-[#356B62] text-white' : 'bg-white border-[#D4E2D5] text-[#687873] hover:text-[#30433F]'}`}><Smartphone className="w-3.5 h-3.5" /><span>{deviceFrameMode ? 'Frame: Phone' : 'Frame: Full'}</span></button>
+                <button onClick={handleSimulateShake} className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#F8E9EA] hover:bg-[#F5DEE0] border border-[#E7B9BE] text-[#B96570] transition-all">Shake SOS</button>
               </div>
             </div>
-
-            {/* Route Search & Location Input Bar */}
-            <RouteSearchBar
-              startLocation={startLocationName}
-              destination={destinationName}
-              onSelectStartLocation={handleSelectStartLocation}
-              onSelectDestination={handleSelectDestination}
-              onStartLocationInputChange={setStartLocationName}
-              onDestinationInputChange={setDestinationName}
-              onSwapLocations={handleSwapLocations}
-              onSearchRoutes={handleFetchRealRoutes}
-              isLoadingRoutes={isLoadingRoutes}
-            />
-
-            {/* Layout: Interactive Leaflet Map + Controls */}
+            <RouteSearchBar startLocation={startLocationName} destination={destinationName} onSelectStartLocation={handleSelectStartLocation} onSelectDestination={handleSelectDestination} onStartLocationInputChange={setStartLocationName} onDestinationInputChange={setDestinationName} onSwapLocations={handleSwapLocations} onSearchRoutes={handleFetchRealRoutes} isLoadingRoutes={isLoadingRoutes} />
             <div className={deviceFrameMode ? "max-w-[460px] mx-auto bg-[#202D2D]/95 p-4 rounded-[48px] border-[5px] border-[#C9C4BC] shadow-2xl space-y-4 relative z-10" : "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start relative z-10"}>
-              {/* Map Visualizer (Left/Top) */}
               <div className={deviceFrameMode ? "flex flex-col gap-4 w-full" : "lg:col-span-7 xl:col-span-8 flex flex-col gap-4"}>
                 <div className={deviceFrameMode ? "h-[340px] w-full relative z-0 isolate" : "h-[460px] sm:h-[520px] w-full relative z-0 isolate"}>
-                  <MapComponent
-                    routes={routes}
-                    selectedRoute={selectedRoute}
-                    onSelectRoute={setSelectedRoute}
-                    landmarks={landmarks}
-                    incidents={incidents}
-                    userLocation={userLocation}
-                    isNavigating={isNavigating}
-                    navProgressIndex={navStepIndex}
-                    showHeatmap={showHeatmap}
-                    showSafeLandmarks={showSafeLandmarks}
-                    mapboxApiKey={mapboxApiKey}
-                    startLocationName={startLocationName}
-                    destinationName={destinationName}
-                    onStreetLampsUpdated={handleStreetLampsUpdated}
-                    onLandmarkClick={(lm) => {
-                      showToast(`Safe Landmark: ${lm.name} (${lm.openHours})`);
-                    }}
-                  />
-
-                  {/* Active SOS Watermark on Map */}
-                  {sosState.isActive && (
-                    <div className="absolute top-4 left-4 z-10 bg-[#D95C5C]/90 text-[#30433F] px-3 py-1.5 rounded-full text-xs font-black tracking-wide shadow-xl flex items-center gap-2 animate-bounce pointer-events-none">
-                      <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
-                      <span>SOS TELEMETRY TRANSMITTING LIVE</span>
-                    </div>
-                  )}
-
-                  {/* 2G Fallback Watermark */}
-                  {isOfflineMode && (
-                    <div className="absolute top-4 right-14 z-10 bg-yellow-600/90 text-black font-bold px-3 py-1.5 rounded-full text-[11px] shadow-xl pointer-events-none">
-                      OFFLINE / 2G MESH ACTIVE
-                    </div>
-                  )}
+                  <MapComponent routes={routes} selectedRoute={selectedRoute} onSelectRoute={setSelectedRoute} landmarks={landmarks} incidents={incidents} userLocation={userLocation} isNavigating={isNavigating} navProgressIndex={navStepIndex} showHeatmap={showHeatmap} showSafeLandmarks={showSafeLandmarks} mapboxApiKey={mapboxApiKey} startLocationName={startLocationName} destinationName={destinationName} onStreetLampsUpdated={handleStreetLampsUpdated} onLandmarkClick={(lm) => { showToast(`Safe Landmark: ${lm.name} (${lm.openHours})`); }} />
+                  {sosState.isActive && (<div className="absolute top-4 left-4 z-10 bg-[#D95C5C]/90 text-[#30433F] px-3 py-1.5 rounded-full text-xs font-black tracking-wide shadow-xl flex items-center gap-2 animate-bounce pointer-events-none"><span className="w-2 h-2 rounded-full bg-white animate-ping"></span><span>SOS TELEMETRY TRANSMITTING LIVE</span></div>)}
+                  {isOfflineMode && (<div className="absolute top-4 right-14 z-10 bg-yellow-600/90 text-black font-bold px-3 py-1.5 rounded-full text-[11px] shadow-xl pointer-events-none">OFFLINE / 2G MESH ACTIVE</div>)}
                 </div>
-
-                {/* Turn-by-turn Navigation drawer when navigating */}
-                {isNavigating && (
-                  <LiveNavigation
-                    route={selectedRoute}
-                    landmarks={landmarks}
-                    onEndTrip={() => setIsNavigating(false)}
-                    onSimulateDeviation={handleSimulateDeviation}
-                    onSafeArrival={handleSafeArrival}
-                    currentCoordIndex={navStepIndex}
-                    onStepNextCoord={handleStepNextCoord}
-                  />
-                )}
+                {isNavigating && (<LiveNavigation route={selectedRoute} landmarks={landmarks} onEndTrip={() => setIsNavigating(false)} onSimulateDeviation={handleSimulateDeviation} onSafeArrival={handleSafeArrival} currentCoordIndex={navStepIndex} onStepNextCoord={handleStepNextCoord} />)}
               </div>
-
-              {/* Route Selector & Innovation Explainability (Right/Bottom) */}
               <div className={deviceFrameMode ? "w-full space-y-4" : "lg:col-span-5 xl:col-span-4 space-y-4"}>
-                <RouteSelector
-                  routes={routes}
-                  selectedRoute={selectedRoute}
-                  onSelectRoute={setSelectedRoute}
-                  onStartTrip={() => {
-                    setIsNavigating(true);
-                    setNavStepIndex(0);
-                    setUserLocation(selectedRoute.coordinates[0]);
-                    showToast(`SafeSafar guidance started for ${selectedRoute.name}`);
-                  }}
-                  onOpenWalkMeHome={() => setIsWalkMeHomeOpen(true)}
-                />
-
-                {/* Quick Covert Toolkit Card */}
+                <RouteSelector routes={routes} selectedRoute={selectedRoute} onSelectRoute={setSelectedRoute} onStartTrip={() => { setIsNavigating(true); setNavStepIndex(0); setUserLocation(selectedRoute.coordinates[0]); showToast(`SafeSafar guidance started for ${selectedRoute.name}`); }} onOpenWalkMeHome={() => setIsWalkMeHomeOpen(true)} />
                 <div className="bg-[#FFFFFF]/80 border border-[#2F5F5E]/15 rounded-3xl p-5 shadow-xl">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-[#7CA982] uppercase tracking-wider">Covert Safety Arsenal</span>
-                    <span className="text-[10px] bg-[#2F5F5E]/10 text-[#2F5F5E] px-2 py-0.5 rounded-md border border-[#2F5F5E]/20">
-                      Novel Innovations
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-[#7A8582] mb-4">
-                    Covert mechanisms built specifically for situations where visible action would escalate danger:
-                  </p>
-
+                  <div className="flex items-center justify-between mb-3"><span className="text-xs font-bold text-[#7CA982] uppercase tracking-wider">Covert Safety Arsenal</span><span className="text-[10px] bg-[#2F5F5E]/10 text-[#2F5F5E] px-2 py-0.5 rounded-md border border-[#2F5F5E]/20">Novel Innovations</span></div>
+                  <p className="text-xs text-[#7A8582] mb-4">Covert mechanisms built specifically for situations where visible action would escalate danger:</p>
                   <div className="grid grid-cols-2 gap-2.5">
-                    <button
-                      onClick={() => setIsFakeCallOpen(true)}
-                      className="p-3 rounded-2xl bg-[#234A45]/30 hover:bg-[#234A45]/50 border border-[#2F5F5E]/30 text-left transition-all group"
-                    >
-                      <span className="text-xs font-bold text-[#30433F] block group-hover:text-[#2F5F5E]">
-                        📞 Fake Call to SOS
-                      </span>
-                      <span className="text-[10px] text-[#7A8582] leading-tight block mt-0.5">
-                        Trigger secret alert using voice keyword "reach soon"
-                      </span>
-                    </button>
-
-                    <button
-                      onClick={() => setIsDuressModalOpen(true)}
-                      className="p-3 rounded-2xl bg-[#806B2B]/20 hover:bg-[#806B2B]/30 border border-[#F9C950]/30 text-left transition-all group"
-                    >
-                      <span className="text-xs font-bold text-[#30433F] block group-hover:text-[#B08D28]">
-                        🔢 Duress PIN (9999)
-                      </span>
-                      <span className="text-[10px] text-[#7A8582] leading-tight block mt-0.5">
-                        Deceives attacker with Decoy Calculator while alerting police
-                      </span>
-                    </button>
+                    <button onClick={() => setIsFakeCallOpen(true)} className="p-3 rounded-2xl bg-[#234A45]/30 hover:bg-[#234A45]/50 border border-[#2F5F5E]/30 text-left transition-all group"><span className="text-xs font-bold text-[#30433F] block group-hover:text-[#2F5F5E]">📞 Fake Call to SOS</span><span className="text-[10px] text-[#7A8582] leading-tight block mt-0.5">Trigger secret alert using voice keyword "reach soon"</span></button>
+                    <button onClick={() => setIsDuressModalOpen(true)} className="p-3 rounded-2xl bg-[#806B2B]/20 hover:bg-[#806B2B]/30 border border-[#F9C950]/30 text-left transition-all group"><span className="text-xs font-bold text-[#30433F] block group-hover:text-[#B08D28]">🔢 Duress PIN (9999)</span><span className="text-[10px] text-[#7A8582] leading-tight block mt-0.5">Deceives attacker with Decoy Calculator while alerting police</span></button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        )}
+        );
 
-        {/* VIEW 2: Guardian Web Live Dashboard */}
-        {currentView === 'guardian' && (
-          <GuardianDashboard
-            userLocation={userLocation}
-            sosState={sosState}
-            activeRoute={selectedRoute}
-            batteryLevel={batteryLevel}
-            trustedContacts={trustedContacts}
-            onTriggerRemoteSOS={() => triggerSOS('button', false, false)}
-            onClearSOS={handleDisarmSOS}
-            onAddContact={handleAddGuardian}
-            onUpdateContact={handleUpdateGuardian}
-            onDeleteContact={handleDeleteGuardian}
-            onLoadSampleContacts={handleLoadSampleContacts}
-            commuterProfile={commuterProfile}
-            onUpdateCommuterProfile={handleUpdateCommuterProfile}
-            onShowToast={showToast}
-          />
-        )}
+      case 'walk-me-home':
+        return (
+          <div className="flex-1 flex flex-col items-center justify-center p-8">
+            <div className="max-w-md w-full text-center space-y-6">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#24504F] to-[#7CA982] flex items-center justify-center mx-auto shadow-xl">
+                <span className="text-4xl">🚶‍♀️</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-[#202D2D] mb-2">Walk Me Home</h2>
+                <p className="text-[#7A8582] text-sm">Start a live guardian session. Your trusted contacts will track your journey in real time and get alerted if you deviate from your route or miss a check-in.</p>
+              </div>
+              <button
+                onClick={() => setIsWalkMeHomeOpen(true)}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#24504F] to-[#2F5F5E] text-white font-bold text-sm shadow-lg hover:opacity-90 transition-all"
+              >
+                🛡️ Start Walk Me Home Session
+              </button>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                {[['📍','Live Tracking'],['⏱️','Check-Ins'],['🔔','Auto Alerts']].map(([icon,label])=>(<div key={label} className="bg-[#EEF3EE] rounded-2xl p-3"><div className="text-xl mb-1">{icon}</div><p className="text-[11px] font-semibold text-[#30433F]">{label}</p></div>))}
+              </div>
+            </div>
+          </div>
+        );
 
-        {/* VIEW 3: Civic Safety Analytics & Heatmap */}
-        {currentView === 'civic' && (
-          <CivicHeatmapDashboard incidents={incidents} />
-        )}
-      </main>
+      case 'sos-center':
+        return (
+          <div className="flex-1 flex flex-col items-center justify-center p-8">
+            <div className="max-w-lg w-full space-y-6">
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#C85D67] to-[#E57373] flex items-center justify-center mx-auto shadow-xl mb-4">
+                  <span className="text-4xl">🚨</span>
+                </div>
+                <h2 className="text-2xl font-black text-[#202D2D] mb-2">SOS Center</h2>
+                <p className="text-[#7A8582] text-sm">Emergency tools designed for high-risk situations. Choose the method that fits your situation.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button onClick={() => triggerSOS('button', false, false)} className="p-5 rounded-2xl bg-[#C85D67] hover:bg-[#B85060] text-white text-left transition-all shadow-lg">
+                  <div className="text-2xl mb-2">🔴</div>
+                  <p className="font-bold text-sm">Emergency SOS</p>
+                  <p className="text-[11px] opacity-80 mt-0.5">Broadcasts to all contacts + police immediately</p>
+                </button>
+                <button onClick={() => setIsFakeCallOpen(true)} className="p-5 rounded-2xl bg-[#24504F] hover:bg-[#1E403F] text-white text-left transition-all shadow-lg">
+                  <div className="text-2xl mb-2">📞</div>
+                  <p className="font-bold text-sm">Fake Call SOS</p>
+                  <p className="text-[11px] opacity-80 mt-0.5">Covert distress via fake incoming call</p>
+                </button>
+                <button onClick={() => setIsDuressModalOpen(true)} className="p-5 rounded-2xl bg-[#806B2B]/80 hover:bg-[#806B2B] text-white text-left transition-all shadow-lg">
+                  <div className="text-2xl mb-2">🔢</div>
+                  <p className="font-bold text-sm">Duress PIN</p>
+                  <p className="text-[11px] opacity-80 mt-0.5">9999 → secret alert + calculator decoy</p>
+                </button>
+                <button onClick={handleSimulateShake} className="p-5 rounded-2xl bg-[#4A6B8A] hover:bg-[#3D5A78] text-white text-left transition-all shadow-lg">
+                  <div className="text-2xl mb-2">📳</div>
+                  <p className="font-bold text-sm">Shake SOS</p>
+                  <p className="text-[11px] opacity-80 mt-0.5">Rapid shake gesture triggers silent alert</p>
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'community':
+        return (
+          <div className="flex-1 flex flex-col items-center justify-center p-8">
+            <div className="max-w-md w-full text-center space-y-6">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#F9C950] to-[#E6A817] flex items-center justify-center mx-auto shadow-xl">
+                <span className="text-4xl">📢</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-[#202D2D] mb-2">Community Reports</h2>
+                <p className="text-[#7A8582] text-sm">Report hazards, dark spots, and suspicious activity. Help other women commuters stay safe by sharing what you observe.</p>
+              </div>
+              <button
+                onClick={() => setIsReportModalOpen(true)}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#F9C950] to-[#E6A817] text-[#202D2D] font-bold text-sm shadow-lg hover:opacity-90 transition-all"
+              >
+                📍 Post a Safety Report
+              </button>
+              <div className="text-left bg-[#FFFBF0] border border-[#F9C950]/40 rounded-2xl p-4">
+                <p className="text-[11px] font-bold text-[#8A7131] uppercase tracking-wider mb-2">Recent Reports</p>
+                {incidents.slice(0, 3).map((inc) => (
+                  <div key={inc.id} className="flex items-start gap-2 py-2 border-b border-[#F9C950]/20 last:border-0">
+                    <span className="text-lg">{inc.type === 'poor_lighting' ? '🌑' : inc.type === 'harassment' ? '⚠️' : inc.type === 'well_lit' ? '💡' : '📍'}</span>
+                    <div><p className="text-[12px] font-semibold text-[#202D2D]">{inc.title}</p><p className="text-[10px] text-[#9A8A6A]">{inc.decayHoursLeft}h remaining · {inc.confirmations} confirmations</p></div>
+                  </div>
+                ))}
+                {incidents.length === 0 && <p className="text-[12px] text-[#9A8A6A]">No community reports yet. Be the first to report!</p>}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'trusted-circle':
+        return (
+          <div className="flex-1 overflow-y-auto p-8">
+            <GuardianDashboard
+              userLocation={userLocation}
+              sosState={sosState}
+              activeRoute={selectedRoute}
+              batteryLevel={batteryLevel}
+              trustedContacts={trustedContacts}
+              onTriggerRemoteSOS={() => triggerSOS('button', false, false)}
+              onClearSOS={handleDisarmSOS}
+              onAddContact={handleAddGuardian}
+              onUpdateContact={handleUpdateGuardian}
+              onDeleteContact={handleDeleteGuardian}
+              onLoadSampleContacts={handleLoadSampleContacts}
+              commuterProfile={commuterProfile}
+              onUpdateCommuterProfile={handleUpdateCommuterProfile}
+              onShowToast={showToast}
+            />
+          </div>
+        );
+
+      case 'safe-havens':
+        return (
+          <div className="flex-1 overflow-y-auto p-8">
+            <div className="max-w-2xl mx-auto space-y-6">
+              <div>
+                <h2 className="text-2xl font-black text-[#202D2D] mb-1">Safe Havens</h2>
+                <p className="text-[#7A8582] text-sm">Verified safe locations nearby — police booths, pink booths, hospitals, and 24/7 pharmacies.</p>
+              </div>
+              {landmarks.length === 0 ? (
+                <div className="text-center py-16 text-[#9AACA8]">
+                  <div className="text-5xl mb-4">📍</div>
+                  <p className="font-semibold">No landmarks loaded yet.</p>
+                  <p className="text-sm mt-1">Search a route first to load nearby safe havens.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {landmarks.map((lm) => {
+                    const icon = lm.type === 'police' ? '🚔' : lm.type === 'pink_booth' ? '🩷' : lm.type === 'hospital' ? '🏥' : lm.type === 'pharmacy' ? '💊' : '🛡️';
+                    const color = lm.type === 'police' ? 'border-[#4A6B8A]/30 bg-[#EEF3F8]' : lm.type === 'pink_booth' ? 'border-[#D58A93]/30 bg-[#FDF0F1]' : lm.type === 'hospital' ? 'border-[#7CA982]/30 bg-[#EEF6EE]' : 'border-[#E6A817]/30 bg-[#FFFBF0]';
+                    return (
+                      <div key={lm.id} className={`rounded-2xl border p-4 ${color} flex items-start gap-3`}>
+                        <span className="text-2xl shrink-0 mt-0.5">{icon}</span>
+                        <div className="min-w-0">
+                          <p className="font-bold text-[13px] text-[#202D2D] truncate">{lm.name}</p>
+                          <p className="text-[11px] text-[#7A8582] mt-0.5 truncate">{lm.address}</p>
+                          <div className="flex items-center gap-3 mt-2">
+                            <span className="text-[11px] text-[#7CA982] font-semibold">✓ {lm.openHours}</span>
+                            <span className="text-[11px] text-[#9AACA8]">{lm.distanceMeters}m away</span>
+                          </div>
+                          {lm.phone && (
+                            <p className="text-[11px] text-[#4A6B8A] mt-1 font-medium">📞 {lm.phone}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'heatmap':
+        return (
+          <div className="flex-1 overflow-y-auto p-8">
+            <CivicHeatmapDashboard incidents={incidents} />
+          </div>
+        );
+
+      case 'ai-companion':
+        return <AiCompanionPage />;
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F7F8F2] text-[#30433F] flex font-sans selection:bg-[#2F5F5E]/30 selection:text-[#30433F]">
+      {/* Decoy Screen Mode (Complete Disguise) */}
+      {isDecoyOpen && (
+        <DecoyScreen
+          onExitDecoy={() => setIsDecoyOpen(false)}
+          duressSOSDispatched={sosState.duressActive}
+        />
+      )}
+
+      {/* Sidebar */}
+      <Sidebar
+        activeFeature={activeFeature}
+        onSelectFeature={setActiveFeature}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onOpenProfile={() => setIsProfileModalOpen(true)}
+      />
+
+      {/* Main Content: full-page feature area */}
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+        {renderFeaturePage()}
+      </div>
+
+      {/* Floating System Toast Alert */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-[10000] bg-[#F1D9D9] border border-[#2F5F5E]/40 text-[#30433F] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
+          <Sparkles className="w-5 h-5 text-[#7CA982] shrink-0" />
+          <span className="text-xs font-semibold">{toastMessage}</span>
+        </div>
+      )}
 
       {/* ALL MODALS & OVERLAYS */}
 

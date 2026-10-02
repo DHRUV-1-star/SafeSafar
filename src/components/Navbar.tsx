@@ -1,21 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Shield, 
-  Smartphone, 
-  Monitor, 
-  BarChart3, 
-  Wifi, 
-  WifiOff, 
-  PhoneCall, 
-  KeyRound, 
-  AlertTriangle, 
-  PlusCircle, 
-  Compass, 
-  LogIn, 
-  ChevronDown, 
-  User as UserIcon, 
-  Lock, 
-  Users, 
+import {
+  Shield,
+  Smartphone,
+  Monitor,
+  BarChart3,
+  Wifi,
+  WifiOff,
+  PhoneCall,
+  KeyRound,
+  AlertTriangle,
+  PlusCircle,
+  Compass,
+  LogIn,
+  ChevronDown,
+  User as UserIcon,
+  Lock,
+  Users,
   Settings,
   LogOut,
   Power,
@@ -102,14 +102,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-[#F8FBF9]/95 backdrop-blur-xl border-b border-[#2D6A5E]/15 px-4 py-2.5">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        
+
         {/* ========================================================= */}
         {/* 1. LEFT: SAFESAFAR BRANDING                               */}
         {/* ========================================================= */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-[#2D6A5E] flex items-center justify-center text-white shadow-md shadow-[#2D6A5E]/20">
-            <Shield className="w-4 h-4 fill-white/20" />
-          </div>
+          <img
+            src="/safesafar-logo.png"
+            alt="SafeSafar Logo"
+            className="w-9 h-9 rounded-xl object-cover shadow-md shadow-[#2D6A5E]/20"
+          />
           <span className="text-base font-black tracking-tight text-[#202D2D] leading-tight">
             SafeSafar
           </span>
@@ -123,11 +125,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center bg-[#F3F8F5]/95 border border-[#D3E5DE] p-1 rounded-xl">
             <button
               onClick={() => onSelectView('mobile')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                currentView === 'mobile'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentView === 'mobile'
                   ? 'bg-[#2D6A5E] text-white shadow-sm'
                   : 'text-[#73847F] hover:text-[#202D2D]'
-              }`}
+                }`}
             >
               <Smartphone className="w-3.5 h-3.5" />
               <span>Mobile App</span>
@@ -135,11 +136,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => onSelectView('guardian')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                currentView === 'guardian'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentView === 'guardian'
                   ? 'bg-[#2D6A5E] text-white shadow-sm'
                   : 'text-[#73847F] hover:text-[#202D2D]'
-              }`}
+                }`}
             >
               <Monitor className="w-3.5 h-3.5" />
               <span>Guardian Dashboard</span>
@@ -147,11 +147,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => onSelectView('civic')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                currentView === 'civic'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentView === 'civic'
                   ? 'bg-[#2D6A5E] text-white shadow-sm'
                   : 'text-[#73847F] hover:text-[#202D2D]'
-              }`}
+                }`}
             >
               <BarChart3 className="w-3.5 h-3.5" />
               <span>Civic Heatmap</span>
@@ -203,11 +202,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* 2G / Offline Toggle */}
             <button
               onClick={onToggleOffline}
-              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border text-xs font-medium transition-colors ${
-                isOfflineMode
+              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border text-xs font-medium transition-colors ${isOfflineMode
                   ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300'
                   : 'bg-[#2D6A5E]/5 border-[#2D6A5E]/15 text-[#61746E] hover:text-[#202D2D]'
-              }`}
+                }`}
               title="Simulate 2G SMS Fallback Mode"
             >
               {isOfflineMode ? <WifiOff className="w-3.5 h-3.5 text-yellow-400" /> : <Wifi className="w-3.5 h-3.5 text-[#55A184]" />}
@@ -221,7 +219,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* 3. RIGHT: ACCOUNT & EMERGENCY CONTROLS                    */}
         {/* ========================================================= */}
         <div className="flex items-center gap-3 shrink-0">
-          
+
           {/* User Account / Profile Control */}
           {currentUser ? (
             <div className="relative" ref={profileMenuRef}>
@@ -247,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* Profile Dropdown Menu */}
               {isProfileDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-[#FFFFFF] border border-[#D3E5DE] rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-[#3E544E]">
-                  
+
                   {/* Dropdown User Info Header */}
                   <div className="px-4 py-2.5 border-b border-[#2D6A5E]/15 flex items-center gap-3">
                     <UserAvatar name={currentUser.name} avatar={currentUser.avatar} size="md" />
@@ -367,25 +365,22 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center bg-[#F3F8F5]/95 border border-[#D3E5DE] p-0.5 rounded-lg shrink-0">
           <button
             onClick={() => onSelectView('mobile')}
-            className={`px-2 py-1 rounded text-[11px] font-semibold ${
-              currentView === 'mobile' ? 'bg-[#2D6A5E] text-white' : 'text-[#73847F]'
-            }`}
+            className={`px-2 py-1 rounded text-[11px] font-semibold ${currentView === 'mobile' ? 'bg-[#2D6A5E] text-white' : 'text-[#73847F]'
+              }`}
           >
             App
           </button>
           <button
             onClick={() => onSelectView('guardian')}
-            className={`px-2 py-1 rounded text-[11px] font-semibold ${
-              currentView === 'guardian' ? 'bg-[#2D6A5E] text-white' : 'text-[#73847F]'
-            }`}
+            className={`px-2 py-1 rounded text-[11px] font-semibold ${currentView === 'guardian' ? 'bg-[#2D6A5E] text-white' : 'text-[#73847F]'
+              }`}
           >
             Guardian
           </button>
           <button
             onClick={() => onSelectView('civic')}
-            className={`px-2 py-1 rounded text-[11px] font-semibold ${
-              currentView === 'civic' ? 'bg-[#2D6A5E] text-white' : 'text-[#73847F]'
-            }`}
+            className={`px-2 py-1 rounded text-[11px] font-semibold ${currentView === 'civic' ? 'bg-[#2D6A5E] text-white' : 'text-[#73847F]'
+              }`}
           >
             Civic
           </button>

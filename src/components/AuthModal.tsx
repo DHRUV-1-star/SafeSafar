@@ -190,11 +190,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               setTab('login');
               setError(null);
             }}
-            className={`flex-1 pb-3 text-xs font-bold text-center border-b-2 transition-all ${
-              tab === 'login'
+            className={`flex-1 pb-3 text-xs font-bold text-center border-b-2 transition-all ${tab === 'login'
                 ? 'border-[#2F5F5E] text-[#202D2D]'
                 : 'border-transparent text-[#7A8582] hover:text-[#465552]'
-            }`}
+              }`}
           >
             Sign In
           </button>
@@ -204,11 +203,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               setTab('signup');
               setError(null);
             }}
-            className={`flex-1 pb-3 text-xs font-bold text-center border-b-2 transition-all ${
-              tab === 'signup'
+            className={`flex-1 pb-3 text-xs font-bold text-center border-b-2 transition-all ${tab === 'signup'
                 ? 'border-[#2F5F5E] text-[#202D2D]'
                 : 'border-transparent text-[#7A8582] hover:text-[#465552]'
-            }`}
+              }`}
           >
             Create Account
           </button>
@@ -388,11 +386,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setRole('commuter')}
-                  className={`p-2 rounded-xl border text-center transition-all ${
-                    role === 'commuter'
+                  className={`p-2 rounded-xl border text-center transition-all ${role === 'commuter'
                       ? 'bg-[#24504F]/30 border-[#2F5F5E] text-[#F1D9D9]'
                       : 'bg-[#2F5F5E]/5 border-[#2F5F5E]/15 text-[#7A8582]'
-                  }`}
+                    }`}
                 >
                   <User className="w-3.5 h-3.5 mx-auto mb-1" />
                   <span className="text-[11px] font-semibold block">Commuter</span>
@@ -401,11 +398,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setRole('guardian')}
-                  className={`p-2 rounded-xl border text-center transition-all ${
-                    role === 'guardian'
+                  className={`p-2 rounded-xl border text-center transition-all ${role === 'guardian'
                       ? 'bg-[#2F5F5E]/30 border-[#7CA982] text-[#F1D9D9]'
                       : 'bg-[#2F5F5E]/5 border-[#2F5F5E]/15 text-[#7A8582]'
-                  }`}
+                    }`}
                 >
                   <HeartHandshake className="w-3.5 h-3.5 mx-auto mb-1" />
                   <span className="text-[11px] font-semibold block">Guardian</span>
@@ -414,11 +410,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setRole('civic')}
-                  className={`p-2 rounded-xl border text-center transition-all ${
-                    role === 'civic'
+                  className={`p-2 rounded-xl border text-center transition-all ${role === 'civic'
                       ? 'bg-[#2F5F5E]/30 border-[#7CA982] text-[#F1D9D9]'
                       : 'bg-[#2F5F5E]/5 border-[#2F5F5E]/15 text-[#7A8582]'
-                  }`}
+                    }`}
                 >
                   <Building2 className="w-3.5 h-3.5 mx-auto mb-1" />
                   <span className="text-[11px] font-semibold block">Civic / Police</span>
