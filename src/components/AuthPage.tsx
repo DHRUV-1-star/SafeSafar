@@ -560,8 +560,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                     type="button"
                     onClick={() => handleSwitchMode('signin')}
                     className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${authMode === 'signin'
-                        ? 'bg-[#24504F] text-[#202D2D] shadow-sm'
-                        : 'text-[#7A8582] hover:text-[#202D2D]'
+                      ? 'bg-[#24504F] text-[#202D2D] shadow-sm'
+                      : 'text-[#7A8582] hover:text-[#202D2D]'
                       }`}
                   >
                     Sign In
@@ -570,8 +570,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                     type="button"
                     onClick={() => handleSwitchMode('register')}
                     className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${authMode === 'register'
-                        ? 'bg-[#24504F] text-[#202D2D] shadow-sm'
-                        : 'text-[#7A8582] hover:text-[#202D2D]'
+                      ? 'bg-[#24504F] text-[#202D2D] shadow-sm'
+                      : 'text-[#7A8582] hover:text-[#202D2D]'
                       }`}
                   >
                     Create Account

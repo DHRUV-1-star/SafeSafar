@@ -473,11 +473,8 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     }
   }
 
-  // Default to pre-seeded Diya Patel if first time
-  const defaultUser = DEMO_USERS[0];
-  const { passwordHash, ...cleanDefault } = defaultUser;
-  localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, JSON.stringify(cleanDefault));
-  return cleanDefault;
+  // Return null if no active session exists (do not force auto-login)
+  return null;
 }
 
 const isValidUUID = (id: string): boolean => {
@@ -766,7 +763,7 @@ export async function fetchIncidents(): Promise<IncidentReport[]> {
         .from('incidents')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (!error && Array.isArray(data) && data.length > 0) {
         return data.map((item) => ({
           id: item.id,
