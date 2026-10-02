@@ -45,12 +45,28 @@ export const App: React.FC = () => {
     const saved = localStorage.getItem('safesafar_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.name) return parsed;
       } catch {
-        return null;
+        // fallback
       }
     }
-    return null;
+    // Default commuter user so visitors on Vercel immediately see full app with Sidebar & features
+    const defaultUser: UserProfile = {
+      id: 'user-commuter',
+      name: 'Dharmik Gohil',
+      phone: '+91 98251 44321',
+      email: 'dharmik@safesafar.app',
+      role: 'commuter',
+      avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Dharmik%20Gohil&backgroundColor=24504F,2F5F5E',
+      normalPin: '1234',
+      duressPin: '9999',
+      secretSafeWord: 'reach soon',
+      guardianPairingCode: 'SAF-8492',
+      emergencyContactCount: 3,
+      batteryStatus: 95,
+    };
+    return defaultUser;
   });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
