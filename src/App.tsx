@@ -20,7 +20,7 @@ import { AuthModal } from './components/AuthModal';
 import { AuthPage } from './components/AuthPage';
 import { DatabaseSetupModal } from './components/DatabaseSetupModal';
 import { UserProfileModal } from './components/UserProfileModal';
-import { Sparkles, Smartphone, Flame } from 'lucide-react';
+import { Sparkles, Smartphone, Flame, Menu, Shield, Zap, CheckCircle2 } from 'lucide-react';
 import { Sidebar, SidebarFeature } from './components/Sidebar';
 import { AiCompanionPage } from './components/AiCompanionPage';
 import { playSilentConfirmPing, stopSiren } from './utils/audio';
@@ -72,8 +72,9 @@ export const App: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isDatabaseSetupOpen, setIsDatabaseSetupOpen] = useState<boolean>(false);
 
-  // Sidebar active feature
+  // Sidebar active feature & Mobile Drawer
   const [activeFeature, setActiveFeature] = useState<SidebarFeature>('safe-route');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
 
   // Navigation & View Views
   const [currentView, setCurrentView] = useState<'mobile' | 'guardian' | 'civic'>('mobile');
@@ -640,6 +641,97 @@ export const App: React.FC = () => {
                   {isOfflineMode && (<div className="absolute top-4 right-14 z-10 bg-yellow-600/90 text-black font-bold px-3 py-1.5 rounded-full text-[11px] shadow-xl pointer-events-none">OFFLINE / 2G MESH ACTIVE</div>)}
                 </div>
                 {isNavigating && (<LiveNavigation route={selectedRoute} landmarks={landmarks} onEndTrip={() => setIsNavigating(false)} onSimulateDeviation={handleSimulateDeviation} onSafeArrival={handleSafeArrival} currentCoordIndex={navStepIndex} onStepNextCoord={handleStepNextCoord} />)}
+
+                {/* Live Route Intelligence & Safety Telemetry Panel (Below Map) */}
+                <div className="bg-[#FFFFFF]/90 border border-[#2F5F5E]/15 rounded-3xl p-5 shadow-lg space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2DDD6] pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-xl bg-[#24504F]/10 border border-[#24504F]/20 flex items-center justify-center text-[#24504F]">
+                        <Shield className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-[#202D2D] uppercase tracking-wider">Live Path Telemetry & Analytics</h4>
+                        <p className="text-[10px] text-[#7A8582]">{selectedRoute.name}</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#7CA982]/15 text-[#2F5F5E] border border-[#7CA982]/30 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#7CA982] animate-pulse"></span>
+                      Realtime Active
+                    </span>
+                  </div>
+
+                  {/* 4 Quick Stat Cards */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-2xl p-3">
+                      <div className="flex items-center justify-between text-xs text-[#7A8582] mb-1">
+                        <span>Lighting</span>
+                        <span className="font-bold text-[#202D2D]">{selectedRoute.lightingPercent}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-[#E2DDD6] rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-[#2F5F5E] to-[#7CA982]" style={{ width: `${selectedRoute.lightingPercent}%` }}></div>
+                      </div>
+                      <p className="text-[10px] text-[#7CA982] font-semibold mt-1">High Lumens LED</p>
+                    </div>
+
+                    <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-2xl p-3">
+                      <p className="text-[10px] text-[#7A8582]">Safe Havens</p>
+                      <p className="text-base font-extrabold text-[#202D2D]">{selectedRoute.safeLandmarksCount} Posts</p>
+                      <p className="text-[10px] text-[#2F5F5E] font-medium">Pink & Police Posts</p>
+                    </div>
+
+                    <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-2xl p-3">
+                      <p className="text-[10px] text-[#7A8582]">Crowd Level</p>
+                      <p className="text-base font-extrabold text-[#202D2D]">{selectedRoute.crowdContext.level}</p>
+                      <p className="text-[10px] text-[#7CA982] font-medium">Verified Active Street</p>
+                    </div>
+
+                    <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-2xl p-3">
+                      <p className="text-[10px] text-[#7A8582]">Safety Index</p>
+                      <p className="text-base font-extrabold text-[#2F5F5E]">{selectedRoute.safetyScore} / 100</p>
+                      <p className="text-[10px] text-[#7CA982] font-medium">Verified Corridor</p>
+                    </div>
+                  </div>
+
+                  {/* Visual Route Waypoint Sequence */}
+                  <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-2xl p-4">
+                    <p className="text-[11px] font-bold text-[#202D2D] uppercase tracking-wider mb-3">Key Safety Waypoints</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="flex items-start gap-2.5 bg-white border border-[#E2DDD6] p-2.5 rounded-xl">
+                        <div className="w-6 h-6 rounded-lg bg-[#24504F] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-[#202D2D] truncate">{startLocationName || 'SVNIT Campus'}</p>
+                          <p className="text-[10px] text-[#7CA982] font-medium">Verified Start Point</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5 bg-white border border-[#E2DDD6] p-2.5 rounded-xl">
+                        <div className="w-6 h-6 rounded-lg bg-[#7CA982] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-[#202D2D] truncate">Piplod Main Road</p>
+                          <p className="text-[10px] text-[#2F5F5E] font-medium">Pink Police Booth • 96% Lit</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5 bg-white border border-[#E2DDD6] p-2.5 rounded-xl">
+                        <div className="w-6 h-6 rounded-lg bg-[#24504F] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-[#202D2D] truncate">{destinationName || 'Ring Road Hub'}</p>
+                          <p className="text-[10px] text-[#7CA982] font-medium">Verified Safe Arrival</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Action Shortcuts */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <span className="text-[11px] font-bold text-[#7A8582]">Quick Safety Actions:</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button onClick={() => setIsWalkMeHomeOpen(true)} className="px-3 py-1.5 rounded-xl bg-[#24504F] text-white text-xs font-bold hover:bg-[#1E403F] transition-all shadow-sm">🚶‍♀️ Walk Me Home</button>
+                      <button onClick={() => setIsFakeCallOpen(true)} className="px-3 py-1.5 rounded-xl bg-[#EEF0EC] text-[#202D2D] text-xs font-bold hover:bg-[#E2E6DF] transition-all">📞 Fake Call</button>
+                      <button onClick={() => setIsReportModalOpen(true)} className="px-3 py-1.5 rounded-xl bg-[#EEF0EC] text-[#202D2D] text-xs font-bold hover:bg-[#E2E6DF] transition-all">📢 Report Spot</button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className={deviceFrameMode ? "w-full space-y-4" : "lg:col-span-5 xl:col-span-4 space-y-4"}>
                 <RouteSelector routes={routes} selectedRoute={selectedRoute} onSelectRoute={setSelectedRoute} onStartTrip={() => { setIsNavigating(true); setNavStepIndex(0); setUserLocation(selectedRoute.coordinates[0]); showToast(`SafeSafar guidance started for ${selectedRoute.name}`); }} onOpenWalkMeHome={() => setIsWalkMeHomeOpen(true)} />
@@ -828,7 +920,30 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F8F2] text-[#30433F] flex font-sans selection:bg-[#2F5F5E]/30 selection:text-[#30433F]">
+    <div className="min-h-screen bg-[#F7F8F2] text-[#30433F] flex flex-col md:flex-row font-sans selection:bg-[#2F5F5E]/30 selection:text-[#30433F]">
+      {/* Mobile Top Header Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-[#FAF9F6] border-b border-[#E2DDD6] px-4 py-3 flex items-center justify-between shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="p-2 rounded-xl bg-[#EEF0EC] text-[#202D2D] hover:bg-[#E2E6DF]"
+            aria-label="Toggle Sidebar"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <img src="/safesafar-logo.png" alt="SafeSafar" className="w-7 h-7 rounded-lg object-cover" />
+          <span className="font-black text-sm text-[#202D2D]">SafeSafar</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => triggerSOS('button', false, false)}
+            className="px-3 py-1.5 rounded-xl bg-[#C85D67] text-white text-xs font-bold shadow-sm"
+          >
+            🚨 SOS
+          </button>
+        </div>
+      </div>
+
       {/* Decoy Screen Mode (Complete Disguise) */}
       {isDecoyOpen && (
         <DecoyScreen
@@ -844,10 +959,12 @@ export const App: React.FC = () => {
         currentUser={currentUser}
         onLogout={handleLogout}
         onOpenProfile={() => setIsProfileModalOpen(true)}
+        isOpenMobile={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
       />
 
       {/* Main Content: full-page feature area */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden pt-14 md:pt-0">
         {renderFeaturePage()}
       </div>
 

@@ -9,9 +9,9 @@ import {
   Sparkles,
   LogOut,
   ChevronRight,
-
   MapPin,
   Settings,
+  X,
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import { UserAvatar } from './UserAvatar';
@@ -32,6 +32,8 @@ interface SidebarProps {
   currentUser: UserProfile;
   onLogout: () => void;
   onOpenProfile: () => void;
+  isOpenMobile?: boolean;
+  onCloseMobile?: () => void;
 }
 
 const NAV_ITEMS: { id: SidebarFeature; label: string; icon: React.ReactNode }[] = [
@@ -51,14 +53,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentUser,
   onLogout,
   onOpenProfile,
+  isOpenMobile = false,
+  onCloseMobile,
 }) => {
-  return (
+  const innerNav = (
     <aside
-      className="w-64 min-h-screen bg-[#FAF9F6] border-r border-[#E2DDD6] flex flex-col shrink-0"
+      className="w-64 min-h-screen bg-[#FAF9F6] border-r border-[#E2DDD6] flex flex-col shrink-0 h-full"
       style={{ fontFamily: "'Inter', 'Outfit', sans-serif" }}
     >
       {/* Brand */}
-      <div className="px-5 py-5 border-b border-[#E2DDD6]">
+      <div className="px-5 py-5 border-b border-[#E2DDD6] flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <img
             src="/safesafar-logo.png"
@@ -67,6 +71,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
           <span className="text-[15px] font-black tracking-tight text-[#202D2D]">SafeSafar</span>
         </div>
+        {onCloseMobile && (
+          <button
+            onClick={onCloseMobile}
+            className="md:hidden p-1 rounded-lg text-[#7A8A87] hover:bg-[#EEF0EC]"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Nav Items */}
@@ -76,11 +88,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           return (
             <button
               key={item.id}
-              onClick={() => onSelectFeature(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 group ${isActive
+              onClick={() => {
+                onSelectFeature(item.id);
+                if (onCloseMobile) onCloseMobile();
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 group ${
+                isActive
                   ? 'bg-[#24504F] text-white shadow-sm'
                   : 'text-[#4A5E5B] hover:bg-[#EEF0EC] hover:text-[#202D2D]'
-                }`}
+              }`}
             >
               <span className={isActive ? 'text-white/90' : 'text-[#7A8A87] group-hover:text-[#30433F]'}>
                 {item.icon}
@@ -102,7 +118,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Profile button — opens UserProfileModal */}
         <button
-          onClick={onOpenProfile}
+          onClick={() => {
+            onOpenProfile();
+            if (onCloseMobile) onCloseMobile();
+          }}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-[#EEF0EC] transition-all duration-150 group text-left mb-1"
         >
           <UserAvatar user={currentUser} size="sm" />
@@ -117,7 +136,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Sign out */}
         <button
-          onClick={onLogout}
+          onClick={() => {
+            onLogout();
+            if (onCloseMobile) onCloseMobile();
+          }}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-semibold text-[#C85D67] hover:bg-[#F8E9EA] transition-all"
         >
           <LogOut className="w-3.5 h-3.5" />
@@ -125,5 +147,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
     </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex shrink-0">
+        {innerNav}
+      </div>
+
+      {/* Mobile Drawer Overlay */}
+      {isOpenMobile && (
+        <div className="fixed inset-0 z-[999] flex md:hidden">
+          <div
+            className="fixed inset-0 bg-[#202D2D]/60 backdrop-blur-xs transition-opacity"
+            onClick={onCloseMobile}
+          />
+          <div className="relative z-10 animate-in slide-in-from-left duration-200">
+            {innerNav}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
