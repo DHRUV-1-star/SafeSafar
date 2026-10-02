@@ -633,114 +633,78 @@ export const App: React.FC = () => {
               </div>
             </div>
             <RouteSearchBar startLocation={startLocationName} destination={destinationName} onSelectStartLocation={handleSelectStartLocation} onSelectDestination={handleSelectDestination} onStartLocationInputChange={setStartLocationName} onDestinationInputChange={setDestinationName} onSwapLocations={handleSwapLocations} onSearchRoutes={handleFetchRealRoutes} isLoadingRoutes={isLoadingRoutes} />
-            <div className={deviceFrameMode ? "max-w-[460px] mx-auto bg-[#202D2D]/95 p-4 rounded-[48px] border-[5px] border-[#C9C4BC] shadow-2xl space-y-4 relative z-10" : "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start relative z-10"}>
-              <div className={deviceFrameMode ? "flex flex-col gap-4 w-full" : "lg:col-span-7 xl:col-span-8 flex flex-col gap-4"}>
-                <div className={deviceFrameMode ? "h-[340px] w-full relative z-0 isolate" : "h-[460px] sm:h-[520px] w-full relative z-0 isolate"}>
+            {/* Map Container + Below Map Information */}
+            <div className="space-y-6 relative z-10">
+              {/* Map Box: Full width at top */}
+              <div className={deviceFrameMode ? "max-w-[460px] mx-auto bg-[#202D2D]/95 p-4 rounded-[48px] border-[5px] border-[#C9C4BC] shadow-2xl relative z-10 overflow-hidden" : "w-full relative z-10"}>
+                <div className={deviceFrameMode ? "h-[380px] sm:h-[420px] w-full relative z-0 isolate rounded-3xl overflow-hidden shadow-lg border border-[#2F5F5E]/15" : "h-[420px] sm:h-[480px] w-full relative z-0 isolate rounded-3xl overflow-hidden shadow-lg border border-[#2F5F5E]/15"}>
                   <MapComponent routes={routes} selectedRoute={selectedRoute} onSelectRoute={setSelectedRoute} landmarks={landmarks} incidents={incidents} userLocation={userLocation} isNavigating={isNavigating} navProgressIndex={navStepIndex} showHeatmap={showHeatmap} showSafeLandmarks={showSafeLandmarks} mapboxApiKey={mapboxApiKey} startLocationName={startLocationName} destinationName={destinationName} onStreetLampsUpdated={handleStreetLampsUpdated} onLandmarkClick={(lm) => { showToast(`Safe Landmark: ${lm.name} (${lm.openHours})`); }} />
                   {sosState.isActive && (<div className="absolute top-4 left-4 z-10 bg-[#D95C5C]/90 text-[#30433F] px-3 py-1.5 rounded-full text-xs font-black tracking-wide shadow-xl flex items-center gap-2 animate-bounce pointer-events-none"><span className="w-2 h-2 rounded-full bg-white animate-ping"></span><span>SOS TELEMETRY TRANSMITTING LIVE</span></div>)}
                   {isOfflineMode && (<div className="absolute top-4 right-14 z-10 bg-yellow-600/90 text-black font-bold px-3 py-1.5 rounded-full text-[11px] shadow-xl pointer-events-none">OFFLINE / 2G MESH ACTIVE</div>)}
                 </div>
                 {isNavigating && (<LiveNavigation route={selectedRoute} landmarks={landmarks} onEndTrip={() => setIsNavigating(false)} onSimulateDeviation={handleSimulateDeviation} onSafeArrival={handleSafeArrival} currentCoordIndex={navStepIndex} onStepNextCoord={handleStepNextCoord} />)}
-
-                {/* Live Route Intelligence & Safety Telemetry Panel (Below Map) */}
-                <div className="bg-[#FFFFFF]/90 border border-[#2F5F5E]/15 rounded-3xl p-5 shadow-lg space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2DDD6] pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-xl bg-[#24504F]/10 border border-[#24504F]/20 flex items-center justify-center text-[#24504F]">
-                        <Shield className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-[#202D2D] uppercase tracking-wider">Live Path Telemetry & Analytics</h4>
-                        <p className="text-[10px] text-[#7A8582]">{selectedRoute.name}</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#7CA982]/15 text-[#2F5F5E] border border-[#7CA982]/30 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#7CA982] animate-pulse"></span>
-                      Realtime Active
-                    </span>
-                  </div>
-
-                  {/* 4 Quick Stat Cards */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-2xl p-3">
-                      <div className="flex items-center justify-between text-xs text-[#7A8582] mb-1">
-                        <span>Lighting</span>
-                        <span className="font-bold text-[#202D2D]">{selectedRoute.lightingPercent}%</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-[#E2DDD6] rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-[#2F5F5E] to-[#7CA982]" style={{ width: `${selectedRoute.lightingPercent}%` }}></div>
-                      </div>
-                      <p className="text-[10px] text-[#7CA982] font-semibold mt-1">High Lumens LED</p>
-                    </div>
-
-                    <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-2xl p-3">
-                      <p className="text-[10px] text-[#7A8582]">Safe Havens</p>
-                      <p className="text-base font-extrabold text-[#202D2D]">{selectedRoute.safeLandmarksCount} Posts</p>
-                      <p className="text-[10px] text-[#2F5F5E] font-medium">Pink & Police Posts</p>
-                    </div>
-
-                    <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-2xl p-3">
-                      <p className="text-[10px] text-[#7A8582]">Crowd Level</p>
-                      <p className="text-base font-extrabold text-[#202D2D]">{selectedRoute.crowdContext.level}</p>
-                      <p className="text-[10px] text-[#7CA982] font-medium">Verified Active Street</p>
-                    </div>
-
-                    <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-2xl p-3">
-                      <p className="text-[10px] text-[#7A8582]">Safety Index</p>
-                      <p className="text-base font-extrabold text-[#2F5F5E]">{selectedRoute.safetyScore} / 100</p>
-                      <p className="text-[10px] text-[#7CA982] font-medium">Verified Corridor</p>
-                    </div>
-                  </div>
-
-                  {/* Visual Route Waypoint Sequence */}
-                  <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-2xl p-4">
-                    <p className="text-[11px] font-bold text-[#202D2D] uppercase tracking-wider mb-3">Key Safety Waypoints</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="flex items-start gap-2.5 bg-white border border-[#E2DDD6] p-2.5 rounded-xl">
-                        <div className="w-6 h-6 rounded-lg bg-[#24504F] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-[#202D2D] truncate">{startLocationName || 'SVNIT Campus'}</p>
-                          <p className="text-[10px] text-[#7CA982] font-medium">Verified Start Point</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2.5 bg-white border border-[#E2DDD6] p-2.5 rounded-xl">
-                        <div className="w-6 h-6 rounded-lg bg-[#7CA982] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-[#202D2D] truncate">Piplod Main Road</p>
-                          <p className="text-[10px] text-[#2F5F5E] font-medium">Pink Police Booth • 96% Lit</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2.5 bg-white border border-[#E2DDD6] p-2.5 rounded-xl">
-                        <div className="w-6 h-6 rounded-lg bg-[#24504F] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-[#202D2D] truncate">{destinationName || 'Ring Road Hub'}</p>
-                          <p className="text-[10px] text-[#7CA982] font-medium">Verified Safe Arrival</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quick Action Shortcuts */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                    <span className="text-[11px] font-bold text-[#7A8582]">Quick Safety Actions:</span>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button onClick={() => setIsWalkMeHomeOpen(true)} className="px-3 py-1.5 rounded-xl bg-[#24504F] text-white text-xs font-bold hover:bg-[#1E403F] transition-all shadow-sm">🚶‍♀️ Walk Me Home</button>
-                      <button onClick={() => setIsFakeCallOpen(true)} className="px-3 py-1.5 rounded-xl bg-[#EEF0EC] text-[#202D2D] text-xs font-bold hover:bg-[#E2E6DF] transition-all">📞 Fake Call</button>
-                      <button onClick={() => setIsReportModalOpen(true)} className="px-3 py-1.5 rounded-xl bg-[#EEF0EC] text-[#202D2D] text-xs font-bold hover:bg-[#E2E6DF] transition-all">📢 Report Spot</button>
-                    </div>
-                  </div>
-                </div>
               </div>
-              <div className={deviceFrameMode ? "w-full space-y-4" : "lg:col-span-5 xl:col-span-4 space-y-4"}>
-                <RouteSelector routes={routes} selectedRoute={selectedRoute} onSelectRoute={setSelectedRoute} onStartTrip={() => { setIsNavigating(true); setNavStepIndex(0); setUserLocation(selectedRoute.coordinates[0]); showToast(`SafeSafar guidance started for ${selectedRoute.name}`); }} onOpenWalkMeHome={() => setIsWalkMeHomeOpen(true)} />
-                <div className="bg-[#FFFFFF]/80 border border-[#2F5F5E]/15 rounded-3xl p-5 shadow-xl">
-                  <div className="flex items-center justify-between mb-3"><span className="text-xs font-bold text-[#7CA982] uppercase tracking-wider">Covert Safety Arsenal</span><span className="text-[10px] bg-[#2F5F5E]/10 text-[#2F5F5E] px-2 py-0.5 rounded-md border border-[#2F5F5E]/20">Novel Innovations</span></div>
-                  <p className="text-xs text-[#7A8582] mb-4">Covert mechanisms built specifically for situations where visible action would escalate danger:</p>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <button onClick={() => setIsFakeCallOpen(true)} className="p-3 rounded-2xl bg-[#234A45]/30 hover:bg-[#234A45]/50 border border-[#2F5F5E]/30 text-left transition-all group"><span className="text-xs font-bold text-[#30433F] block group-hover:text-[#2F5F5E]">📞 Fake Call to SOS</span><span className="text-[10px] text-[#7A8582] leading-tight block mt-0.5">Trigger secret alert using voice keyword "reach soon"</span></button>
-                    <button onClick={() => setIsDuressModalOpen(true)} className="p-3 rounded-2xl bg-[#806B2B]/20 hover:bg-[#806B2B]/30 border border-[#F9C950]/30 text-left transition-all group"><span className="text-xs font-bold text-[#30433F] block group-hover:text-[#B08D28]">🔢 Duress PIN (9999)</span><span className="text-[10px] text-[#7A8582] leading-tight block mt-0.5">Deceives attacker with Decoy Calculator while alerting police</span></button>
+
+              {/* BELOW MAP INFORMATION GRID */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Left Column: RouteSelector (Smart Route Intelligence, Compare Routes, Explainable Safety Engine, Start Nav & Walk Me Home) */}
+                <div className="lg:col-span-8 space-y-6">
+                  <RouteSelector
+                    routes={routes}
+                    selectedRoute={selectedRoute}
+                    onSelectRoute={setSelectedRoute}
+                    onStartTrip={() => {
+                      setIsNavigating(true);
+                      setNavStepIndex(0);
+                      setUserLocation(selectedRoute.coordinates[0]);
+                      showToast(`SafeSafar guidance started for ${selectedRoute.name}`);
+                    }}
+                    onOpenWalkMeHome={() => setIsWalkMeHomeOpen(true)}
+                  />
+                </div>
+
+                {/* Right Column: Covert Safety Arsenal & Quick Action Cards */}
+                <div className="lg:col-span-4 space-y-5">
+                  <div className="bg-[#FFFFFF]/90 border border-[#2F5F5E]/15 rounded-3xl p-5 shadow-xl">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold text-[#7CA982] uppercase tracking-wider">Covert Safety Arsenal</span>
+                      <span className="text-[10px] bg-[#2F5F5E]/10 text-[#2F5F5E] px-2 py-0.5 rounded-md border border-[#2F5F5E]/20">Novel Innovations</span>
+                    </div>
+                    <p className="text-xs text-[#7A8582] mb-4">
+                      Covert mechanisms built specifically for situations where visible action would escalate danger:
+                    </p>
+                    <div className="grid grid-cols-1 gap-3">
+                      <button
+                        onClick={() => setIsFakeCallOpen(true)}
+                        className="p-3.5 rounded-2xl bg-[#234A45]/10 hover:bg-[#234A45]/20 border border-[#2F5F5E]/30 text-left transition-all group flex items-start gap-3"
+                      >
+                        <span className="text-xl shrink-0">📞</span>
+                        <div>
+                          <span className="text-xs font-bold text-[#202D2D] block group-hover:text-[#24504F]">Fake Call to SOS</span>
+                          <span className="text-[11px] text-[#7A8582] leading-tight block mt-0.5">Trigger secret alert using voice keyword "reach soon"</span>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => setIsDuressModalOpen(true)}
+                        className="p-3.5 rounded-2xl bg-[#806B2B]/10 hover:bg-[#806B2B]/20 border border-[#F9C950]/30 text-left transition-all group flex items-start gap-3"
+                      >
+                        <span className="text-xl shrink-0">🔢</span>
+                        <div>
+                          <span className="text-xs font-bold text-[#202D2D] block group-hover:text-[#8A7131]">Duress PIN (9999)</span>
+                          <span className="text-[11px] text-[#7A8582] leading-tight block mt-0.5">Deceives attacker with Decoy Calculator while alerting police</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick Action Bar */}
+                  <div className="bg-[#FAF9F6] border border-[#E2DDD6] rounded-3xl p-5 shadow-sm space-y-3">
+                    <p className="text-xs font-bold text-[#202D2D] uppercase tracking-wider">Quick Actions</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button onClick={() => setIsWalkMeHomeOpen(true)} className="py-2.5 px-3 rounded-xl bg-[#24504F] text-white text-xs font-bold hover:bg-[#1E403F] transition-all text-center">🚶‍♀️ Walk Me Home</button>
+                      <button onClick={() => setIsReportModalOpen(true)} className="py-2.5 px-3 rounded-xl bg-[#EEF0EC] text-[#202D2D] text-xs font-bold hover:bg-[#E2E6DF] transition-all text-center">📢 Report Spot</button>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -33,7 +33,7 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
       </div>
 
       {/* Route Cards */}
-      <div className="grid grid-cols-1 gap-3.5 mb-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 mb-5">
         {routes.map((route) => {
           const isSelected = route.id === selectedRoute.id;
           const isSafest = route.category === 'safest';
@@ -57,73 +57,75 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
             <div
               key={route.id}
               onClick={() => onSelectRoute(route)}
-              className={`cursor-pointer rounded-2xl p-4 transition-all border ${
+              className={`cursor-pointer rounded-2xl p-3.5 sm:p-4 transition-all border overflow-hidden min-w-0 flex flex-col justify-between ${
                 isSelected
                   ? 'bg-[#EDF7F2] border-[#55A184] shadow-xl shadow-[#2D6A5E]/10 ring-1 ring-[#2D6A5E]/30'
                   : 'bg-white border-[#D3E5DE] hover:border-[#72A892]/55 hover:bg-[#F8FCFA]'
               }`}
             >
               {/* Header Row: Category Badge + Special Tag & Safety Score */}
-              <div className="flex items-start justify-between gap-3 mb-2.5">
-                <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold capitalize ${badgeColor}`}>
-                      {icon}
-                      <span>{route.category}</span>
+              <div>
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1">
+                      <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[11px] font-bold capitalize ${badgeColor}`}>
+                        {icon}
+                        <span>{route.category}</span>
+                      </div>
+
+                      {isSafest && (
+                        <span className="bg-[#D8ECE2] text-[#2D6A5E] text-[9px] font-extrabold px-1.5 py-0.5 rounded-md shadow-2xs tracking-wide">
+                          ★ RECOMMENDED
+                        </span>
+                      )}
+
+                      {isFastest && (
+                        <span className="bg-[#F9E9EB] text-[#B85F6B] border border-[#E8BEC4] text-[9px] font-extrabold px-1.5 py-0.5 rounded-md shadow-2xs tracking-wide">
+                          ⚠️ HIGH RISK AT NIGHT
+                        </span>
+                      )}
                     </div>
 
-                    {isSafest && (
-                      <span className="bg-[#D8ECE2] text-[#2D6A5E] text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm tracking-wide">
-                        ★ RECOMMENDED
-                      </span>
-                    )}
-
-                    {isFastest && (
-                      <span className="bg-[#F9E9EB] text-[#B85F6B] border border-[#E8BEC4] text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm tracking-wide">
-                        ⚠️ HIGH RISK AT NIGHT
-                      </span>
-                    )}
+                    <h3 className="font-bold text-[#243A35] text-xs sm:text-sm leading-snug mt-0.5 break-words">{route.name}</h3>
                   </div>
 
-                  <h3 className="font-bold text-[#243A35] text-sm leading-snug mt-0.5">{route.name}</h3>
-                </div>
-
-                <div className="text-right shrink-0">
-                  <div className={`px-2.5 py-1 rounded-xl bg-gradient-to-br ${scoreBg} text-white font-black text-sm shadow-md inline-block`}>
-                    {route.safetyScore}<span className="text-[10px] font-normal opacity-90">/100</span>
+                  <div className="text-right shrink-0">
+                    <div className={`px-2 py-0.5 rounded-xl bg-gradient-to-br ${scoreBg} text-white font-black text-xs sm:text-sm shadow-sm inline-block`}>
+                      {route.safetyScore}<span className="text-[9px] font-normal opacity-90">/100</span>
+                    </div>
+                    <div className="text-[9px] font-medium text-[#73847F] leading-tight mt-0.5">Safety Index</div>
                   </div>
-                  <div className="text-[10px] font-medium text-[#73847F] leading-tight mt-1">Safety Index</div>
                 </div>
-              </div>
 
-              {/* Duration & Distance Row */}
-              <div className="flex items-center gap-2 text-xs text-[#61746E] mb-3 font-medium">
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-[#73847F] shrink-0" />
-                  {route.durationMin} mins
-                </span>
-                <span className="text-[#B7B1A8]">•</span>
-                <span>{route.distanceKm} km</span>
+                {/* Duration & Distance Row */}
+                <div className="flex items-center gap-2 text-[11px] text-[#61746E] mb-3 font-medium">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-[#73847F] shrink-0" />
+                    {route.durationMin} mins
+                  </span>
+                  <span className="text-[#B7B1A8]">•</span>
+                  <span>{route.distanceKm} km</span>
+                </div>
               </div>
 
               {/* Telemetry Breakdown */}
-              <div className="pt-3 border-t border-[#2D6A5E]/15 space-y-2 text-xs">
+              <div className="pt-2.5 border-t border-[#2D6A5E]/15 space-y-2 text-[11px]">
                 {/* Lighting Bar */}
                 <div>
-                  <div className="flex justify-between items-center text-[#73847F] gap-2 mb-1">
-                    <span className="flex items-center gap-1.5 shrink-0">
-                      <Lightbulb className="w-3.5 h-3.5 text-yellow-400 shrink-0" /> Lighting
+                  <div className="flex justify-between items-center text-[#73847F] gap-1 mb-1">
+                    <span className="flex items-center gap-1 shrink-0 text-[11px]">
+                      <Lightbulb className="w-3 h-3 text-yellow-500 shrink-0" /> Lighting
                     </span>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1 min-w-0">
                       {route.confidence === 'low' && (
-                        <span className="text-[9px] font-medium text-[#A67B22] bg-[#F9C950]/10 border border-[#F9C950]/20 px-1.5 py-0.2 rounded">
-                          Sparse OSM Data
+                        <span className="text-[8px] font-bold text-[#A67B22] bg-[#F9C950]/15 border border-[#F9C950]/30 px-1 py-0.2 rounded truncate">
+                          Sparse OSM
                         </span>
                       )}
-                      <span className="font-bold text-[#243A35] shrink-0">{route.lightingPercent}%</span>
+                      <span className="font-bold text-[#243A35] shrink-0 text-[11px]">{route.lightingPercent}%</span>
                     </div>
                   </div>
-                  <div className="w-full h-2 bg-[#E7E3DD]/95 rounded-full overflow-hidden p-0.5">
+                  <div className="w-full h-1.5 bg-[#E7E3DD]/95 rounded-full overflow-hidden p-0.5">
                     <div
                       className="h-full rounded-full transition-all duration-300"
                       style={{
@@ -135,11 +137,11 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
                 </div>
 
                 {/* Crowd Context */}
-                <div className="flex justify-between items-center gap-2 text-[#73847F] pt-0.5">
-                  <span className="flex items-center gap-1.5 shrink-0">
-                    <Users className="w-3.5 h-3.5 text-[#55A184] shrink-0" /> Crowd Context
+                <div className="flex items-center justify-between gap-1 text-[#73847F] pt-0.5 min-w-0">
+                  <span className="flex items-center gap-1 shrink-0 text-[11px]">
+                    <Users className="w-3 h-3 text-[#55A184] shrink-0" /> Crowd
                   </span>
-                  <span className={`font-bold text-xs text-right truncate shrink-0 ${route.crowdContext.verifiedSafe ? 'text-[#55A184]' : 'text-[#D97883]'}`}>
+                  <span className={`font-bold text-[11px] text-right truncate min-w-0 ${route.crowdContext.verifiedSafe ? 'text-[#55A184]' : 'text-[#D97883]'}`}>
                     {route.crowdContext.level} {route.crowdContext.verifiedSafe ? '✓ Verified' : '⚠️ Deserted'}
                   </span>
                 </div>

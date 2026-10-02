@@ -492,8 +492,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   }, [streetLamps, showSafeLandmarks]);
 
   return (
-    <div className="relative z-0 isolate w-full h-full min-h-[380px] rounded-2xl overflow-hidden shadow-2xl border border-[#2D6A5E]/15">
-      <div ref={mapContainerRef} className="w-full h-full min-h-[380px] relative z-0" />
+    <div className="relative z-0 isolate w-full h-full rounded-2xl overflow-hidden border border-[#2D6A5E]/15">
+      <div ref={mapContainerRef} className="w-full h-full relative z-0 rounded-2xl overflow-hidden" />
     </div>
   );
 };
