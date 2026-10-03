@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import { UserProfile, UserRole } from '../types';
 import { MOCK_USERS } from '../data/mockData';
-import { loginWithGoogle, registerUser, loginUser, sendEmailOTP, verifyEmailOTP } from '../services/databaseService';
+import { loginWithGoogle, registerUser, loginUser, resendVerificationEmail } from '../services/databaseService';
+import { supabase } from '../services/supabaseClient';
 
 interface AuthPageProps {
   onLoginSuccess: (user: UserProfile) => void;
@@ -47,24 +48,50 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // OTP step (after registration form submitted)
-  const [isOtpStep, setIsOtpStep] = useState(false);
+  // Email Sent Confirmation Step
+  const [isEmailSentStep, setIsEmailSentStep] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
-  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
-  const [otpCountdown, setOtpCountdown] = useState(60);
+  const [resendCountdown, setResendCountdown] = useState(60);
   const [isResending, setIsResending] = useState(false);
 
-  // Countdown timer for OTP resend
+  // Countdown timer for email resend
   useEffect(() => {
-    if (!isOtpStep || otpCountdown <= 0) return;
-    const timer = setInterval(() => setOtpCountdown((p) => Math.max(0, p - 1)), 1000);
+    if (!isEmailSentStep || resendCountdown <= 0) return;
+    const timer = setInterval(() => setResendCountdown((p) => Math.max(0, p - 1)), 1000);
     return () => clearInterval(timer);
-  }, [isOtpStep, otpCountdown]);
+  }, [isEmailSentStep, resendCountdown]);
 
-  // Cached registration data (used after OTP verification)
-  const [pendingRegData, setPendingRegData] = useState<{
-    name: string; phone: string; password: string; localFallback?: boolean;
-  } | null>(null);
+  // Listen for automatic login when user clicks the confirmation link in email
+  useEffect(() => {
+    if (!supabase) return;
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user && (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED')) {
+        const u = session.user;
+        const profile: UserProfile = {
+          id: u.id,
+          name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'User',
+          phone: u.user_metadata?.phone || '',
+          email: u.email || '',
+          role: u.user_metadata?.role || 'commuter',
+          avatar: u.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u.user_metadata?.full_name || 'User')}&backgroundColor=7c3aed,4f46e5`,
+          normalPin: '1234',
+          duressPin: '9999',
+          guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
+          emergencyContactCount: 0,
+          batteryStatus: 92,
+          hub: 'SVNIT Surat Hub',
+        };
+        localStorage.setItem('safesafar_user', JSON.stringify(profile));
+        localStorage.setItem('safesafar_db_session', JSON.stringify(profile));
+        onLoginSuccess(profile);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [onLoginSuccess]);
+
 
 
   // Forgot password
@@ -95,10 +122,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
   const handleSwitchMode = (mode: 'signin' | 'register') => {
     setAuthMode(mode);
     setErrorMsg(null);
-    setIsOtpStep(false);
+    setIsEmailSentStep(false);
     setShowForgotPassword(false);
   };
-
 
   // Handle email sign-in
   const handleEmailSignIn = async (e: React.FormEvent) => {
@@ -153,7 +179,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  // Handle registration — always shows OTP screen
+  // Handle registration — sends verification link via Supabase
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) { setErrorMsg('Please enter your full name.'); return; }
@@ -165,194 +191,60 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     setErrorMsg(null);
 
     try {
-      // Try to send OTP via Supabase
-      const { error: otpError } = await sendEmailOTP(email.trim());
-
-      const isRateLimited = otpError && (
-        otpError.toLowerCase().includes('rate limit') ||
-        otpError.toLowerCase().includes('over_email_send_rate_limit') ||
-        otpError.toLowerCase().includes('email_send_rate_limit') ||
-        otpError.toLowerCase().includes('too many') ||
-        otpError.toLowerCase().includes('too_many')
+      const { user, requiresEmailConfirmation, error: regError } = await registerUser(
+        email.trim(),
+        password,
+        fullName.trim(),
+        phone ? `+91${phone}` : '',
+        'commuter'
       );
-      const isNotConfigured = otpError && otpError.toLowerCase().includes('not configured');
 
-      if (otpError && !isRateLimited && !isNotConfigured) {
-        // A real error (bad email format, service down, etc.) — show it
-        setErrorMsg(otpError);
+      if (regError) {
+        setErrorMsg(regError);
         return;
       }
 
-      // If rate limited or not configured → generate a local OTP for demo
-      let usingLocalFallback = false;
-      if (isRateLimited || isNotConfigured) {
-        const localOtp = String(Math.floor(100000 + Math.random() * 900000));
-        sessionStorage.setItem('safesafar_reg_otp', localOtp);
-        sessionStorage.setItem('safesafar_reg_otp_email', email.trim().toLowerCase());
-        usingLocalFallback = true;
-        console.info('[SafeSafar] Local OTP fallback (Supabase rate limit):', localOtp);
-      } else {
-        // Real OTP sent — clear any stale local fallback
-        sessionStorage.removeItem('safesafar_reg_otp');
-        sessionStorage.removeItem('safesafar_reg_otp_email');
-      }
-
-      // Always show OTP screen
-      setPendingRegData({
-        name: fullName.trim(),
-        phone: phone ? `+91${phone}` : '',
-        password,
-        localFallback: usingLocalFallback,
-      });
-      setRegisteredEmail(email.trim());
-      setOtpDigits(['', '', '', '', '', '']);
-      setOtpCountdown(60);
-      setIsOtpStep(true);
-    } catch (err: any) {
-      setErrorMsg(err?.message || 'Failed to send OTP. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle OTP digit input
-  const handleOtpChange = (index: number, value: string) => {
-    const digit = value.replace(/\D/g, '').slice(-1);
-    const updated = [...otpDigits];
-    updated[index] = digit;
-    setOtpDigits(updated);
-    setErrorMsg(null);
-    if (digit && index < 5) {
-      document.getElementById(`reg-otp-${index + 1}`)?.focus();
-    }
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
-      document.getElementById(`reg-otp-${index - 1}`)?.focus();
-    }
-  };
-
-  // Verify OTP and complete account creation
-  const handleVerifyRegistrationOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const token = otpDigits.join('');
-    if (token.length < 6) {
-      setErrorMsg('Please enter the complete 6-digit OTP.');
-      return;
-    }
-    setIsLoading(true);
-    setErrorMsg(null);
-
-    try {
-      // Check local fallback OTP first
-      const localOtp = sessionStorage.getItem('safesafar_reg_otp');
-      const localOtpEmail = sessionStorage.getItem('safesafar_reg_otp_email');
-      const isLocalMatch =
-        localOtp &&
-        localOtpEmail === registeredEmail.toLowerCase() &&
-        localOtp === token;
-
-      let profile: UserProfile | null = null;
-
-      if (isLocalMatch || pendingRegData?.localFallback) {
-        if (!isLocalMatch) {
-          setErrorMsg('Incorrect OTP. Please check and try again.');
-          return;
-        }
-        // Local OTP verified — create account via registerUser
-        sessionStorage.removeItem('safesafar_reg_otp');
-        sessionStorage.removeItem('safesafar_reg_otp_email');
-
-        const { user, error: regError } = await registerUser(
-          registeredEmail,
-          pendingRegData?.password || '',
-          pendingRegData?.name || '',
-          pendingRegData?.phone || '',
-          'commuter'
-        );
-        if (regError) { setErrorMsg(regError); return; }
-        if (user) {
-          profile = {
-            id: user.id,
-            name: pendingRegData?.name || user.name,
-            phone: pendingRegData?.phone || user.phone || '',
-            email: user.email,
-            role: user.role,
-            avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(pendingRegData?.name || user.name)}&backgroundColor=7c3aed,4f46e5`,
-            normalPin: '1234', duressPin: '9999',
-            guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
-            emergencyContactCount: 0, batteryStatus: 95, hub: user.hub,
-          };
-        }
-      } else {
-        // Verify via Supabase OTP
-        const { user: verifiedUser, error: verifyError } = await verifyEmailOTP(registeredEmail, token);
-        if (verifyError) {
-          setErrorMsg(
-            verifyError.toLowerCase().includes('expired')
-              ? 'OTP expired. Please click "Resend OTP" to get a new one.'
-              : verifyError.toLowerCase().includes('invalid')
-              ? 'Incorrect OTP. Please check and try again.'
-              : verifyError
-          );
-          return;
-        }
-        if (verifiedUser) {
-          profile = {
-            id: verifiedUser.id,
-            name: pendingRegData?.name || verifiedUser.name,
-            phone: pendingRegData?.phone || verifiedUser.phone || '',
-            email: verifiedUser.email,
-            role: verifiedUser.role,
-            avatar: verifiedUser.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(pendingRegData?.name || verifiedUser.name)}&backgroundColor=7c3aed,4f46e5`,
-            normalPin: '1234', duressPin: '9999',
-            guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
-            emergencyContactCount: 0, batteryStatus: 95, hub: verifiedUser.hub,
-          };
-        }
-      }
-
-      if (profile) {
+      if (requiresEmailConfirmation) {
+        setRegisteredEmail(email.trim());
+        setResendCountdown(60);
+        setIsEmailSentStep(true);
+      } else if (user) {
+        const profile: UserProfile = {
+          id: user.id,
+          name: user.name,
+          phone: user.phone || '',
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=7c3aed,4f46e5`,
+          normalPin: '1234', duressPin: '9999',
+          guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
+          emergencyContactCount: 0, batteryStatus: 95, hub: user.hub,
+        };
         localStorage.setItem('safesafar_user', JSON.stringify(profile));
         localStorage.setItem('safesafar_db_session', JSON.stringify(profile));
         onLoginSuccess(profile);
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'OTP verification failed. Please try again.');
+      setErrorMsg(err?.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Resend OTP
-  const handleResendOtp = async () => {
+  // Resend Verification Email Link
+  const handleResendEmail = async () => {
     setIsResending(true);
     setErrorMsg(null);
-    const { error } = await sendEmailOTP(registeredEmail);
-    const isRateLimited = error && (
-      error.toLowerCase().includes('rate limit') ||
-      error.toLowerCase().includes('too many')
-    );
-    if (error && !isRateLimited) {
+    const { error } = await resendVerificationEmail(registeredEmail);
+    if (error) {
       setErrorMsg(error);
     } else {
-      if (isRateLimited) {
-        // Regenerate local OTP
-        const localOtp = String(Math.floor(100000 + Math.random() * 900000));
-        sessionStorage.setItem('safesafar_reg_otp', localOtp);
-        sessionStorage.setItem('safesafar_reg_otp_email', registeredEmail.toLowerCase());
-        if (pendingRegData) setPendingRegData({ ...pendingRegData, localFallback: true });
-        console.info('[SafeSafar] New local OTP fallback:', localOtp);
-      }
-      setOtpCountdown(60);
-      setOtpDigits(['', '', '', '', '', '']);
-      setSuccessNotice(isRateLimited ? 'New demo OTP generated (check below).' : 'New OTP sent to your email.');
-      setTimeout(() => setSuccessNotice(null), 3000);
+      setResendCountdown(60);
+      setSuccessNotice(`Verification link resent to ${registeredEmail}`);
+      setTimeout(() => setSuccessNotice(null), 4000);
     }
     setIsResending(false);
   };
-
 
   // Google Sign In
   const handleGoogleSignIn = async () => {
@@ -488,104 +380,85 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
             )}
 
             {/* ============================================================ */}
-            {/* OTP VERIFICATION SCREEN (shown after registration form)      */}
             {/* ============================================================ */}
-            {isOtpStep ? (
-              <div className="space-y-5 animate-in fade-in duration-300">
+            {/* EMAIL SENT CONFIRMATION SCREEN (shown after registration)   */}
+            {/* ============================================================ */}
+            {isEmailSentStep ? (
+              <div className="space-y-6 animate-in fade-in duration-300">
                 {/* Back button */}
                 <button
                   type="button"
-                  onClick={() => { setIsOtpStep(false); setErrorMsg(null); }}
-                  className="inline-flex items-center gap-1.5 text-xs text-[#7A8582] hover:text-[#202D2D] transition-colors"
+                  onClick={() => { setIsEmailSentStep(false); setErrorMsg(null); }}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7A8582] hover:text-[#202D2D] transition-colors"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Change details</span>
+                  <span>Back to registration</span>
                 </button>
 
                 {/* Header */}
-                <div className="flex flex-col items-center text-center space-y-2 pb-1">
-                  <div className="w-14 h-14 rounded-full bg-[#7CA982]/15 border-2 border-[#7CA982]/30 flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-[#7CA982]" />
+                <div className="flex flex-col items-center text-center space-y-3 pt-2">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-full bg-[#7CA982]/20 border-2 border-[#7CA982]/40 flex items-center justify-center animate-pulse">
+                      <Mail className="w-8 h-8 text-[#24504F]" />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#7CA982] text-white flex items-center justify-center border-2 border-white">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold text-[#202D2D]">Enter Verification Code</h3>
-                  <p className="text-xs text-[#7A8582] max-w-xs">
-                    We sent a 6-digit OTP to
-                    <span className="font-semibold text-[#2F5F5E] block mt-0.5">{registeredEmail}</span>
+                  <h3 className="text-xl font-black text-[#202D2D]">Check Your Email</h3>
+                  <p className="text-xs text-[#526460]">
+                    We have sent a verification confirmation link to:
                   </p>
+                  <div className="px-4 py-2 rounded-xl bg-[#EEF3EE] border border-[#D4E2D5] text-[#24504F] font-bold text-sm tracking-wide break-all">
+                    {registeredEmail}
+                  </div>
                 </div>
 
-                {/* OTP form */}
-                <form onSubmit={handleVerifyRegistrationOtp} className="space-y-5">
-                  {/* 6-digit OTP boxes */}
-                  <div className="flex justify-between gap-2">
-                    {otpDigits.map((digit, i) => (
-                      <input
-                        key={i}
-                        id={`reg-otp-${i}`}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={digit}
-                        onChange={(e) => handleOtpChange(i, e.target.value)}
-                        onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                        autoFocus={i === 0}
-                        className={`w-11 h-12 text-center rounded-xl border text-lg font-bold text-[#202D2D] focus:outline-none focus:ring-2 transition-all ${
-                          digit
-                            ? 'bg-[#24504F]/10 border-[#2F5F5E] focus:ring-[#2F5F5E]'
-                            : 'bg-[#FAF9F6] border-[#2F5F5E]/20 focus:ring-[#2F5F5E]/50'
-                        }`}
-                      />
-                    ))}
-                  </div>
+                {/* Verification Instructions */}
+                <div className="bg-[#FAF9F6] border border-[#2F5F5E]/15 rounded-xl p-4 space-y-2.5 text-xs text-[#30433F]">
+                  <p className="font-semibold text-[#202D2D]">To complete your account creation:</p>
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#24504F] text-white text-[10px] font-bold flex items-center justify-center">1</span>
+                      <span>Open your email inbox (check Spam/Junk folder if not in inbox).</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#24504F] text-white text-[10px] font-bold flex items-center justify-center">2</span>
+                      <span>Click the button in the email: <strong>"Confirm your email"</strong> or <strong>"Yes, it's me"</strong>.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#24504F] text-white text-[10px] font-bold flex items-center justify-center">3</span>
+                      <span>Your account will be activated and you will automatically be logged into SafeSafar!</span>
+                    </li>
+                  </ul>
+                </div>
 
-                  {/* Verify button */}
-                  <button
-                    type="submit"
-                    disabled={isLoading || otpDigits.join('').length < 6}
-                    className="w-full py-2.5 rounded-xl bg-[#24504F] hover:bg-[#2F5F5E] text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {isLoading ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /><span>Verifying...</span></>
-                    ) : (
-                      <><CheckCircle2 className="w-4 h-4" /><span>Verify & Create Account</span></>
-                    )}
-                  </button>
-                </form>
-
-                {/* Resend */}
-                <div className="text-center text-xs text-[#7A8582]">
-                  <span>Didn't receive the OTP?{' '}</span>
+                {/* Resend Action */}
+                <div className="space-y-3 pt-1">
                   <button
                     type="button"
-                    disabled={isResending || otpCountdown > 0}
-                    onClick={handleResendOtp}
-                    className="font-semibold text-[#7CA982] hover:text-[#2F5F5E] disabled:opacity-50 underline"
+                    disabled={isResending || resendCountdown > 0}
+                    onClick={handleResendEmail}
+                    className="w-full py-2.5 rounded-xl border border-[#24504F] text-[#24504F] hover:bg-[#EEF3EE] font-semibold text-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {isResending ? 'Sending...' : otpCountdown > 0 ? `Resend in ${otpCountdown}s` : 'Resend OTP'}
+                    {isResending ? (
+                      <><Loader2 className="w-3.5 h-3.5 animate-spin" /><span>Sending...</span></>
+                    ) : resendCountdown > 0 ? (
+                      <span>Resend verification email in {resendCountdown}s</span>
+                    ) : (
+                      <><Mail className="w-3.5 h-3.5" /><span>Resend Verification Email</span></>
+                    )}
                   </button>
-                 </div>
 
-                {/* Show local fallback OTP when Supabase email is rate-limited */}
-                {pendingRegData?.localFallback ? (
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-3 space-y-1">
-                    <p className="text-[11px] font-semibold text-amber-700 flex items-center gap-1.5">
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                      Email service rate-limited — use this demo OTP:
-                    </p>
-                    <p className="text-center font-mono text-xl font-black tracking-[0.3em] text-amber-800 py-1">
-                      {sessionStorage.getItem('safesafar_reg_otp') || '------'}
-                    </p>
-                    <p className="text-[10px] text-amber-600 text-center">
-                      This OTP is generated locally for demo/testing purposes.
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-center text-[11px] text-[#9AACA8]">
-                    Check your spam folder if you don't see it in inbox.
-                  </p>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchMode('signin')}
+                    className="w-full text-center text-xs text-[#7A8582] hover:text-[#202D2D] font-medium"
+                  >
+                    Already verified? <span className="text-[#2F5F5E] font-semibold underline">Sign In</span>
+                  </button>
+                </div>
               </div>
-
             ) : (
 
               <div className="space-y-5">
@@ -912,7 +785,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                     </div>
                   </div>
                 </div>
-
               </div>
             )}
           </div>

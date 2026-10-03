@@ -110,7 +110,7 @@ export async function registerUser(
   name: string,
   phone?: string,
   role: 'commuter' | 'guardian' | 'civic' = 'commuter'
-): Promise<{ user: AuthUser | null; error: string | null }> {
+): Promise<{ user: AuthUser | null; requiresEmailConfirmation?: boolean; error: string | null }> {
   const cleanEmail = email.trim().toLowerCase();
 
   // 1. Supabase Cloud Database Mode
@@ -120,6 +120,7 @@ export async function registerUser(
         email: cleanEmail,
         password,
         options: {
+          emailRedirectTo: window.location.origin,
           data: {
             full_name: name.trim(),
             phone: phone?.trim() || '',
@@ -129,16 +130,7 @@ export async function registerUser(
       });
 
       if (error) {
-        // If Supabase hits email rate limit, fall back seamlessly to local persistent registration so user is never blocked!
-        if (
-          error.message.toLowerCase().includes('rate limit') ||
-          error.message.toLowerCase().includes('email rate limit') ||
-          error.message.toLowerCase().includes('over_email_send_rate_limit')
-        ) {
-          console.warn('[Supabase Auth] Rate limit hit, seamlessly completing registration locally:', error.message);
-          return registerUserLocally(cleanEmail, password, name, phone, role);
-        }
-        return { user: null, error: error.message };
+        return { user: null, requiresEmailConfirmation: false, error: error.message };
       }
 
       if (data.user) {
@@ -167,10 +159,14 @@ export async function registerUser(
           hub: 'SVNIT Surat Hub',
           avatar: avatarUrl,
         };
-        return { user: newUser, error: null };
+
+        // If data.session is null, Supabase requires email confirmation via link
+        const requiresEmailConfirmation = !data.session;
+        return { user: newUser, requiresEmailConfirmation, error: null };
       }
     } catch (err: any) {
-      console.warn('[Supabase Auth] Sign up error, falling back to local database:', err);
+      console.warn('[Supabase Auth] Sign up exception:', err);
+      return { user: null, requiresEmailConfirmation: false, error: err.message || 'Registration failed.' };
     }
   }
 
@@ -180,7 +176,7 @@ export async function registerUser(
   const users: (AuthUser & { passwordHash: string })[] = rawUsers ? JSON.parse(rawUsers) : [];
 
   if (users.some((u) => u.email === cleanEmail)) {
-    return { user: null, error: 'An account with this email address already exists.' };
+    return { user: null, requiresEmailConfirmation: false, error: 'An account with this email address already exists.' };
   }
 
   const newUserId = `user-${Date.now()}`;
@@ -198,8 +194,33 @@ export async function registerUser(
   localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users));
   localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, JSON.stringify(newUser));
 
-  return { user: newUser, error: null };
+  return { user: newUser, requiresEmailConfirmation: false, error: null };
 }
+
+/**
+ * Resend email confirmation link via Supabase Auth
+ */
+export async function resendVerificationEmail(email: string): Promise<{ error: string | null }> {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim().toLowerCase(),
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+      if (error) {
+        return { error: error.message };
+      }
+      return { error: null };
+    } catch (err: any) {
+      return { error: err.message || 'Failed to resend confirmation email.' };
+    }
+  }
+  return { error: 'Cloud database not configured.' };
+}
+
 
 /**
  * Sign in an existing user
