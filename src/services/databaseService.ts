@@ -890,24 +890,29 @@ export async function fetchIncidents(): Promise<IncidentReport[]> {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return data.map((item) => ({
+      if (error) {
+        console.warn('[Supabase fetchIncidents] SELECT error:', error.code, error.message);
+      } else if (Array.isArray(data) && data.length > 0) {
+        const dbList = data.map((item) => ({
           id: item.id,
           type: item.type as any,
           severity: item.severity as any,
-          lat: item.lat,
-          lng: item.lng,
+          lat: Number(item.lat),
+          lng: Number(item.lng),
           title: item.title,
-          description: item.description,
-          timestamp: item.timestamp_str,
-          confirmations: item.confirmations,
-          requiredConfirmations: item.required_confirmations,
-          verified: item.verified,
-          decayHoursLeft: item.decay_hours_left,
+          description: item.description || '',
+          timestamp: item.timestamp_str || 'Just now',
+          confirmations: Number(item.confirmations || 1),
+          requiredConfirmations: Number(item.required_confirmations || 3),
+          verified: Boolean(item.verified),
+          decayHoursLeft: Number(item.decay_hours_left || 48),
         }));
+
+        localStorage.setItem(LOCAL_STORAGE_INCIDENTS_KEY, JSON.stringify(dbList));
+        return dbList;
       }
     } catch (err) {
-      console.warn('[Supabase DB] Failed to fetch incidents, checking local DB:', err);
+      console.warn('[Supabase DB] Failed to fetch incidents:', err);
     }
   }
 
@@ -928,48 +933,57 @@ export async function fetchIncidents(): Promise<IncidentReport[]> {
 }
 
 export async function saveIncidentToDatabase(incidentData: Omit<IncidentReport, 'id'>): Promise<IncidentReport> {
+  const generatedId = `inc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+
   if (isSupabaseConfigured() && supabase) {
     try {
+      const payload = {
+        id: generatedId,
+        type: incidentData.type,
+        severity: incidentData.severity || 'medium',
+        lat: incidentData.lat,
+        lng: incidentData.lng,
+        title: incidentData.title,
+        description: incidentData.description || '',
+        timestamp_str: incidentData.timestamp || 'Just now',
+        confirmations: incidentData.confirmations || 1,
+        required_confirmations: incidentData.requiredConfirmations || 3,
+        verified: incidentData.verified ?? false,
+        decay_hours_left: incidentData.decayHoursLeft || 48,
+      };
+
       const { data, error } = await supabase
         .from('incidents')
-        .insert({
-          type: incidentData.type,
-          severity: incidentData.severity,
-          lat: incidentData.lat,
-          lng: incidentData.lng,
-          title: incidentData.title,
-          description: incidentData.description,
-          timestamp_str: incidentData.timestamp,
-          confirmations: incidentData.confirmations,
-          required_confirmations: incidentData.requiredConfirmations,
-          verified: incidentData.verified,
-          decay_hours_left: incidentData.decayHoursLeft,
-        })
+        .insert(payload)
         .select()
         .single();
 
-      if (!error && data) {
+      if (error) {
+        console.error('[Supabase saveIncident] INSERT error:', error.code, error.message);
+      } else if (data) {
+        console.log('[Supabase saveIncident] ✓ Saved community report to Supabase:', data.id);
         const saved: IncidentReport = {
           id: data.id,
           type: data.type as any,
           severity: data.severity as any,
-          lat: data.lat,
-          lng: data.lng,
+          lat: Number(data.lat),
+          lng: Number(data.lng),
           title: data.title,
-          description: data.description,
-          timestamp: data.timestamp_str,
-          confirmations: data.confirmations,
-          requiredConfirmations: data.required_confirmations,
-          verified: data.verified,
-          decayHoursLeft: data.decay_hours_left,
+          description: data.description || '',
+          timestamp: data.timestamp_str || 'Just now',
+          confirmations: Number(data.confirmations || 1),
+          requiredConfirmations: Number(data.required_confirmations || 3),
+          verified: Boolean(data.verified),
+          decayHoursLeft: Number(data.decay_hours_left || 48),
         };
 
         const current = await fetchIncidents();
-        localStorage.setItem(LOCAL_STORAGE_INCIDENTS_KEY, JSON.stringify([saved, ...current]));
+        const updated = [saved, ...current.filter((c) => c.id !== saved.id)];
+        localStorage.setItem(LOCAL_STORAGE_INCIDENTS_KEY, JSON.stringify(updated));
         return saved;
       }
     } catch (err) {
-      console.warn('[Supabase DB] Failed to insert incident:', err);
+      console.error('[Supabase saveIncident] Exception:', err);
     }
   }
 
@@ -977,7 +991,7 @@ export async function saveIncidentToDatabase(incidentData: Omit<IncidentReport, 
   const current = await fetchIncidents();
   const newIncident: IncidentReport = {
     ...incidentData,
-    id: `inc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    id: generatedId,
   };
 
   const updated = [newIncident, ...current];
