@@ -1,10 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, RefreshCw } from 'lucide-react';
-
-interface Message {
-  role: 'user' | 'assistant';
-  text: string;
-}
+import { Sparkles, Send, RefreshCw, Loader2 } from 'lucide-react';
+import { getGeminiResponse, ChatMessage } from '../services/geminiService';
 
 const QUICK_PROMPTS = [
   "What's the safest way to walk home after 10pm?",
@@ -13,47 +9,47 @@ const QUICK_PROMPTS = [
   'How do I set up discreet SOS triggers?',
 ];
 
-const AI_RESPONSES: Record<string, string> = {
-  default:
-    "Hi — I'm your SafeSafar companion. Ask me anything about getting home safely, choosing routes, or using SOS.",
-  safe:
-    '🌟 For walking home safely after 10pm: (1) Share your live location with a trusted contact. (2) Use SafeSafar\'s "Walk Me Home" mode — your guardian gets alerts. (3) Prefer lit main roads even if longer. (4) Keep your phone charged and SOS armed.',
-  followed:
-    '🚨 If you feel followed: (1) Do NOT go home directly. Head to a crowded public place (mall, shop, hospital). (2) Call someone and speak loudly about your location. (3) Activate Silent SOS in SafeSafar right now. (4) If danger is immediate, shout for help — bystanders will respond.',
-  cab: '🚖 Solo cab safety tips: (1) Share the ride details (number plate, driver) via SafeSafar before leaving. (2) Sit behind the driver, not passenger side. (3) Keep the window slightly open. (4) Activate "Walk Me Home" so your guardian tracks the cab route in real time.',
-  sos: '🔒 Discreet SOS options in SafeSafar: (1) **Shake SOS** — rapid phone shake sends silent alert. (2) **Fake Call → SOS** — say "reach soon" during the fake call to secretly dispatch emergency. (3) **Duress PIN (9999)** — opens a Calculator decoy while alerting your circle. (4) **Volume button** hold — silent SOS broadcast.',
+const INITIAL_MESSAGE: ChatMessage = {
+  role: 'assistant',
+  text: "Hi — I'm your SafeSafar AI companion. Ask me anything about getting home safely, choosing routes, or using SOS features.",
 };
 
-function getResponse(input: string): string {
-  const lower = input.toLowerCase();
-  if (lower.includes('walk') || lower.includes('10pm') || lower.includes('night') || lower.includes('safe'))
-    return AI_RESPONSES.safe;
-  if (lower.includes('follow') || lower.includes('danger') || lower.includes('scary'))
-    return AI_RESPONSES.followed;
-  if (lower.includes('cab') || lower.includes('ride') || lower.includes('auto') || lower.includes('uber'))
-    return AI_RESPONSES.cab;
-  if (lower.includes('sos') || lower.includes('trigger') || lower.includes('discreet') || lower.includes('silent'))
-    return AI_RESPONSES.sos;
-  return "That's a great safety question. In SafeSafar, you can always activate Walk Me Home for live guardian monitoring, use the Fake Call feature for covert distress, or shake your phone for a silent SOS. Stay aware, stay connected. 💙";
-}
-
 export const AiCompanionPage: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', text: AI_RESPONSES.default },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isLoading]);
 
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
-    const userMsg: Message = { role: 'user', text: text.trim() };
-    const aiMsg: Message = { role: 'assistant', text: getResponse(text) };
-    setMessages((prev) => [...prev, userMsg, aiMsg]);
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return;
+    
+    const userMsgText = text.trim();
+    const newHistory: ChatMessage[] = [...messages, { role: 'user', text: userMsgText }];
+    
+    setMessages(newHistory);
     setInput('');
+    setIsLoading(true);
+
+    try {
+      // Fetch response from Gemini API (or fallback if offline/no key)
+      const aiResponseText = await getGeminiResponse(userMsgText, messages);
+      setMessages([...newHistory, { role: 'assistant', text: aiResponseText }]);
+    } catch (err) {
+      console.error('[AiCompanionPage] Error getting response:', err);
+      setMessages([
+        ...newHistory,
+        {
+          role: 'assistant',
+          text: 'I had trouble connecting to the AI server. Please check your internet connection or try again.',
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -62,7 +58,7 @@ export const AiCompanionPage: React.FC = () => {
   };
 
   const handleReset = () => {
-    setMessages([{ role: 'assistant', text: AI_RESPONSES.default }]);
+    setMessages([INITIAL_MESSAGE]);
     setInput('');
   };
 
@@ -72,7 +68,7 @@ export const AiCompanionPage: React.FC = () => {
       <div className="px-8 pt-8 pb-4 shrink-0">
         <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#7CA982] mb-2">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>AI Companion · Powered by SafeSafar</span>
+          <span>AI Companion · Powered by Google Gemini</span>
         </div>
         <h1 className="text-3xl font-black text-[#202D2D] leading-tight">
           Someone to think out loud with.
@@ -85,8 +81,9 @@ export const AiCompanionPage: React.FC = () => {
           {QUICK_PROMPTS.map((prompt) => (
             <button
               key={prompt}
+              disabled={isLoading}
               onClick={() => sendMessage(prompt)}
-              className="px-3.5 py-1.5 rounded-full border border-[#D4E2D5] bg-white text-[12px] text-[#30433F] font-medium hover:bg-[#EEF3EE] hover:border-[#24504F] transition-all"
+              className="px-3.5 py-1.5 rounded-full border border-[#D4E2D5] bg-white text-[12px] text-[#30433F] font-medium hover:bg-[#EEF3EE] hover:border-[#24504F] transition-all disabled:opacity-50"
             >
               {prompt}
             </button>
@@ -100,7 +97,7 @@ export const AiCompanionPage: React.FC = () => {
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'assistant' && (
               <div className="max-w-xl w-full bg-[#EEF3EE] border border-[#D4E2D5] rounded-2xl px-5 py-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#7CA982] mb-1">SafeSafar</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#7CA982] mb-1">SafeSafar AI</p>
                 <p className="text-[14px] text-[#202D2D] leading-relaxed whitespace-pre-line">{msg.text}</p>
               </div>
             )}
@@ -111,6 +108,15 @@ export const AiCompanionPage: React.FC = () => {
             )}
           </div>
         ))}
+
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="max-w-xl w-full bg-[#EEF3EE] border border-[#D4E2D5] rounded-2xl px-5 py-4 flex items-center gap-2">
+              <Loader2 className="w-4 h-4 text-[#24504F] animate-spin" />
+              <span className="text-[13px] text-[#30433F] font-medium">SafeSafar AI is thinking...</span>
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
@@ -119,26 +125,30 @@ export const AiCompanionPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="flex items-center gap-3 bg-white border border-[#D4E2D5] rounded-2xl px-4 py-3 shadow-sm">
           <input
             value={input}
+            disabled={isLoading}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about safety, routes, SOS..."
-            className="flex-1 text-[14px] text-[#202D2D] placeholder-[#9AACA8] bg-transparent outline-none"
+            className="flex-1 text-[14px] text-[#202D2D] placeholder-[#9AACA8] bg-transparent outline-none disabled:opacity-50"
           />
           <button
             type="button"
             onClick={handleReset}
-            className="p-1.5 rounded-lg text-[#9AACA8] hover:text-[#30433F] hover:bg-[#F0F2F0] transition-all"
+            disabled={isLoading}
+            className="p-1.5 rounded-lg text-[#9AACA8] hover:text-[#30433F] hover:bg-[#F0F2F0] transition-all disabled:opacity-50"
             title="Reset conversation"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
           <button
             type="submit"
-            className="w-9 h-9 rounded-xl bg-[#C85D67] hover:bg-[#B85060] flex items-center justify-center transition-all shadow-sm"
+            disabled={isLoading || !input.trim()}
+            className="w-9 h-9 rounded-xl bg-[#C85D67] hover:bg-[#B85060] flex items-center justify-center transition-all shadow-sm disabled:opacity-50"
           >
-            <Send className="w-4 h-4 text-white" />
+            {isLoading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
           </button>
         </form>
       </div>
     </div>
   );
 };
+
