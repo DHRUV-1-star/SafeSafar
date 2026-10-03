@@ -537,33 +537,45 @@ const isValidUUID = (id: string): boolean => {
 export async function fetchUserGuardians(userId: string): Promise<TrustedContact[]> {
   if (!userId) return [];
 
-  // 1. Supabase Cloud Database Query (Only for valid UUID user IDs)
-  if (isSupabaseConfigured() && supabase && isValidUUID(userId)) {
+  // 1. Supabase Cloud Database Query
+  if (isSupabaseConfigured() && supabase) {
     try {
-      const { data, error } = await supabase
-        .from('guardians')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (!error && Array.isArray(data)) {
-        return data.map((item) => ({
-          id: item.id,
-          name: item.name,
-          relation: item.relation,
-          phone: item.phone,
-          email: item.email || undefined,
-          isEmergencyAlert: item.is_emergency_alert,
-          isPrimary: item.is_primary,
-          avatar:
-            item.avatar ||
-            `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.name)}&backgroundColor=7c3aed,4f46e5`,
-          batteryStatus: item.battery_status ?? 92,
-          lastActive: item.last_active || 'Active now',
-        }));
+      let targetUserId = userId;
+      if (!isValidUUID(targetUserId)) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user?.id) {
+          targetUserId = sessionData.session.user.id;
+        }
       }
-    } catch {
-      // Silently fall back to local database
+
+      if (isValidUUID(targetUserId)) {
+        const { data, error } = await supabase
+          .from('guardians')
+          .select('*')
+          .eq('user_id', targetUserId)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('[Supabase Fetch Guardians Error]:', error);
+        } else if (Array.isArray(data)) {
+          return data.map((item) => ({
+            id: item.id,
+            name: item.name,
+            relation: item.relation,
+            phone: item.phone,
+            email: item.email || undefined,
+            isEmergencyAlert: item.is_emergency_alert,
+            isPrimary: item.is_primary,
+            avatar:
+              item.avatar ||
+              `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.name)}&backgroundColor=7c3aed,4f46e5`,
+            batteryStatus: item.battery_status ?? 92,
+            lastActive: item.last_active || 'Active now',
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('[Supabase Fetch Guardians Exception]:', err);
     }
   }
 
@@ -595,49 +607,63 @@ export async function saveGuardianToDatabase(
     guardianData.avatar ||
     `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(guardianData.name)}&backgroundColor=7c3aed,4f46e5,db2777`;
 
-  // 1. Supabase Cloud Database Insert (Only for valid UUID user IDs)
-  if (isSupabaseConfigured() && supabase && isValidUUID(userId)) {
+  // 1. Supabase Cloud Database Insert
+  if (isSupabaseConfigured() && supabase) {
     try {
-      const { data, error } = await supabase
-        .from('guardians')
-        .insert({
-          user_id: userId,
-          name: guardianData.name,
-          relation: guardianData.relation,
-          phone: guardianData.phone,
-          email: guardianData.email || null,
-          is_emergency_alert: guardianData.isEmergencyAlert,
-          is_primary: guardianData.isPrimary || false,
-          avatar,
-          battery_status: guardianData.batteryStatus ?? 90,
-          last_active: 'Active now',
-        })
-        .select()
-        .single();
-
-      if (!error && data) {
-        const saved: TrustedContact = {
-          id: data.id,
-          name: data.name,
-          relation: data.relation,
-          phone: data.phone,
-          email: data.email || undefined,
-          isEmergencyAlert: data.is_emergency_alert,
-          isPrimary: data.is_primary,
-          avatar: data.avatar,
-          batteryStatus: data.battery_status,
-          lastActive: data.last_active,
-        };
-
-        // Also sync local cache for offline speed
-        const key = getGuardiansKey(userId);
-        const current = await fetchUserGuardians(userId);
-        localStorage.setItem(key, JSON.stringify([saved, ...current]));
-
-        return saved;
+      let targetUserId = userId;
+      if (!isValidUUID(targetUserId)) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user?.id) {
+          targetUserId = sessionData.session.user.id;
+        }
       }
-    } catch {
-      // Silently fall back to local database
+
+      if (isValidUUID(targetUserId)) {
+        const { data, error } = await supabase
+          .from('guardians')
+          .insert({
+            user_id: targetUserId,
+            name: guardianData.name,
+            relation: guardianData.relation,
+            phone: guardianData.phone,
+            email: guardianData.email || null,
+            is_emergency_alert: guardianData.isEmergencyAlert ?? true,
+            is_primary: guardianData.isPrimary || false,
+            avatar,
+            battery_status: guardianData.batteryStatus ?? 90,
+            last_active: 'Active now',
+          })
+          .select();
+
+        if (error) {
+          console.error('[Supabase Save Guardian Error]:', error);
+        } else if (data && data.length > 0) {
+          const row = data[0];
+          const saved: TrustedContact = {
+            id: row.id,
+            name: row.name,
+            relation: row.relation,
+            phone: row.phone,
+            email: row.email || undefined,
+            isEmergencyAlert: row.is_emergency_alert,
+            isPrimary: row.is_primary,
+            avatar: row.avatar,
+            batteryStatus: row.battery_status,
+            lastActive: row.last_active,
+          };
+
+          // Also sync local cache for offline speed
+          const key = getGuardiansKey(targetUserId);
+          const current = await fetchUserGuardians(targetUserId);
+          localStorage.setItem(key, JSON.stringify([saved, ...current.filter((c) => c.id !== saved.id)]));
+
+          return saved;
+        }
+      } else {
+        console.warn('[Supabase Save Guardian Notice] User ID is not a valid Supabase UUID:', targetUserId);
+      }
+    } catch (err) {
+      console.error('[Supabase Save Guardian Exception]:', err);
     }
   }
 
@@ -667,24 +693,38 @@ export async function updateGuardianInDatabase(
   updates: Partial<TrustedContact>
 ): Promise<TrustedContact[]> {
   // 1. Supabase Cloud Database Update
-  if (isSupabaseConfigured() && supabase && isValidUUID(userId)) {
+  if (isSupabaseConfigured() && supabase) {
     try {
-      const payload: Record<string, any> = {};
-      if (updates.name !== undefined) payload.name = updates.name;
-      if (updates.relation !== undefined) payload.relation = updates.relation;
-      if (updates.phone !== undefined) payload.phone = updates.phone;
-      if (updates.email !== undefined) payload.email = updates.email;
-      if (updates.isEmergencyAlert !== undefined) payload.is_emergency_alert = updates.isEmergencyAlert;
-      if (updates.isPrimary !== undefined) payload.is_primary = updates.isPrimary;
-      if (updates.avatar !== undefined) payload.avatar = updates.avatar;
+      let targetUserId = userId;
+      if (!isValidUUID(targetUserId)) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user?.id) {
+          targetUserId = sessionData.session.user.id;
+        }
+      }
 
-      await supabase
-        .from('guardians')
-        .update(payload)
-        .eq('id', guardianId)
-        .eq('user_id', userId);
-    } catch {
-      // Silently fall back to local database
+      if (isValidUUID(targetUserId)) {
+        const payload: Record<string, any> = {};
+        if (updates.name !== undefined) payload.name = updates.name;
+        if (updates.relation !== undefined) payload.relation = updates.relation;
+        if (updates.phone !== undefined) payload.phone = updates.phone;
+        if (updates.email !== undefined) payload.email = updates.email;
+        if (updates.isEmergencyAlert !== undefined) payload.is_emergency_alert = updates.isEmergencyAlert;
+        if (updates.isPrimary !== undefined) payload.is_primary = updates.isPrimary;
+        if (updates.avatar !== undefined) payload.avatar = updates.avatar;
+
+        const { error } = await supabase
+          .from('guardians')
+          .update(payload)
+          .eq('id', guardianId)
+          .eq('user_id', targetUserId);
+
+        if (error) {
+          console.error('[Supabase Update Guardian Error]:', error);
+        }
+      }
+    } catch (err) {
+      console.error('[Supabase Update Guardian Exception]:', err);
     }
   }
 
@@ -704,15 +744,29 @@ export async function deleteGuardianFromDatabase(
   guardianId: string
 ): Promise<TrustedContact[]> {
   // 1. Supabase Cloud Database Delete
-  if (isSupabaseConfigured() && supabase && isValidUUID(userId)) {
+  if (isSupabaseConfigured() && supabase) {
     try {
-      await supabase
-        .from('guardians')
-        .delete()
-        .eq('id', guardianId)
-        .eq('user_id', userId);
-    } catch {
-      // Silently fall back to local database
+      let targetUserId = userId;
+      if (!isValidUUID(targetUserId)) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user?.id) {
+          targetUserId = sessionData.session.user.id;
+        }
+      }
+
+      if (isValidUUID(targetUserId)) {
+        const { error } = await supabase
+          .from('guardians')
+          .delete()
+          .eq('id', guardianId)
+          .eq('user_id', targetUserId);
+
+        if (error) {
+          console.error('[Supabase Delete Guardian Error]:', error);
+        }
+      }
+    } catch (err) {
+      console.error('[Supabase Delete Guardian Exception]:', err);
     }
   }
 

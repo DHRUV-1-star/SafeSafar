@@ -63,8 +63,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
 
   // Cached registration data (used after OTP verification)
   const [pendingRegData, setPendingRegData] = useState<{
-    name: string; phone: string; password: string;
+    name: string; phone: string; password: string; localFallback?: boolean;
   } | null>(null);
+
 
   // Forgot password
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -152,7 +153,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  // Handle registration with email verification
+  // Handle registration — always shows OTP screen
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) { setErrorMsg('Please enter your full name.'); return; }
@@ -164,37 +165,45 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     setErrorMsg(null);
 
     try {
-      // Send OTP to the provided email via Supabase
+      // Try to send OTP via Supabase
       const { error: otpError } = await sendEmailOTP(email.trim());
-      if (otpError) {
-        // If Supabase isn't configured or rate limited, fall through to local registration directly
-        if (otpError.includes('not configured') || otpError.includes('rate limit') || otpError.includes('Rate limit')) {
-          // Fallback: create account locally without OTP
-          const { user, error: regError } = await registerUser(
-            email.trim(), password, fullName.trim(), phone ? `+91${phone}` : '', 'commuter'
-          );
-          if (regError) { setErrorMsg(regError); return; }
-          if (user) {
-            const profile: UserProfile = {
-              id: user.id, name: user.name,
-              phone: user.phone || (phone ? `+91 ${phone}` : ''),
-              email: user.email, role: user.role,
-              avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=7c3aed,4f46e5`,
-              normalPin: '1234', duressPin: '9999',
-              guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
-              emergencyContactCount: 0, batteryStatus: 95, hub: user.hub,
-            };
-            localStorage.setItem('safesafar_user', JSON.stringify(profile));
-            localStorage.setItem('safesafar_db_session', JSON.stringify(profile));
-            onLoginSuccess(profile);
-          }
-          return;
-        }
+
+      const isRateLimited = otpError && (
+        otpError.toLowerCase().includes('rate limit') ||
+        otpError.toLowerCase().includes('over_email_send_rate_limit') ||
+        otpError.toLowerCase().includes('email_send_rate_limit') ||
+        otpError.toLowerCase().includes('too many') ||
+        otpError.toLowerCase().includes('too_many')
+      );
+      const isNotConfigured = otpError && otpError.toLowerCase().includes('not configured');
+
+      if (otpError && !isRateLimited && !isNotConfigured) {
+        // A real error (bad email format, service down, etc.) — show it
         setErrorMsg(otpError);
         return;
       }
-      // OTP sent — show OTP input screen
-      setPendingRegData({ name: fullName.trim(), phone: phone ? `+91${phone}` : '', password });
+
+      // If rate limited or not configured → generate a local OTP for demo
+      let usingLocalFallback = false;
+      if (isRateLimited || isNotConfigured) {
+        const localOtp = String(Math.floor(100000 + Math.random() * 900000));
+        sessionStorage.setItem('safesafar_reg_otp', localOtp);
+        sessionStorage.setItem('safesafar_reg_otp_email', email.trim().toLowerCase());
+        usingLocalFallback = true;
+        console.info('[SafeSafar] Local OTP fallback (Supabase rate limit):', localOtp);
+      } else {
+        // Real OTP sent — clear any stale local fallback
+        sessionStorage.removeItem('safesafar_reg_otp');
+        sessionStorage.removeItem('safesafar_reg_otp_email');
+      }
+
+      // Always show OTP screen
+      setPendingRegData({
+        name: fullName.trim(),
+        phone: phone ? `+91${phone}` : '',
+        password,
+        localFallback: usingLocalFallback,
+      });
       setRegisteredEmail(email.trim());
       setOtpDigits(['', '', '', '', '', '']);
       setOtpCountdown(60);
@@ -234,26 +243,77 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     }
     setIsLoading(true);
     setErrorMsg(null);
+
     try {
-      const { user: verifiedUser, error: verifyError } = await verifyEmailOTP(registeredEmail, token);
-      if (verifyError) {
-        setErrorMsg(verifyError.includes('expired') ? 'OTP has expired. Please resend.' : verifyError);
-        return;
+      // Check local fallback OTP first
+      const localOtp = sessionStorage.getItem('safesafar_reg_otp');
+      const localOtpEmail = sessionStorage.getItem('safesafar_reg_otp_email');
+      const isLocalMatch =
+        localOtp &&
+        localOtpEmail === registeredEmail.toLowerCase() &&
+        localOtp === token;
+
+      let profile: UserProfile | null = null;
+
+      if (isLocalMatch || pendingRegData?.localFallback) {
+        if (!isLocalMatch) {
+          setErrorMsg('Incorrect OTP. Please check and try again.');
+          return;
+        }
+        // Local OTP verified — create account via registerUser
+        sessionStorage.removeItem('safesafar_reg_otp');
+        sessionStorage.removeItem('safesafar_reg_otp_email');
+
+        const { user, error: regError } = await registerUser(
+          registeredEmail,
+          pendingRegData?.password || '',
+          pendingRegData?.name || '',
+          pendingRegData?.phone || '',
+          'commuter'
+        );
+        if (regError) { setErrorMsg(regError); return; }
+        if (user) {
+          profile = {
+            id: user.id,
+            name: pendingRegData?.name || user.name,
+            phone: pendingRegData?.phone || user.phone || '',
+            email: user.email,
+            role: user.role,
+            avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(pendingRegData?.name || user.name)}&backgroundColor=7c3aed,4f46e5`,
+            normalPin: '1234', duressPin: '9999',
+            guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
+            emergencyContactCount: 0, batteryStatus: 95, hub: user.hub,
+          };
+        }
+      } else {
+        // Verify via Supabase OTP
+        const { user: verifiedUser, error: verifyError } = await verifyEmailOTP(registeredEmail, token);
+        if (verifyError) {
+          setErrorMsg(
+            verifyError.toLowerCase().includes('expired')
+              ? 'OTP expired. Please click "Resend OTP" to get a new one.'
+              : verifyError.toLowerCase().includes('invalid')
+              ? 'Incorrect OTP. Please check and try again.'
+              : verifyError
+          );
+          return;
+        }
+        if (verifiedUser) {
+          profile = {
+            id: verifiedUser.id,
+            name: pendingRegData?.name || verifiedUser.name,
+            phone: pendingRegData?.phone || verifiedUser.phone || '',
+            email: verifiedUser.email,
+            role: verifiedUser.role,
+            avatar: verifiedUser.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(pendingRegData?.name || verifiedUser.name)}&backgroundColor=7c3aed,4f46e5`,
+            normalPin: '1234', duressPin: '9999',
+            guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
+            emergencyContactCount: 0, batteryStatus: 95, hub: verifiedUser.hub,
+          };
+        }
       }
-      if (verifiedUser) {
-        // Update profile with name/phone from registration form
-        const profile: UserProfile = {
-          id: verifiedUser.id,
-          name: pendingRegData?.name || verifiedUser.name,
-          phone: pendingRegData?.phone || verifiedUser.phone || '',
-          email: verifiedUser.email,
-          role: verifiedUser.role,
-          avatar: verifiedUser.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(pendingRegData?.name || verifiedUser.name)}&backgroundColor=7c3aed,4f46e5`,
-          normalPin: '1234', duressPin: '9999',
-          guardianPairingCode: `SAF-${Math.floor(1000 + Math.random() * 9000)}`,
-          emergencyContactCount: 0, batteryStatus: 95,
-          hub: verifiedUser.hub,
-        };
+
+      if (profile) {
         localStorage.setItem('safesafar_user', JSON.stringify(profile));
         localStorage.setItem('safesafar_db_session', JSON.stringify(profile));
         onLoginSuccess(profile);
@@ -270,16 +330,29 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     setIsResending(true);
     setErrorMsg(null);
     const { error } = await sendEmailOTP(registeredEmail);
-    setIsResending(false);
-    if (error) {
+    const isRateLimited = error && (
+      error.toLowerCase().includes('rate limit') ||
+      error.toLowerCase().includes('too many')
+    );
+    if (error && !isRateLimited) {
       setErrorMsg(error);
     } else {
+      if (isRateLimited) {
+        // Regenerate local OTP
+        const localOtp = String(Math.floor(100000 + Math.random() * 900000));
+        sessionStorage.setItem('safesafar_reg_otp', localOtp);
+        sessionStorage.setItem('safesafar_reg_otp_email', registeredEmail.toLowerCase());
+        if (pendingRegData) setPendingRegData({ ...pendingRegData, localFallback: true });
+        console.info('[SafeSafar] New local OTP fallback:', localOtp);
+      }
       setOtpCountdown(60);
       setOtpDigits(['', '', '', '', '', '']);
-      setSuccessNotice('New OTP sent to your email.');
+      setSuccessNotice(isRateLimited ? 'New demo OTP generated (check below).' : 'New OTP sent to your email.');
       setTimeout(() => setSuccessNotice(null), 3000);
     }
+    setIsResending(false);
   };
+
 
   // Google Sign In
   const handleGoogleSignIn = async () => {
@@ -490,11 +563,29 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                   >
                     {isResending ? 'Sending...' : otpCountdown > 0 ? `Resend in ${otpCountdown}s` : 'Resend OTP'}
                   </button>
-                </div>
-                <p className="text-center text-[11px] text-[#9AACA8]">
-                  Check your spam folder if you don't see it in inbox.
-                </p>
+                 </div>
+
+                {/* Show local fallback OTP when Supabase email is rate-limited */}
+                {pendingRegData?.localFallback ? (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-3 space-y-1">
+                    <p className="text-[11px] font-semibold text-amber-700 flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      Email service rate-limited — use this demo OTP:
+                    </p>
+                    <p className="text-center font-mono text-xl font-black tracking-[0.3em] text-amber-800 py-1">
+                      {sessionStorage.getItem('safesafar_reg_otp') || '------'}
+                    </p>
+                    <p className="text-[10px] text-amber-600 text-center">
+                      This OTP is generated locally for demo/testing purposes.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-center text-[11px] text-[#9AACA8]">
+                    Check your spam folder if you don't see it in inbox.
+                  </p>
+                )}
               </div>
+
             ) : (
 
               <div className="space-y-5">

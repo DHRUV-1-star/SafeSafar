@@ -425,7 +425,11 @@ export const App: React.FC = () => {
     const userId = currentUser?.id || 'guest-user';
     const savedContact = await saveGuardianToDatabase(userId, contactData);
     setTrustedContacts((prev) => [savedContact, ...prev.filter((c) => c.id !== savedContact.id)]);
-    showToast(`✓ Guardian "${savedContact.name}" saved to database!`);
+    if (savedContact.id.startsWith('g-')) {
+      showToast(`✓ Guardian "${savedContact.name}" saved locally (Sign in with email to store in Supabase DB)`);
+    } else {
+      showToast(`✓ Guardian "${savedContact.name}" stored in Supabase database!`);
+    }
   };
 
   const handleUpdateGuardian = async (id: string, updatedFields: Partial<TrustedContact>) => {
