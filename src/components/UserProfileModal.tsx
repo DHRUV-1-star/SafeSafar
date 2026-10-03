@@ -592,7 +592,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-[#202D2D]">Duress Panic PIN</span>
                     <span className="text-[10px] text-[#E57373] bg-[#E57373]/10 border border-[#E57373]/20 px-2 py-0.5 rounded-full font-mono">
-                      Configured ••••
+                      {currentUser.duressPin === '9999' ? 'Default (9999)' : 'Custom ••••'}
                     </span>
                   </div>
                   <p className="text-[11px] text-[#7A8582]">
@@ -612,7 +612,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-[#202D2D]">Safe Disarm PIN</span>
                     <span className="text-[10px] text-[#7CA982] bg-[#7CA982]/10 border border-[#7CA982]/20 px-2 py-0.5 rounded-full font-mono">
-                      Configured ••••
+                      {currentUser.normalPin === '1234' ? 'Default (1234)' : 'Custom ••••'}
                     </span>
                   </div>
                   <p className="text-[11px] text-[#7A8582]">

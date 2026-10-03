@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, ShieldCheck, AlertOctagon, X, Delete } from 'lucide-react';
+import { Lock, X, Delete } from 'lucide-react';
 import { playSilentConfirmPing } from '../utils/audio';
 
 interface DuressModalProps {
@@ -31,12 +31,12 @@ export const DuressModal: React.FC<DuressModalProps> = ({
     setErrorMsg('');
 
     if (nextPin.length === 4) {
-      if (nextPin === duressPin || nextPin === '9999') {
+      if (nextPin === duressPin) {
         // DURESS PASSKEY TRIGGER!
         playSilentConfirmPing();
         onDuressTriggered();
         setPin('');
-      } else if (nextPin === normalPin || nextPin === '1234') {
+      } else if (nextPin === normalPin) {
         // Real Disarm
         onDisarmed();
         setPin('');
@@ -111,18 +111,6 @@ export const DuressModal: React.FC<DuressModalProps> = ({
           >
             <Delete className="w-5 h-5" />
           </button>
-        </div>
-
-        {/* Evaluator Feature Callout */}
-        <div className="mt-6 w-full p-3 rounded-xl bg-[#1E3D3C]/40 border border-[#2F5F5E]/20 text-[11px] text-[#65716F]">
-          <div className="flex items-center gap-1.5 text-[#2F5F5E] font-semibold mb-1">
-            <AlertOctagon className="w-3.5 h-3.5 text-[#7CA982]" />
-            <span>Duress Innovation Demo</span>
-          </div>
-          <p className="text-[10px] text-[#7A8582] leading-tight">
-            • Enter <span className="text-[#7CA982] font-bold">1234</span> for Normal Disarm.<br />
-            • Enter <span className="text-[#E57373] font-bold">9999</span> for <strong>Duress Passkey</strong> (silently alerts contacts while opening Decoy Calculator to deceive perpetrator).
-          </p>
         </div>
       </div>
     </div>
