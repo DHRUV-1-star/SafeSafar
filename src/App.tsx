@@ -24,7 +24,7 @@ import { Sparkles, Smartphone, Flame, Menu, Shield, Zap, CheckCircle2 } from 'lu
 import { Sidebar, SidebarFeature } from './components/Sidebar';
 import { AiCompanionPage } from './components/AiCompanionPage';
 import { playSilentConfirmPing, stopSiren } from './utils/audio';
-import { fetchRealRoutes, searchLocationSuggestions, generateRouteLandmarks, LocationSuggestion } from './services/geocodingService';
+import { fetchRealRoutes, searchLocationSuggestions, generateRouteLandmarks, generateRouteIncidents, LocationSuggestion } from './services/geocodingService';
 import {
   getCurrentUser,
   fetchUserGuardians,
@@ -321,6 +321,12 @@ export const App: React.FC = () => {
         const dynamicLandmarks = generateRouteLandmarks(newRoutes[0].coordinates, activeStartName, activeDestName);
         if (dynamicLandmarks.length > 0) {
           setLandmarks(dynamicLandmarks);
+        }
+
+        // Generate dynamic incidents & dark spot heatmap points along the actual travel route
+        const dynamicIncidents = generateRouteIncidents(newRoutes[0].coordinates, activeStartName, activeDestName);
+        if (dynamicIncidents.length > 0) {
+          setIncidents(dynamicIncidents);
         }
 
         showToast(`📍 Found 3 rated routes! Safest highway corridor recommended.`);
@@ -634,8 +640,8 @@ export const App: React.FC = () => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7CA982] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-[#7CA982]"></span>
                 </span>
-                <span className="text-xs font-bold text-[#30433F]">Safe Route Intelligence: Surat Pilot Corridor</span>
-                <span className="text-[10px] text-[#2F5F5E] font-mono hidden md:inline">SVNIT ➔ Ring Road Hub</span>
+                <span className="text-xs font-bold text-[#30433F]">Safe Route Intelligence: Active Safety Corridor</span>
+                <span className="text-[10px] text-[#2F5F5E] font-mono hidden md:inline">{startLocationName.split(',')[0]} ➔ {destinationName.split(',')[0]}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => setShowSafeLandmarks(!showSafeLandmarks)} className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${showSafeLandmarks ? 'bg-[#F8E9EA] border-[#D58A93]/45 text-[#B96570]' : 'bg-white border-[#D4E2D5] text-[#73807B]'}`}>Pink & Police Posts</button>

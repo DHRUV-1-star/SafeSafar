@@ -138,13 +138,13 @@ export const GuardianDashboard: React.FC<GuardianDashboardProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
-                onShowToast("Initiating call to Surat Police (112)...");
+                onShowToast("Initiating call to Emergency Police (112)...");
                 window.location.href = 'tel:112';
               }}
               className="px-5 py-3 rounded-2xl bg-white text-[#D95C5C] font-bold text-sm hover:bg-[#F4F1EC] shadow-lg flex items-center gap-2"
             >
               <Phone className="w-4 h-4" />
-              <span>Call Surat Police (112)</span>
+              <span>Call Police Emergency (112)</span>
             </button>
             <button
               onClick={onClearSOS}

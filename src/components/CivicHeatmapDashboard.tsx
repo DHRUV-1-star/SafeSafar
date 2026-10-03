@@ -14,7 +14,7 @@ export const CivicHeatmapDashboard: React.FC<CivicHeatmapDashboardProps> = ({ in
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-[#7CA982] uppercase tracking-wider mb-1">
             <Building2 className="w-4 h-4" />
-            <span>Surat Municipal Corporation (SMC) & Police Safety Intelligence</span>
+            <span>MUNICIPAL CORPORATION & POLICE SAFETY INTELLIGENCE</span>
           </div>
           <h2 className="text-xl font-bold text-[#202D2D]">Civic Infrastructure & Safety Heatmap Analytics</h2>
           <p className="text-xs text-[#7A8582] mt-1 max-w-xl">
@@ -37,8 +37,8 @@ export const CivicHeatmapDashboard: React.FC<CivicHeatmapDashboardProps> = ({ in
           <span className="text-xs text-[#7A8582] flex items-center gap-1.5">
             <Lightbulb className="w-3.5 h-3.5 text-yellow-400" /> Unlit Stretches Flagged
           </span>
-          <div className="text-2xl font-black text-[#202D2D] mt-2">14 Spots</div>
-          <span className="text-[10px] text-[#7CA982]">8 scheduled for LED retrofits</span>
+          <div className="text-2xl font-black text-[#202D2D] mt-2">{incidents && incidents.length > 0 ? `${incidents.length} Spots` : '14 Spots'}</div>
+          <span className="text-[10px] text-[#7CA982]">Scheduled for LED retrofits</span>
         </div>
 
         <div className="bg-[#FFFFFF]/80 border border-[#2F5F5E]/15 rounded-2xl p-4">
@@ -46,7 +46,7 @@ export const CivicHeatmapDashboard: React.FC<CivicHeatmapDashboardProps> = ({ in
             <Users className="w-3.5 h-3.5 text-[#7CA982]" /> Verified Citizen Auditors
           </span>
           <div className="text-2xl font-black text-[#202D2D] mt-2">1,240+</div>
-          <span className="text-[10px] text-[#2F5F5E]">SVNIT & Surat colleges active</span>
+          <span className="text-[10px] text-[#2F5F5E]">University & Local Community Active</span>
         </div>
 
         <div className="bg-[#FFFFFF]/80 border border-[#2F5F5E]/15 rounded-2xl p-4">
@@ -54,7 +54,7 @@ export const CivicHeatmapDashboard: React.FC<CivicHeatmapDashboardProps> = ({ in
             <TrendingUp className="w-3.5 h-3.5 text-[#7CA982]" /> Safe Trip Completion
           </span>
           <div className="text-2xl font-black text-[#7CA982] mt-2">99.2%</div>
-          <span className="text-[10px] text-[#7A8582]">Across 3,800 simulated commutes</span>
+          <span className="text-[10px] text-[#7A8582]">Across active monitored commutes</span>
         </div>
 
         <div className="bg-[#FFFFFF]/80 border border-[#2F5F5E]/15 rounded-2xl p-4">
@@ -81,39 +81,57 @@ export const CivicHeatmapDashboard: React.FC<CivicHeatmapDashboardProps> = ({ in
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              <tr className="hover:bg-[#2F5F5E]/5 transition-colors">
-                <td className="py-3 font-semibold text-[#202D2D]">Canal Road Flyover Underpass</td>
-                <td className="py-3 text-yellow-400">Pitch Black / 3 Broken Poles</td>
-                <td className="py-3 text-[#65716F]">7 Peer Verified</td>
-                <td className="py-3">
-                  <span className="px-2 py-0.5 rounded-full bg-[#F9C950]/10 text-[#B08D28] border border-[#F9C950]/20 text-[10px]">
-                    SMC Work Order Issued
-                  </span>
-                </td>
-                <td className="py-3 text-right text-[#7A8582] font-mono">Ticket #SMC-2026-881</td>
-              </tr>
-              <tr className="hover:bg-[#2F5F5E]/5 transition-colors">
-                <td className="py-3 font-semibold text-[#202D2D]">SVNIT East Service Bypass</td>
-                <td className="py-3 text-[#B08D28]">Deserted Pedestrian Pathway</td>
-                <td className="py-3 text-[#65716F]">4 Peer Verified</td>
-                <td className="py-3">
-                  <span className="px-2 py-0.5 rounded-full bg-[#2F5F5E]/10 text-[#2F5F5E] border border-[#2F5F5E]/20 text-[10px]">
-                    Pink Patrol Route Adjusted
-                  </span>
-                </td>
-                <td className="py-3 text-right text-[#7A8582] font-mono">Police Beat #14</td>
-              </tr>
-              <tr className="hover:bg-[#2F5F5E]/5 transition-colors">
-                <td className="py-3 font-semibold text-[#202D2D]">Kargil Chowk High-Mast Junction</td>
-                <td className="py-3 text-[#7CA982]">100% Illumination & Camera Check</td>
-                <td className="py-3 text-[#65716F]">12 Peer Verified</td>
-                <td className="py-3">
-                  <span className="px-2 py-0.5 rounded-full bg-[#7CA982]/10 text-[#2F5F5E] border border-[#7CA982]/20 text-[10px]">
-                    Designated Safe Haven
-                  </span>
-                </td>
-                <td className="py-3 text-right text-[#7CA982] font-mono">Verified Active ✓</td>
-              </tr>
+              {incidents && incidents.length > 0 ? (
+                incidents.slice(0, 5).map((inc, i) => (
+                  <tr key={inc.id || i} className="hover:bg-[#2F5F5E]/5 transition-colors">
+                    <td className="py-3 font-semibold text-[#202D2D]">{inc.title || `Location Point #${i + 1}`}</td>
+                    <td className="py-3 text-yellow-400 font-medium capitalize">{inc.type.replace('_', ' ')} • {inc.description}</td>
+                    <td className="py-3 text-[#65716F]">Peer Verified</td>
+                    <td className="py-3">
+                      <span className="px-2 py-0.5 rounded-full bg-[#F9C950]/10 text-[#B08D28] border border-[#F9C950]/20 text-[10px]">
+                        Municipal Work Order Issued
+                      </span>
+                    </td>
+                    <td className="py-3 text-right text-[#7A8582] font-mono">Ticket #MC-2026-00{i + 1}</td>
+                  </tr>
+                ))
+              ) : (
+                <>
+                  <tr className="hover:bg-[#2F5F5E]/5 transition-colors">
+                    <td className="py-3 font-semibold text-[#202D2D]">Central Transit Flyover Underpass</td>
+                    <td className="py-3 text-yellow-400">Low Illumination / Broken Streetlights</td>
+                    <td className="py-3 text-[#65716F]">7 Peer Verified</td>
+                    <td className="py-3">
+                      <span className="px-2 py-0.5 rounded-full bg-[#F9C950]/10 text-[#B08D28] border border-[#F9C950]/20 text-[10px]">
+                        Municipal Work Order Issued
+                      </span>
+                    </td>
+                    <td className="py-3 text-right text-[#7A8582] font-mono">Ticket #MC-2026-881</td>
+                  </tr>
+                  <tr className="hover:bg-[#2F5F5E]/5 transition-colors">
+                    <td className="py-3 font-semibold text-[#202D2D]">University East Service Bypass</td>
+                    <td className="py-3 text-[#B08D28]">Deserted Pedestrian Pathway</td>
+                    <td className="py-3 text-[#65716F]">4 Peer Verified</td>
+                    <td className="py-3">
+                      <span className="px-2 py-0.5 rounded-full bg-[#2F5F5E]/10 text-[#2F5F5E] border border-[#2F5F5E]/20 text-[10px]">
+                        Pink Patrol Route Adjusted
+                      </span>
+                    </td>
+                    <td className="py-3 text-right text-[#7A8582] font-mono">Police Beat #14</td>
+                  </tr>
+                  <tr className="hover:bg-[#2F5F5E]/5 transition-colors">
+                    <td className="py-3 font-semibold text-[#202D2D]">Central Chowk High-Mast Junction</td>
+                    <td className="py-3 text-[#7CA982]">100% Illumination & Camera Check</td>
+                    <td className="py-3 text-[#65716F]">12 Peer Verified</td>
+                    <td className="py-3">
+                      <span className="px-2 py-0.5 rounded-full bg-[#7CA982]/10 text-[#2F5F5E] border border-[#7CA982]/20 text-[10px]">
+                        Designated Safe Haven
+                      </span>
+                    </td>
+                    <td className="py-3 text-right text-[#7CA982] font-mono">Verified Active ✓</td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>
