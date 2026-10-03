@@ -532,7 +532,9 @@ const isValidUUID = (id: string): boolean => {
 // ============================================================================
 
 /**
- * Fetch all guardians for a specific user from the database
+ * Fetch all guardians for a specific user from the database.
+ * Only selects the columns that exist in the actual Supabase guardians table:
+ * id, user_id, name, relation, phone
  */
 export async function fetchUserGuardians(userId: string): Promise<TrustedContact[]> {
   if (!userId) return [];
@@ -540,56 +542,54 @@ export async function fetchUserGuardians(userId: string): Promise<TrustedContact
   // 1. Supabase Cloud Database Query
   if (isSupabaseConfigured() && supabase) {
     try {
-      let targetUserId = userId;
-      if (!isValidUUID(targetUserId)) {
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData?.session?.user?.id) {
-          targetUserId = sessionData.session.user.id;
-        }
-      }
+      // Use getUser() for the authoritative Supabase-authenticated user ID
+      const { data: { user } } = await supabase.auth.getUser();
+      const targetUserId = (user?.id && isValidUUID(user.id))
+        ? user.id
+        : (isValidUUID(userId) ? userId : null);
 
-      if (isValidUUID(targetUserId)) {
+      if (!targetUserId) {
+        console.warn('[Supabase fetchUserGuardians] No authenticated Supabase UUID — falling back to local storage.');
+      } else {
+        // ONLY select columns that exist in the actual guardians table
         const { data, error } = await supabase
           .from('guardians')
-          .select('*')
+          .select('id, user_id, name, relation, phone')
           .eq('user_id', targetUserId)
-          .order('created_at', { ascending: false });
+          .order('id', { ascending: false });
 
         if (error) {
-          console.error('[Supabase Fetch Guardians Error]:', error);
+          console.error('[Supabase fetchUserGuardians] SELECT error:', error.code, error.message, error.details);
         } else if (Array.isArray(data)) {
+          console.log(`[Supabase fetchUserGuardians] Loaded ${data.length} guardian(s) from Supabase for user ${targetUserId}`);
           return data.map((item) => ({
             id: item.id,
             name: item.name,
             relation: item.relation,
             phone: item.phone,
-            email: item.email || undefined,
-            isEmergencyAlert: item.is_emergency_alert,
-            isPrimary: item.is_primary,
-            avatar:
-              item.avatar ||
-              `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.name)}&backgroundColor=7c3aed,4f46e5`,
-            batteryStatus: item.battery_status ?? 92,
-            lastActive: item.last_active || 'Active now',
+            email: undefined,
+            isEmergencyAlert: true,
+            isPrimary: false,
+            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.name)}&backgroundColor=7c3aed,4f46e5`,
+            batteryStatus: 92,
+            lastActive: 'Active now',
           }));
         }
       }
     } catch (err) {
-      console.error('[Supabase Fetch Guardians Exception]:', err);
+      console.error('[Supabase fetchUserGuardians] Exception:', err);
     }
   }
 
-  // 2. Local Database Query (Partitioned per User ID)
+  // 2. Local Database Query fallback (Partitioned per User ID)
   const key = getGuardiansKey(userId);
   const raw = localStorage.getItem(key);
   if (raw) {
     try {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        return parsed;
-      }
+      if (Array.isArray(parsed)) return parsed;
     } catch (e) {
-      console.error('Error parsing local guardians for user', e);
+      console.error('Error parsing local guardians:', e);
     }
   }
 
@@ -597,7 +597,10 @@ export async function fetchUserGuardians(userId: string): Promise<TrustedContact
 }
 
 /**
- * Add a new guardian for the current user into the database
+ * Add a new guardian for the current user into the Supabase database.
+ * ONLY inserts the real columns that exist in the guardians table: user_id, name, relation, phone.
+ * Throws on INSERT failure so the caller can show the actual error to the user.
+ * Falls back to localStorage ONLY if the user has no Supabase session.
  */
 export async function saveGuardianToDatabase(
   userId: string,
@@ -607,70 +610,79 @@ export async function saveGuardianToDatabase(
     guardianData.avatar ||
     `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(guardianData.name)}&backgroundColor=7c3aed,4f46e5,db2777`;
 
-  // 1. Supabase Cloud Database Insert
   if (isSupabaseConfigured() && supabase) {
-    try {
-      let targetUserId = userId;
-      if (!isValidUUID(targetUserId)) {
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData?.session?.user?.id) {
-          targetUserId = sessionData.session.user.id;
-        }
-      }
+    // Use getUser() — the authoritative way to get the authenticated Supabase user
+    const { data: { user }, error: userErr } = await supabase.auth.getUser();
+    if (userErr) console.error('[Supabase saveGuardian] getUser error:', userErr.message);
 
-      if (isValidUUID(targetUserId)) {
-        const { data, error } = await supabase
-          .from('guardians')
-          .insert({
-            user_id: targetUserId,
-            name: guardianData.name,
-            relation: guardianData.relation,
-            phone: guardianData.phone,
-            email: guardianData.email || null,
-            is_emergency_alert: guardianData.isEmergencyAlert ?? true,
-            is_primary: guardianData.isPrimary || false,
-            avatar,
-            battery_status: guardianData.batteryStatus ?? 90,
-            last_active: 'Active now',
-          })
-          .select();
+    const targetUserId = (user?.id && isValidUUID(user.id))
+      ? user.id
+      : (isValidUUID(userId) ? userId : null);
 
-        if (error) {
-          console.error('[Supabase Save Guardian Error]:', error);
-        } else if (data && data.length > 0) {
-          const row = data[0];
-          const saved: TrustedContact = {
-            id: row.id,
-            name: row.name,
-            relation: row.relation,
-            phone: row.phone,
-            email: row.email || undefined,
-            isEmergencyAlert: row.is_emergency_alert,
-            isPrimary: row.is_primary,
-            avatar: row.avatar,
-            batteryStatus: row.battery_status,
-            lastActive: row.last_active,
-          };
-
-          // Also sync local cache for offline speed
-          const key = getGuardiansKey(targetUserId);
-          const current = await fetchUserGuardians(targetUserId);
-          localStorage.setItem(key, JSON.stringify([saved, ...current.filter((c) => c.id !== saved.id)]));
-
-          return saved;
-        }
-      } else {
-        console.warn('[Supabase Save Guardian Notice] User ID is not a valid Supabase UUID:', targetUserId);
-      }
-    } catch (err) {
-      console.error('[Supabase Save Guardian Exception]:', err);
+    if (!targetUserId) {
+      // User is NOT signed in with Supabase — save to localStorage (offline/demo mode)
+      console.warn('[Supabase saveGuardian] No authenticated Supabase user. Saving to localStorage (offline mode).');
+      return _saveGuardianLocally(userId, guardianData, avatar);
     }
+
+    // INSERT only the columns that actually exist in the guardians table
+    const { data, error } = await supabase
+      .from('guardians')
+      .insert({
+        user_id: targetUserId,
+        name: guardianData.name.trim(),
+        relation: guardianData.relation.trim(),
+        phone: guardianData.phone.trim(),
+      })
+      .select('id, user_id, name, relation, phone');
+
+    if (error) {
+      // Log the full error object so it can be diagnosed
+      console.error('[Supabase saveGuardian] INSERT error:', error.code, error.message, error.details, error.hint);
+      // Throw — do NOT silently fall back to localStorage when the user is authenticated
+      throw new Error(`Supabase INSERT failed: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      throw new Error('Guardian INSERT returned no rows. This usually means an RLS policy is blocking the insert. Ensure: INSERT policy exists for authenticated role with user_id = auth.uid().');
+    }
+
+    const row = data[0];
+    console.log('[Supabase saveGuardian] ✓ Inserted row:', row.id, '| user_id:', row.user_id);
+
+    const saved: TrustedContact = {
+      id: row.id,
+      name: row.name,
+      relation: row.relation,
+      phone: row.phone,
+      email: undefined,
+      isEmergencyAlert: true,
+      isPrimary: false,
+      avatar,
+      batteryStatus: guardianData.batteryStatus ?? 90,
+      lastActive: 'Active now',
+    };
+
+    // Sync to local cache for offline speed
+    const cacheKey = getGuardiansKey(targetUserId);
+    const cachedList: TrustedContact[] = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+    localStorage.setItem(cacheKey, JSON.stringify([saved, ...cachedList.filter((c) => c.id !== saved.id)]));
+
+    return saved;
   }
 
-  // 2. Local Database Insert
-  const key = getGuardiansKey(userId);
-  const current = await fetchUserGuardians(userId);
+  // No Supabase configured at all — pure offline mode
+  return _saveGuardianLocally(userId, guardianData, avatar);
+}
 
+/** Save guardian to localStorage only (offline / no Supabase session) */
+function _saveGuardianLocally(
+  userId: string,
+  guardianData: Omit<TrustedContact, 'id'>,
+  avatar: string
+): TrustedContact {
+  const key = getGuardiansKey(userId);
+  const current: TrustedContact[] = JSON.parse(localStorage.getItem(key) || '[]');
   const newContact: TrustedContact = {
     ...guardianData,
     id: `g-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -678,14 +690,13 @@ export async function saveGuardianToDatabase(
     batteryStatus: guardianData.batteryStatus ?? Math.floor(Math.random() * 20) + 80,
     lastActive: 'Active now',
   };
-
-  const updated = [newContact, ...current];
-  localStorage.setItem(key, JSON.stringify(updated));
+  localStorage.setItem(key, JSON.stringify([newContact, ...current]));
   return newContact;
 }
 
 /**
- * Update an existing guardian in the database
+ * Update an existing guardian in the database.
+ * Only updates real columns: name, relation, phone.
  */
 export async function updateGuardianInDatabase(
   userId: string,
@@ -695,23 +706,16 @@ export async function updateGuardianInDatabase(
   // 1. Supabase Cloud Database Update
   if (isSupabaseConfigured() && supabase) {
     try {
-      let targetUserId = userId;
-      if (!isValidUUID(targetUserId)) {
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData?.session?.user?.id) {
-          targetUserId = sessionData.session.user.id;
-        }
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      const targetUserId = (user?.id && isValidUUID(user.id))
+        ? user.id
+        : (isValidUUID(userId) ? userId : null);
 
-      if (isValidUUID(targetUserId)) {
+      if (targetUserId) {
         const payload: Record<string, any> = {};
-        if (updates.name !== undefined) payload.name = updates.name;
-        if (updates.relation !== undefined) payload.relation = updates.relation;
-        if (updates.phone !== undefined) payload.phone = updates.phone;
-        if (updates.email !== undefined) payload.email = updates.email;
-        if (updates.isEmergencyAlert !== undefined) payload.is_emergency_alert = updates.isEmergencyAlert;
-        if (updates.isPrimary !== undefined) payload.is_primary = updates.isPrimary;
-        if (updates.avatar !== undefined) payload.avatar = updates.avatar;
+        if (updates.name !== undefined) payload.name = updates.name.trim();
+        if (updates.relation !== undefined) payload.relation = updates.relation.trim();
+        if (updates.phone !== undefined) payload.phone = updates.phone.trim();
 
         const { error } = await supabase
           .from('guardians')
@@ -720,15 +724,17 @@ export async function updateGuardianInDatabase(
           .eq('user_id', targetUserId);
 
         if (error) {
-          console.error('[Supabase Update Guardian Error]:', error);
+          console.error('[Supabase updateGuardian] UPDATE error:', error.code, error.message);
+        } else {
+          console.log('[Supabase updateGuardian] ✓ Updated guardian:', guardianId);
         }
       }
     } catch (err) {
-      console.error('[Supabase Update Guardian Exception]:', err);
+      console.error('[Supabase updateGuardian] Exception:', err);
     }
   }
 
-  // 2. Local Database Update
+  // Always keep local cache in sync
   const key = getGuardiansKey(userId);
   const current = await fetchUserGuardians(userId);
   const updated = current.map((c) => (c.id === guardianId ? { ...c, ...updates } : c));
@@ -737,7 +743,7 @@ export async function updateGuardianInDatabase(
 }
 
 /**
- * Delete a guardian from the database
+ * Delete a guardian from the database.
  */
 export async function deleteGuardianFromDatabase(
   userId: string,
@@ -746,15 +752,12 @@ export async function deleteGuardianFromDatabase(
   // 1. Supabase Cloud Database Delete
   if (isSupabaseConfigured() && supabase) {
     try {
-      let targetUserId = userId;
-      if (!isValidUUID(targetUserId)) {
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData?.session?.user?.id) {
-          targetUserId = sessionData.session.user.id;
-        }
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      const targetUserId = (user?.id && isValidUUID(user.id))
+        ? user.id
+        : (isValidUUID(userId) ? userId : null);
 
-      if (isValidUUID(targetUserId)) {
+      if (targetUserId) {
         const { error } = await supabase
           .from('guardians')
           .delete()
@@ -762,15 +765,17 @@ export async function deleteGuardianFromDatabase(
           .eq('user_id', targetUserId);
 
         if (error) {
-          console.error('[Supabase Delete Guardian Error]:', error);
+          console.error('[Supabase deleteGuardian] DELETE error:', error.code, error.message);
+        } else {
+          console.log('[Supabase deleteGuardian] ✓ Deleted guardian:', guardianId);
         }
       }
     } catch (err) {
-      console.error('[Supabase Delete Guardian Exception]:', err);
+      console.error('[Supabase deleteGuardian] Exception:', err);
     }
   }
 
-  // 2. Local Database Delete
+  // Always keep local cache in sync
   const key = getGuardiansKey(userId);
   const current = await fetchUserGuardians(userId);
   const updated = current.filter((c) => c.id !== guardianId);

@@ -423,12 +423,17 @@ export const App: React.FC = () => {
   // Guardian Database CRUD Handlers
   const handleAddGuardian = async (contactData: Omit<TrustedContact, 'id'>) => {
     const userId = currentUser?.id || 'guest-user';
-    const savedContact = await saveGuardianToDatabase(userId, contactData);
-    setTrustedContacts((prev) => [savedContact, ...prev.filter((c) => c.id !== savedContact.id)]);
-    if (savedContact.id.startsWith('g-')) {
-      showToast(`✓ Guardian "${savedContact.name}" saved locally (Sign in with email to store in Supabase DB)`);
-    } else {
-      showToast(`✓ Guardian "${savedContact.name}" stored in Supabase database!`);
+    try {
+      const savedContact = await saveGuardianToDatabase(userId, contactData);
+      setTrustedContacts((prev) => [savedContact, ...prev.filter((c) => c.id !== savedContact.id)]);
+      if (savedContact.id.startsWith('g-')) {
+        showToast(`Guardian "${savedContact.name}" saved locally. Sign in with Supabase to sync to DB.`);
+      } else {
+        showToast(`✓ Guardian "${savedContact.name}" stored in Supabase database!`);
+      }
+    } catch (err: any) {
+      console.error('[handleAddGuardian] Failed:', err);
+      showToast(`⚠ Failed to save guardian: ${err?.message || 'Unknown error'}. Check browser console for details.`);
     }
   };
 
